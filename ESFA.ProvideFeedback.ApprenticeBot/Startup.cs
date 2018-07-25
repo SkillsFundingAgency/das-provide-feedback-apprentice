@@ -44,7 +44,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 // an "Ooops" message is sent. 
                 options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
                 {
-                    await context.TraceActivity("EchoBot Exception", exception);
+                    await context.TraceActivity($"{nameof(ApprenticeBot)} Exception", exception);
                     await context.SendActivity("Sorry, it looks like something went wrong!");
                 }));
 
@@ -65,7 +65,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureTableStorage("AzureTablesConnectionString", "TableName");
                 // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
 
-                options.Middleware.Add(new ConversationState<ConvoState>(dataStore));
+                options.Middleware.Add(new ConversationState<Dictionary<string, object>>(dataStore));
             });
         }
 
