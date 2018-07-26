@@ -24,7 +24,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
     { 
         static readonly string Intro = "Here's your quarterly apprenticeship survey. You agreed to participate when you started your apprenticeship";
         static readonly string YourFeedback = "Your feedback will really help us improve things. But if you want to opt out, please text STOP";
-        static readonly string Question1 = "So far, are you learning as much as you expected?";
+        static readonly string Question1 = "So far, are you learning as much as you expected? Reply yes or no.";
         static readonly string Question2 = "Each month you should be getting at least 4 days of training that's not part of your job. Are you getting this?";
         static readonly string PositiveResult = "Keep up the good work!";
         static readonly string NegativeResult = "If you have a problem with your apprenticeship, it's a good idea to speak to your employer's Human Resources department";
@@ -34,12 +34,19 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
 
         public ApprenticeBot()
         {
-            var list = new List<string> {"yes", "no"};
-            //var choices = new List<Choice>()
-            //{
-            //    new Choice {Value = "yes", Synonyms = new List<string>() {"yep", "yeah", "ok"}},
-            //    new Choice {Value = "no", Synonyms = new List<string>() {"nope", "nah", "negative"}}
-            //};
+            var choices = new List<Choice>()
+            {
+                new Choice {Action = new CardAction(text: "yes", title: "yes", value: "yes"), Value = "yes", Synonyms = new List<string>() {"yep", "yeah", "ok"}},
+                new Choice {Action = new CardAction(text: "no", title: "no", value: "no"), Value = "no", Synonyms = new List<string>() {"nope", "nah", "negative"}}
+            };
+
+            var list = choices.Select(c => c.Value).ToList();
+
+            var binaryOptions = new ChoicePromptOptions()
+            {
+                Choices = choices,
+                RetryPromptActivity = MessageFactory.Text("Please reply YES or NO") as Activity,
+            };
 
             _dialogs = new DialogSet();
             _dialogs.Add("feedback", new WaterfallStep[]
@@ -49,11 +56,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                     await dc.Context.SendActivity(Intro);
                     await dc.Context.SendActivity(YourFeedback);
 
-                    await dc.Prompt("questionOne", Question1, new ChoicePromptOptions()
-                    {
-                        Choices = ChoiceFactory.ToChoices(list),
-                        RetryPromptActivity = MessageFactory.SuggestedActions(list, "Please reply YES or NO") as Activity
-                    });
+                    await dc.Prompt("questionOne", Question1, binaryOptions);
                 },
                 async (dc, args, next) =>
                 {
@@ -69,11 +72,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                     }
                     await dc.Context.SendActivity(Responses.OrderBy(s => Guid.NewGuid()).First());
 
-                    await dc.Prompt("questionTwo", Question2, new ChoicePromptOptions()
-                    {
-                        Choices = ChoiceFactory.ToChoices(list),
-                        RetryPromptActivity = MessageFactory.SuggestedActions(list, "Please reply YES or NO") as Activity
-                    });
+                    await dc.Prompt("questionTwo", Question2, binaryOptions);
                 },
                 async (dc, args, next) =>
                 {
@@ -103,8 +102,8 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 }
             });
 
-            _dialogs.Add("questionOne", new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English));
-            _dialogs.Add("questionTwo", new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English));
+            _dialogs.Add("questionOne", new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English) { Style = ListStyle.None });
+            _dialogs.Add("questionTwo", new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English) { Style = ListStyle.None });
         }
 
         /// <inheritdoc />
