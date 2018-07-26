@@ -10,24 +10,37 @@ using Microsoft.Bot.Builder.Prompts;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
 using Microsoft.Recognizers.Text;
+using ChoiceFactory = Microsoft.Bot.Builder.Prompts.Choices.ChoiceFactory;
 
 namespace ESFA.ProvideFeedback.ApprenticeBot
 {
-    public class ApprenticeBot : IBot
+    public class SurveyChoice
     {
+        public bool IsPositive { get; set; }
+        public string Text { get; set; }
+    }
+
+    public class ApprenticeBot : IBot
+    { 
         static readonly string Intro = "Here's your quarterly apprenticeship survey. You agreed to participate when you started your apprenticeship";
         static readonly string YourFeedback = "Your feedback will really help us improve things. But if you want to opt out, please text STOP";
-        static readonly string Question1 = "Q1. So far, are you learning as much as you expected? Please answer YES or NO";
+        static readonly string Question1 = "So far, are you learning as much as you expected?";
         static readonly string Question2 = "Each month you should be getting at least 4 days of training that's not part of your job. Are you getting this?";
         static readonly string PositiveResult = "Keep up the good work!";
         static readonly string NegativeResult = "If you have a problem with your apprenticeship, it's a good idea to speak to your employer's Human Resources department";
         static readonly List<string> Responses = new List<string> { "Okay, thanks for the feedback" , "Okay, thanks for your feedback. It's really helpful" , "Thanks!" };
 
-
         private readonly DialogSet _dialogs;
 
         public ApprenticeBot()
         {
+            var list = new List<string> {"yes", "no"};
+            //var choices = new List<Choice>()
+            //{
+            //    new Choice {Value = "yes", Synonyms = new List<string>() {"yep", "yeah", "ok"}},
+            //    new Choice {Value = "no", Synonyms = new List<string>() {"nope", "nah", "negative"}}
+            //};
+
             _dialogs = new DialogSet();
             _dialogs.Add("feedback", new WaterfallStep[]
             {
@@ -35,35 +48,69 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 {
                     await dc.Context.SendActivity(Intro);
                     await dc.Context.SendActivity(YourFeedback);
-                    await dc.Prompt("questionOne", Question1);
+
+                    await dc.Prompt("questionOne", Question1, new ChoicePromptOptions()
+                    {
+                        Choices = ChoiceFactory.ToChoices(list),
+                        RetryPromptActivity = MessageFactory.SuggestedActions(list, "Please reply YES or NO") as Activity
+                    });
                 },
                 async (dc, args, next) =>
                 {
-                    var convo = ConversationState<Dictionary<string,object>>.Get(dc.Context);
+                    var state = ConversationState<SurveyState>.Get(dc.Context);
 
-                    var response = args["Text"];
-                    
-                    await dc.Context.SendActivity($"You answered {response.ToString().ToLower()}");
-                    await dc.Prompt("questionTwo", Question2);
+                    if (args["Value"] is FoundChoice response && response.Value == "yes")
+                    {
+                        state.SurveyScore++;
+                    }
+                    else
+                    {
+                        state.SurveyScore--;
+                    }
+                    await dc.Context.SendActivity(Responses.OrderBy(s => Guid.NewGuid()).First());
+
+                    await dc.Prompt("questionTwo", Question2, new ChoicePromptOptions()
+                    {
+                        Choices = ChoiceFactory.ToChoices(list),
+                        RetryPromptActivity = MessageFactory.SuggestedActions(list, "Please reply YES or NO") as Activity
+                    });
                 },
                 async (dc, args, next) =>
                 {
-                    var convo = ConversationState<Dictionary<string,object>>.Get(dc.Context);
+                    var state = ConversationState<SurveyState>.Get(dc.Context);
 
-                    var response = args["Text"];
-                    await dc.Context.SendActivity($"You answered {response.ToString().ToLower()}");
-                },
+                    if (args["Value"] is FoundChoice response && response.Value == "yes")
+                    {
+                        state.SurveyScore++;
+                    }
+                    else
+                    {
+                        state.SurveyScore--;
+                    }
+                    await dc.Context.SendActivity(Responses.OrderBy(s => Guid.NewGuid()).First());
+
+                    // End the convo
+                    if (state.SurveyScore > 1)
+                    {
+                        await dc.Context.SendActivity($"{PositiveResult}");
+                    }
+                    else
+                    {
+                        await dc.Context.SendActivity($"{NegativeResult}");
+                    }
+
+                    await dc.End();
+                }
             });
 
-            // add the prompt, of type TextPrompt
-            _dialogs.Add("questionOne", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
-            _dialogs.Add("questionTwo", new Microsoft.Bot.Builder.Dialogs.TextPrompt());
+            _dialogs.Add("questionOne", new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English));
+            _dialogs.Add("questionTwo", new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English));
         }
 
         /// <inheritdoc />
         public async Task OnTurn(ITurnContext context)
         {
-            var state = ConversationState<Dictionary<string, object>>.Get(context);
+            var state = ConversationState<SurveyState>.Get(context);
             var dc = _dialogs.CreateContext(context, state);
 
             if (context.Activity.Type == ActivityTypes.Message)

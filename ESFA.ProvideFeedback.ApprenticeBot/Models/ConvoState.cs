@@ -5,13 +5,18 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
     /// <summary>
     /// Stores the current conversation state
     /// </summary>
-    public class ConvoState
+    public class SurveyState: Dictionary<string, object>
     {
-        public ConvoState()
-        {
-            Messages = new List<string>();
-        }
+        private const string SurveyScoreKey = "SurveyScore";
 
-        public List<string> Messages { get; set; }
+        public SurveyState()
+        {
+            this[SurveyScoreKey] = 0;
+        }
+        public int SurveyScore
+        {
+            get { return (int)this[SurveyScoreKey]; }
+            set { this[SurveyScoreKey] = value; }
+        }
     }
 }
