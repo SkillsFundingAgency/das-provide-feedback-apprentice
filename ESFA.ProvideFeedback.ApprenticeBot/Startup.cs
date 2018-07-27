@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Bot.Builder.BotFramework;
 using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 
@@ -66,7 +67,11 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage("AzureBlobConnectionString", "containerName");
 
                 options.Middleware.Add(new ConversationState<SurveyState>(dataStore));
+                options.Middleware.Add(new UserState<UserState>(dataStore));
+
             });
+
+            services.AddTransient<IApprenticeFeedbackSurvey, DefaultFeedbackSurvey>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

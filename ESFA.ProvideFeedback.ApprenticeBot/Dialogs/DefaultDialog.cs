@@ -8,7 +8,7 @@ using Microsoft.Bot.Builder.Dialogs;
 namespace ESFA.ProvideFeedback.ApprenticeBot.Dialogs
 {
     [Serializable]
-    public class DefaultDialog : IDialog
+    public class RootDialog : IDialog
     {
         public Task DialogBegin(DialogContext dc, IDictionary<string, object> dialogArgs = null)
         {

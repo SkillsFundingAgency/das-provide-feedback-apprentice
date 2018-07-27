@@ -1,14 +1,31 @@
-﻿namespace ESFA.ProvideFeedback.ApprenticeBot
+﻿using System.Collections.Generic;
+
+namespace ESFA.ProvideFeedback.ApprenticeBot
 {
-    public class UserState
+    /// <summary>
+    /// Stores the current conversation state
+    /// </summary>
+    public class UserState : Dictionary<string, object>
     {
+        private const string PhoneNumberKey = "PhoneNumber";
+        private const string UserNameKey = "UserName";
+
         public UserState()
         {
-            SmsId = 10000;
-            PhoneNumber = "07880256082";
+            this[PhoneNumberKey] = 07880256082;
+            this[UserNameKey] = "Steeeeeeve";
+        }
+        public int PhoneNumber
+        {
+            get { return (int)this[PhoneNumberKey]; }
+            set { this[PhoneNumberKey] = value; }
         }
 
-        public int SmsId { get; set; }
-        public string PhoneNumber { get; set; }
+        public int UserName
+        {
+            get { return (int)this[UserNameKey]; }
+            set { this[UserNameKey] = value; }
+        }
+
     }
 }

@@ -18,5 +18,6 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
             get { return (int)this[SurveyScoreKey]; }
             set { this[SurveyScoreKey] = value; }
         }
+
     }
 }
