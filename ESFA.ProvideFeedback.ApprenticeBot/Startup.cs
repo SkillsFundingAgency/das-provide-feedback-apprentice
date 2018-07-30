@@ -12,6 +12,7 @@ using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
+using Microsoft.Extensions.Logging;
 
 namespace ESFA.ProvideFeedback.ApprenticeBot
 {
@@ -71,7 +72,8 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
 
             });
 
-            services.AddTransient<IApprenticeFeedbackSurvey, DefaultFeedbackSurvey>();
+            services.AddTransient<IApprenticeFeedbackSurvey, ApprenticeFeedbackSurvey>();
+            services.AddSingleton<IDialogFactory<DialogSet>, BotDialogFactory>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

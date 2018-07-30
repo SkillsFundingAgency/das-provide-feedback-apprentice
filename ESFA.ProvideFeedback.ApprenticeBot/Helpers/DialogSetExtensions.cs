@@ -6,17 +6,54 @@ using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Logging;
 
 namespace ESFA.ProvideFeedback.ApprenticeBot
 {
-    /// <summary>
-    /// Extension method for adding dialog sets to a dialog collection.
-    /// </summary>
-    public static class DialogSetExtensions
+    public interface IDialogFactory<T>
     {
+        T BuildApprenticeFeedbackDialog();
+        T BuildApprenticeFeedbackRootDialog(T dialogs);
+        T BuildApprenticeFeedbackQuestionsDialog(T dialogs);
+        T BuildApprenticeFeedbackAdditionalFeedbackDialog(T dialogs);
+    }
+
+    public static class ApprenticeFeedbackDialogExtensions
+    {
+        public static DialogSet WithRootDialog(this DialogSet dialogs, IDialogFactory<DialogSet> factory)
+        {
+            return factory.BuildApprenticeFeedbackRootDialog(dialogs);
+        }
+        public static DialogSet WithQuestionSet(this DialogSet dialogs, IDialogFactory<DialogSet> factory)
+        {
+            return factory.BuildApprenticeFeedbackQuestionsDialog(dialogs);
+        }
+        public static DialogSet WithAdditionalFeedback(this DialogSet dialogs, IDialogFactory<DialogSet> factory)
+        {
+            return factory.BuildApprenticeFeedbackAdditionalFeedbackDialog(dialogs);
+        }
+    }
+
+    /// <summary>
+    /// Factory for adding conversational dialogs to Bots
+    /// </summary>
+    public class BotDialogFactory : IDialogFactory<DialogSet>
+    {
+        private readonly ILogger _logger;
+
         internal static readonly List<string> Responses = new List<string> { "Okay, thanks for the feedback", "Okay, thanks for your feedback. It's really helpful", "Thanks!" };
 
-        public static DialogSet WithRootDialog(this DialogSet dialogs)
+        public BotDialogFactory(ILogger log)
+        {
+            _logger = log;
+        }
+
+        public DialogSet BuildApprenticeFeedbackDialog()
+        {
+            return new DialogSet();
+        }
+
+        public DialogSet BuildApprenticeFeedbackRootDialog(DialogSet dialogs)
         {
             // The main form
             dialogs.Add("firstRun",
@@ -28,23 +65,26 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                         await Task.Delay(1000);
                         await dc.Context.SendActivity("Your feedback will really help us improve things. But if you want to opt out, please text STOP", inputHint: InputHints.AcceptingInput);
                         await Task.Delay(1000);
-                        await dc.Begin("feedbackQuestionnaire");
+                        await dc.Begin("apprenticeFeedbackQuestionnaire");
                     },
                     async (dc, args, next) =>
                     {
                         var state = ConversationState<SurveyState>.Get(dc.Context);
+                        var user = ConversationState<UserState>.Get(dc.Context);
 
                         // End the convo
                         if (state.SurveyScore > 1)
                         {
                             await Task.Delay(1000);
-                            await dc.Context.SendActivity($"DEBUG: You have a survey score of {state.SurveyScore} which has triggered the positive conversation tree");
+                            _logger.LogDebug($"User {user.UserName} has a survey score of {state.SurveyScore} which has triggered the positive conversation tree");
+                            //await dc.Context.SendActivity($"DEBUG: You have a survey score of {state.SurveyScore} which has triggered the negative conversation tree");
                             await dc.Context.SendActivity($"Keep up the good work!", inputHint: InputHints.IgnoringInput);
                         }
                         else
                         {
                             await Task.Delay(1000);
-                            await dc.Context.SendActivity($"DEBUG: You have a survey score of {state.SurveyScore} which has triggered the negative conversation tree");
+                            _logger.LogDebug($"User {user.UserName} has a survey score of {state.SurveyScore} which has triggered the positive conversation tree");
+                            //await dc.Context.SendActivity($"DEBUG: You have a survey score of {state.SurveyScore} which has triggered the negative conversation tree");
                             await dc.Context.SendActivity($"If you have a problem with your apprenticeship, it's a good idea to speak to your employer's Human Resources department", inputHint: InputHints.IgnoringInput);
                         }
 
@@ -62,10 +102,10 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
             return dialogs;
         }
 
-        public static DialogSet WithFeedbackQuestions(this DialogSet dialogs)
+        public DialogSet BuildApprenticeFeedbackQuestionsDialog(DialogSet dialogs)
         {
             // The feedback questionnaire. Invoked by typing '/feedback' to the bot, or an external trigger
-            dialogs.Add("feedbackQuestionnaire", new WaterfallStep[]
+            dialogs.Add("apprenticeFeedbackQuestionnaire", new WaterfallStep[]
             {
                 async (dc, args, next) =>
                 {
@@ -136,7 +176,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
             return dialogs;
         }
 
-        public static DialogSet WithOtherComments(this DialogSet dialogs)
+        public DialogSet BuildApprenticeFeedbackAdditionalFeedbackDialog(DialogSet dialogs)
         {
             // A free text feedback entry prompt, with a simple echo back to the user
             dialogs.Add("otherComments", new WaterfallStep[]
