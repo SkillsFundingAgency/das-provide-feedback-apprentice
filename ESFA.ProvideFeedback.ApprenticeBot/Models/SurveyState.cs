@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot
+namespace ESFA.ProvideFeedback.ApprenticeBot.Models
 {
+    /// <inheritdoc />
     /// <summary>
     /// Stores the current conversation state
     /// </summary>
@@ -15,8 +16,8 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
         }
         public int SurveyScore
         {
-            get { return (int)this[SurveyScoreKey]; }
-            set { this[SurveyScoreKey] = value; }
+            get => (int)this[SurveyScoreKey];
+            set => this[SurveyScoreKey] = value;
         }
 
     }

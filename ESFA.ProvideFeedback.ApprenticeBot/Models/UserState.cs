@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot
+namespace ESFA.ProvideFeedback.ApprenticeBot.Models
 {
     /// <summary>
     /// Stores the current conversation state
@@ -17,14 +17,14 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
         }
         public int PhoneNumber
         {
-            get { return (int)this[PhoneNumberKey]; }
-            set { this[PhoneNumberKey] = value; }
+            get => (int)this[PhoneNumberKey];
+            set => this[PhoneNumberKey] = value;
         }
 
         public int UserName
         {
-            get { return (int)this[UserNameKey]; }
-            set { this[UserNameKey] = value; }
+            get => (int)this[UserNameKey];
+            set => this[UserNameKey] = value;
         }
 
     }

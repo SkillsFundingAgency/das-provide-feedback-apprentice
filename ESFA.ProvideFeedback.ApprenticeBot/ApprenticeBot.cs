@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ESFA.ProvideFeedback.ApprenticeBot.Models;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
@@ -34,16 +35,18 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                             await dc.Context.SendActivity($"Feedback cancelled");
                             dc.EndAll();
                         }
+                        else if (context.Activity.Text.ToLowerInvariant().Contains("feedback"))
+                        {
+                            dc.EndAll();
+                            await dc.Begin("start");
+                        }
                         else
                         {
                             await dc.Continue();
 
                             if (!context.Responded)
                             {
-                                if (context.Activity.Text.ToLowerInvariant().Contains("feedback"))
-                                {
-                                    await dc.Begin("firstRun");
-                                }
+                                await dc.Begin("start");
                             }
                         }
 
@@ -54,7 +57,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                         {
                             if (newMember.Id != context.Activity.Recipient.Id)
                             {
-                                await context.SendActivity($"Hello! I'm Bertie the Apprentice Feedback Bot. Please reply with 'feedback' if you would like to leave some new feedback");
+                                await context.SendActivity($"Hello! I'm Bertie the Apprentice Feedback Bot. Please reply with 'help' if you would like to see a list of my capabilities");
                             }
                         }
                         break;

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ESFA.ProvideFeedback.ApprenticeBot.Helpers;
+using ESFA.ProvideFeedback.ApprenticeBot.Models;
+using ESFA.ProvideFeedback.ApprenticeBot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +16,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
 using Microsoft.Extensions.Logging;
+using NLog.Web;
 
 namespace ESFA.ProvideFeedback.ApprenticeBot
 {
@@ -35,6 +39,8 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
+
             services.AddBot<ApprenticeBot>(options =>
             {
                 options.CredentialProvider = new ConfigurationCredentialProvider(Configuration);
@@ -47,7 +53,8 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
                 {
                     await context.TraceActivity($"{nameof(ApprenticeBot)} Exception", exception);
-                    await context.SendActivity("Sorry, it looks like something went wrong!");
+                    logger.Error(exception, $"{nameof(ApprenticeBot)} Exception");
+                    await context.SendActivity(exception.Message);
                 }));
 
                 // The Memory Storage used here is for local bot debugging only. When the bot
