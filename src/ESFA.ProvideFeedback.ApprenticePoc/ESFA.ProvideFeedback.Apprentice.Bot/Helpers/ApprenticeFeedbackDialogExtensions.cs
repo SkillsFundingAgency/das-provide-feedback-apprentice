@@ -1,9 +1,8 @@
-﻿using System;
-using ESFA.ProvideFeedback.ApprenticeBot.Services;
+﻿using ESFA.ProvideFeedback.Apprentice.Bot.Services;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot.Helpers
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Helpers
 {
     public static class ApprenticeFeedbackDialogExtensions
     {
@@ -42,14 +41,4 @@ namespace ESFA.ProvideFeedback.ApprenticeBot.Helpers
             return factory.BuildDynamicEndDialog(dialogs, dialogName, requiredScore, positiveEnd, negativeEnd);
         }
     }
-
-    public static class DialogStepExtensions
-    {
-        public static IDialogStep WithResponse(this IDialogStep option, string response)
-        {
-            option.Responses.Add(response);
-            return option;
-        }
-    }
-
 }

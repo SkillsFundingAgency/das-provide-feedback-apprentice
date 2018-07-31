@@ -1,24 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using ESFA.ProvideFeedback.ApprenticeBot.Helpers;
-using ESFA.ProvideFeedback.ApprenticeBot.Models;
-using ESFA.ProvideFeedback.ApprenticeBot.Services;
+using ESFA.ProvideFeedback.Apprentice.Bot.Models;
+using ESFA.ProvideFeedback.Apprentice.Bot.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Bot.Builder.BotFramework;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using NLog.Web;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot
+namespace ESFA.ProvideFeedback.Apprentice.Bot
 {
     public class Startup
     {
@@ -41,7 +35,7 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
         {
             var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
 
-            services.AddBot<ApprenticeBot>(options =>
+            services.AddBot<Apprentice.Bot.FeedbackBot>(options =>
             {
                 options.CredentialProvider = new ConfigurationCredentialProvider(Configuration);
 
@@ -52,8 +46,8 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 // an "Ooops" message is sent. 
                 options.Middleware.Add(new CatchExceptionMiddleware<Exception>(async (context, exception) =>
                 {
-                    await context.TraceActivity($"{nameof(ApprenticeBot)} Exception", exception);
-                    logger.Error(exception, $"{nameof(ApprenticeBot)} Exception");
+                    await context.TraceActivity($"{nameof(Apprentice.Bot.FeedbackBot)} Exception", exception);
+                    logger.Error(exception, $"{nameof(Apprentice.Bot.FeedbackBot)} Exception");
                     await context.SendActivity(exception.Message);
                 }));
 

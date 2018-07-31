@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot.Models
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Models
 {
     /// <summary>
     /// Stores the current conversation state

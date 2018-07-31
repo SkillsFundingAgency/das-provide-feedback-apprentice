@@ -3,7 +3,7 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using NLog.Web;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot
+namespace ESFA.ProvideFeedback.Apprentice.Bot
 {
     public class Program
     {
@@ -12,12 +12,12 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
             var logger = NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
             try
             {
-                logger.Info("Starting up ApprenticeBot host");
+                logger.Info("Starting up Apprentice Feedback Bot host");
                 CreateWebHostBuilder(args).Build().Run();
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "Stopped ApprenticeBot because of exception");
+                logger.Error(ex, "Stopped Apprentice Feedback Bot because of exception");
                 throw;
             }
            

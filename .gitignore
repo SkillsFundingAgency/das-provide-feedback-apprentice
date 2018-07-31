@@ -278,9 +278,11 @@ __pycache__/
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config
-/ESFA.ProvideFeedback.ApprenticeBot/internal-nlog.txt
-/ESFA.ProvideFeedback.ApprenticeBot/Properties/PublishProfiles/esfa-pf-apprentice-bot - Web Deploy.pubxml
-/ESFA.ProvideFeedback.ApprenticeBot/Properties/PublishProfiles/esfa-pf-apprentice-bot - FTP.pubxml
+
+# Apprentice Bot specific excludes
+/src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/internal-nlog.txt
+/src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/Properties/PublishProfiles/esfa-pf-apprentice-bot - Web Deploy.pubxml
+/src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/Properties/PublishProfiles/esfa-pf-apprentice-bot - FTP.pubxml
 
 
 # Telerik's JustMock configuration file

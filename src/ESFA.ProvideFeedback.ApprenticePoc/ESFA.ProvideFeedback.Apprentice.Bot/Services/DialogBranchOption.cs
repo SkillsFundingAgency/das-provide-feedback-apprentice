@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot.Services
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 {
     public class DialogBranchOption : IDialogStep
     { 

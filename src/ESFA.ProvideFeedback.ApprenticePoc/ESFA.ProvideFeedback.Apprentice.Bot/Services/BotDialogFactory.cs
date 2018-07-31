@@ -1,32 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using ESFA.ProvideFeedback.ApprenticeBot.Helpers;
-using ESFA.ProvideFeedback.ApprenticeBot.Models;
+﻿using System.Threading.Tasks;
+using ESFA.ProvideFeedback.Apprentice.Bot.Helpers;
+using ESFA.ProvideFeedback.Apprentice.Bot.Models;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Builder.Prompts;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.Recognizers.Text;
-using Microsoft.Bot.Builder.Prompts;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot.Services
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 {
-    public interface IDialogFactory<T>
-    {
-        T BuildApprenticeFeedbackDialog();
-
-        T BuildWelcomeDialog(T dialogs, string dialogName, IDialogStep nextStep);
-        T BuildBranchingDialog(T dialogs, string dialogName, string prompt, IDialogStep positiveBranch, IDialogStep negativeBranch);
-        T BuildFreeTextDialog(T dialogs, string dialogName, string prompt, IDialogStep nextStep);
-        T BuildDynamicEndDialog(T dialogs, string dialogName, int requiredScore, IDialogStep positiveEnd, IDialogStep negativeEnd);
-        T BuildChoicePrompt(T dialogs, string promptName, ListStyle style);
-        T BuildTextPrompt(T dialogs, string promptName);
-    }
-
     /// <summary>
     /// Factory for adding conversational dialogs to Bots
     /// </summary>

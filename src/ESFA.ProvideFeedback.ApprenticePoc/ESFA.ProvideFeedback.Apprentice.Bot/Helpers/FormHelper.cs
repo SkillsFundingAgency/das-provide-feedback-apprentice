@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using ESFA.ProvideFeedback.ApprenticeBot.Services;
-using Microsoft.Extensions.Configuration;
+using ESFA.ProvideFeedback.Apprentice.Bot.Services;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Configuration;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot.Helpers
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Helpers
 {
     public static class FormHelper
     {

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.ProvideFeedback.ApprenticeBot", "ESFA.ProvideFeedback.ApprenticeBot\ESFA.ProvideFeedback.ApprenticeBot.csproj", "{EDE5D7D9-5BC5-467F-95A1-3D4A57D0D9F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.ProvideFeedback.Apprentice.Bot", "ESFA.ProvideFeedback.Apprentice.Bot\ESFA.ProvideFeedback.Apprentice.Bot.csproj", "{EDE5D7D9-5BC5-467F-95A1-3D4A57D0D9F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

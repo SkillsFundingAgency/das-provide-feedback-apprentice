@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using ESFA.ProvideFeedback.ApprenticeBot.Helpers;
-using ESFA.ProvideFeedback.ApprenticeBot.Services;
+﻿using ESFA.ProvideFeedback.Apprentice.Bot.Helpers;
+using ESFA.ProvideFeedback.Apprentice.Bot.Services;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts;
-using Microsoft.Recognizers.Text;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot.Models
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Models
 {
     /// <summary>
     /// The dialogs are all configured here. Bot Framework v4.0 doesn't have a stable FormFlow implementation yet, so it needs to be inline instead of represented by IDialog implementations.
@@ -72,10 +70,5 @@ namespace ESFA.ProvideFeedback.ApprenticeBot.Models
         {
             return _dialogs;
         }
-    }
-
-    public interface IApprenticeFeedbackSurvey
-    {
-        DialogSet Current();
     }
 }

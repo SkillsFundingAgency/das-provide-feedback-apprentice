@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ESFA.ProvideFeedback.ApprenticeBot.Models;
+using ESFA.ProvideFeedback.Apprentice.Bot.Models;
 using Microsoft.Bot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot
+namespace ESFA.ProvideFeedback.Apprentice.Bot
 {
-    public class ApprenticeBot : IBot
+    public class FeedbackBot : IBot
     {
         private readonly DialogSet _dialogs;
 
-        public ApprenticeBot(IApprenticeFeedbackSurvey feedbackDialogSet)
+        public FeedbackBot(IApprenticeFeedbackSurvey feedbackDialogSet)
         {
             _dialogs = feedbackDialogSet.Current();
         }
