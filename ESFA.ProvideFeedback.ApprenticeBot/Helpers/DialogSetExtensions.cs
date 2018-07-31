@@ -41,22 +41,6 @@ namespace ESFA.ProvideFeedback.ApprenticeBot.Helpers
         {
             return factory.BuildDynamicEndDialog(dialogs, dialogName, requiredScore, positiveEnd, negativeEnd);
         }
-
-        [Obsolete("Please build branching dialogs using WithWelcome method instead")]
-        public static DialogSet WithRootDialog(this DialogSet dialogs, IDialogFactory<DialogSet> factory)
-        {
-            return factory.BuildApprenticeFeedbackRootDialog(dialogs);
-        }
-        [Obsolete("Please build branching dialogs using WithBranch method instead")]
-        public static DialogSet WithQuestionSet(this DialogSet dialogs, IDialogFactory<DialogSet> factory)
-        {
-            return factory.BuildApprenticeFeedbackQuestionsDialog(dialogs);
-        }
-        [Obsolete("Please build free-text dialogs using WithFreeTextEntry method instead")]
-        public static DialogSet WithAdditionalFeedback(this DialogSet dialogs, IDialogFactory<DialogSet> factory)
-        {
-            return factory.BuildApprenticeFeedbackAdditionalFeedbackDialog(dialogs);
-        }
     }
 
     public static class DialogStepExtensions

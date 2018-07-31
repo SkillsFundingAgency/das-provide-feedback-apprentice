@@ -12,18 +12,18 @@ namespace ESFA.ProvideFeedback.ApprenticeBot.Models
 
         public UserState()
         {
-            this[PhoneNumberKey] = 07880256082;
-            this[UserNameKey] = "Steeeeeeve";
+            this[PhoneNumberKey] = "01234567890";
+            this[UserNameKey] = "Steeeeve";
         }
-        public int PhoneNumber
+        public string PhoneNumber
         {
-            get => (int)this[PhoneNumberKey];
+            get => (string)this[PhoneNumberKey];
             set => this[PhoneNumberKey] = value;
         }
 
-        public int UserName
+        public string UserName
         {
-            get => (int)this[UserNameKey];
+            get => (string)this[UserNameKey];
             set => this[UserNameKey] = value;
         }
 

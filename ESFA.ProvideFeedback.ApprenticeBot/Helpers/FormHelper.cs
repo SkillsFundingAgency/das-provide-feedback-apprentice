@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
 using ESFA.ProvideFeedback.ApprenticeBot.Services;
-using Microsoft.AspNetCore.Hosting.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Builder.Prompts.Choices;
 using Microsoft.Bot.Schema;
-using Microsoft.CodeAnalysis.Text;
 
-namespace ESFA.ProvideFeedback.ApprenticeBot
+namespace ESFA.ProvideFeedback.ApprenticeBot.Helpers
 {
     public static class FormHelper
     {
+        private static IConfiguration Configuration { get; set; }
+
         public static ChoicePromptOptions ConfirmationPromptOptions => new ChoicePromptOptions()
         {
             Choices = BuildConfirmationChoices(),
@@ -58,6 +59,13 @@ namespace ESFA.ProvideFeedback.ApprenticeBot
                 DialogTarget = null,
                 Responses = new List<string>()
             };
+        }
+
+        public static int CalculateTypingTimeInMs(string textToType)
+        {
+            var msPerLetter = 60 / 300;
+            var msResponseDelay = 1000;
+            return string.IsNullOrEmpty(textToType) ? 0 : msResponseDelay + (textToType.Length * msPerLetter);
         }
     }
 }
