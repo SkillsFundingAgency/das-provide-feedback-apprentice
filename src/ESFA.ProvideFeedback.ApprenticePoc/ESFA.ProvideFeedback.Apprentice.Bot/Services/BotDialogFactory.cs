@@ -40,11 +40,12 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                         var state = ConversationState<SurveyState>.Get(dc.Context);
                         state.SurveyScore = 0;
 
-                        foreach (string r in nextStep.Responses)
+                        foreach (var r in nextStep.Responses)
                         {
-                            await AddRealisticTypingDelay(dc.Context, r);
+                            await dc.Context.AddRealisticTypingDelay(r);
                             await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
                         }
+
                         await dc.Begin(nextStep.DialogTarget);
                     },
                     async (dc, args, next) =>
@@ -58,21 +59,14 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
             return dialogs;
         }
 
-        public async Task AddRealisticTypingDelay(ITurnContext ctx, string textToType)
-        {
-            Activity typing = new Activity() { Type = ActivityTypes.Typing };
-            await ctx.SendActivity(typing);
-            await Task.Delay(FormHelper.CalculateTypingTimeInMs(textToType));
-        }
-
-        public DialogSet BuildBranchingDialog(DialogSet dialogs, string dialogName, string prompt, IDialogStep positiveBranch, IDialogStep negativeBranch)
+        public DialogSet BuildBranchingDialog(DialogSet dialogs, string dialogName, string prompt,
+            IDialogStep positiveBranch, IDialogStep negativeBranch)
         {
             dialogs.Add(dialogName, new WaterfallStep[]
             {
                 async (dc, args, next) =>
                 {
-                    await AddRealisticTypingDelay(dc.Context, prompt);
-
+                    await dc.Context.AddRealisticTypingDelay(prompt);
                     await dc.Prompt("confirmationPrompt", prompt,
                         FormHelper.ConfirmationPromptOptions);
                 },
@@ -81,9 +75,9 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                     var state = ConversationState<SurveyState>.Get(dc.Context);
                     var userState = UserState<UserState>.Get(dc.Context);
 
-                    var positive = args["Value"] is FoundChoice response && (response.Value == "yes" ? true : false);
+                    var positive = args["Value"] is FoundChoice response && response.Value == "yes";
                     IDialogStep activeBranch;
-                    
+
                     if (positive)
                     {
                         state.SurveyScore++;
@@ -95,19 +89,19 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                         activeBranch = negativeBranch;
                     }
 
-                    _logger.LogDebug($"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} conversation tree");
+                    _logger.LogDebug(
+                        $"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} conversation tree");
 
+                    await dc.End(dc.ActiveDialog.State);
                     foreach (var r in activeBranch.Responses)
                     {
-                        await AddRealisticTypingDelay(dc.Context, r);
                         await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
+                        await dc.Context.AddRealisticTypingDelay(r);
                     }
+
                     await dc.Begin(activeBranch.DialogTarget);
                 },
-                async (dc, args, next) =>
-                {
-                    await dc.End();
-                }
+                async (dc, args, next) => { await dc.End(); }
             });
 
             return dialogs;
@@ -120,11 +114,13 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
             {
                 async (dc, args, next) =>
                 {
-                    await AddRealisticTypingDelay(dc.Context, prompt);
+                    await dc.Context.AddRealisticTypingDelay(prompt);
                     await dc.Prompt("freeText", prompt);
                 },
                 async (dc, args, next) =>
                 {
+                    await dc.Context.SendActivity("", inputHint: InputHints.IgnoringInput);
+
                     var state = ConversationState<SurveyState>.Get(dc.Context);
                     var userState = UserState<UserState>.Get(dc.Context);
 
@@ -133,22 +129,20 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 
                     foreach (var r in nextStep.Responses)
                     {
-                        await AddRealisticTypingDelay(dc.Context, r);
                         await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
+                        await dc.Context.AddRealisticTypingDelay(r);
                     }
 
                     await dc.Begin(nextStep.DialogTarget);
                 },
-                async (dc, args, next) =>
-                {
-                    await dc.End();
-                }
+                async (dc, args, next) => { await dc.End(); }
             });
 
             return dialogs;
         }
 
-        public DialogSet BuildDynamicEndDialog(DialogSet dialogs, string dialogName, int requiredScore, IDialogStep positiveEnd,
+        public DialogSet BuildDynamicEndDialog(DialogSet dialogs, string dialogName, int requiredScore,
+            IDialogStep positiveEnd,
             IDialogStep negativeEnd)
         {
             dialogs.Add(dialogName,
@@ -159,16 +153,17 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                         var state = ConversationState<SurveyState>.Get(dc.Context);
                         var userState = UserState<UserState>.Get(dc.Context);
 
-                        var positive = state.SurveyScore >= requiredScore ? true : false;
+                        var positive = state.SurveyScore >= requiredScore;
 
                         // End the convo, deciding whether to use the positive or negative journey based on the user score
                         var activeEnd = positive ? positiveEnd : negativeEnd;
 
-                        _logger.LogDebug($"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} ending");
+                        _logger.LogDebug(
+                            $"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} ending");
 
-                        foreach (string r in activeEnd.Responses)
+                        foreach (var r in activeEnd.Responses)
                         {
-                            await AddRealisticTypingDelay(dc.Context, r);
+                            await dc.Context.AddRealisticTypingDelay(r);
                             await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
                         }
 
@@ -181,7 +176,8 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 
         public DialogSet BuildChoicePrompt(DialogSet dialogs, string promptName, ListStyle style)
         {
-            dialogs.Add(promptName, new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English) { Style = ListStyle.None });
+            dialogs.Add(promptName,
+                new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English) {Style = ListStyle.None});
             return dialogs;
         }
 
@@ -189,6 +185,16 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
         {
             dialogs.Add(promptName, new Microsoft.Bot.Builder.Dialogs.TextPrompt());
             return dialogs;
+        }
+    }
+
+    public static class TurnContextExtensions
+    {
+        public static async Task AddRealisticTypingDelay(this ITurnContext ctx, string textToType)
+        {
+            Activity typing = new Activity() { Type = ActivityTypes.Typing };
+            await ctx.SendActivity(typing);
+            await Task.Delay(FormHelper.CalculateTypingTimeInMs(textToType));
         }
     }
 }

@@ -7,15 +7,18 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Logging;
 
 namespace ESFA.ProvideFeedback.Apprentice.Bot
 {
     public class FeedbackBot : IBot
     {
         private readonly DialogSet _dialogs;
+        private readonly ILogger<FeedbackBot> _logger;
 
-        public FeedbackBot(IApprenticeFeedbackSurvey feedbackDialogSet)
+        public FeedbackBot(ILogger<FeedbackBot> logger, IApprenticeFeedbackSurvey feedbackDialogSet)
         {
+            _logger = logger;
             _dialogs = feedbackDialogSet.Current();
         }
 
@@ -24,6 +27,18 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot
         {
             try
             {
+                dynamic channelData = context.Activity.ChannelData;
+                _logger.LogDebug($"channelData: {channelData}");
+
+                if (channelData?.SlackMessage != null)
+                {
+                    // only reply in threads
+                    if (channelData.SlackMessage.@event.thread_ts == null)
+                    {
+                        context.Activity.Conversation.Id += $":{channelData.SlackMessage.@event.ts}";
+                    }
+                }
+
                 switch (context.Activity.Type)
                 {
                     case ActivityTypes.Message:
@@ -35,18 +50,16 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot
                             await dc.Context.SendActivity($"Feedback cancelled");
                             dc.EndAll();
                         }
-                        else if (context.Activity.Text.ToLowerInvariant().Contains("feedback"))
-                        {
-                            dc.EndAll();
-                            await dc.Begin("start");
-                        }
                         else
                         {
                             await dc.Continue();
 
                             if (!context.Responded)
                             {
-                                await dc.Begin("start");
+                                if (context.Activity.Text.ToLowerInvariant().Contains("feedback"))
+                                {
+                                    await dc.Begin("start");
+                                }
                             }
                         }
 

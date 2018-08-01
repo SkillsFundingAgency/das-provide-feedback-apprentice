@@ -15,7 +15,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Helpers
         public static ChoicePromptOptions ConfirmationPromptOptions => new ChoicePromptOptions()
         {
             Choices = BuildConfirmationChoices(),
-            RetryPromptActivity = MessageFactory.Text("Please reply YES or NO") as Activity,
+            RetryPromptActivity = MessageFactory.Text("I didn't understand that I'm afraid. Please reply yes or no", inputHint: InputHints.ExpectingInput),
         };
 
         private static List<Choice> BuildConfirmationChoices()
@@ -34,12 +34,12 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Helpers
                     Value = "no",
                     Synonyms = new List<string>() {"nope", "nah", "negative", "n"}
                 },
-                new Choice
-                {
-                    Action = new CardAction(text: "skip", title: "skip", value: "skip"),
-                    Value = "skip",
-                    Synonyms = new List<string>() {"next"}
-                }
+                //new Choice
+                //{
+                //    Action = new CardAction(text: "skip", title: "skip", value: "skip"),
+                //    Value = "skip",
+                //    Synonyms = new List<string>() {"next"}
+                //}
             };
         }
 

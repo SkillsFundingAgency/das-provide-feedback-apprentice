@@ -45,7 +45,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Models
                         .WithResponse("Okay, thanks for that."))
                 .WithBranch(_dialogFactory,
                     "overallSatisfaction",
-                    "Overall, are you saitisfied with your training?",
+                    "Overall, are you satisfied with your training?",
                     FormHelper.BuildConversationPath("finish")
                         .WithResponse("Great, thanks for your feedback. It’s really helpful"),
                     FormHelper.BuildConversationPath("additionalFeedback"))
