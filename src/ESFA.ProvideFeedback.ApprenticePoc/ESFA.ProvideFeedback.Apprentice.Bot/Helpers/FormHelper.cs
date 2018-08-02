@@ -63,7 +63,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Helpers
 
         public static int CalculateTypingTimeInMs(string textToType)
         {
-            var msPerLetter = 60 / 300;
+            var msPerLetter = 60 / 500;
             var msResponseDelay = 1000;
             return string.IsNullOrEmpty(textToType) ? 0 : msResponseDelay + (textToType.Length * msPerLetter);
         }
