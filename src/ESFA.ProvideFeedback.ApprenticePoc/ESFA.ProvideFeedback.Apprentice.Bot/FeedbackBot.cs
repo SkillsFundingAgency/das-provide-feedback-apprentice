@@ -8,6 +8,7 @@ using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Microsoft.Bot.Builder.Azure;
 
 namespace ESFA.ProvideFeedback.Apprentice.Bot
 {
@@ -42,8 +43,8 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot
                 switch (context.Activity.Type)
                 {
                     case ActivityTypes.Message:
-                        var state = ConversationState<Dictionary<string, object>>.Get(context);
-                        var dc = _dialogs.CreateContext(context, state);
+                        var convoState = ConversationState<Dictionary<string, object>>.Get(context);
+                        var dc = _dialogs.CreateContext(context, convoState);
 
                         if (context.Activity.Text.ToLowerInvariant().Contains("stop"))
                         {
@@ -78,7 +79,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot
             }
             catch (Exception e)
             {
-                await context.SendActivity($"Exception: {e.Message}");
+                throw new Exception($"Error while handling conversation response: {e.Message}", e);
             }
         }
     }

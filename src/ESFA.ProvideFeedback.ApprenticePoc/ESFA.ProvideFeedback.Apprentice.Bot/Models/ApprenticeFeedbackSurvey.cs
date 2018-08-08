@@ -31,37 +31,38 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Models
                             "It's just 3 questions and it'll really help us improve things. But if you want to opt out, please type ‘Stop’"))
                 .WithBranch(_dialogFactory,
                     "daysOfTraining",
-                    "Over the last 6 months, have you received at least 25 days of training?",
+                    "Over the last 6 months, have you received at least 25 days of training? Please type ‘Yes’ or ‘No’",
                     FormHelper.BuildConversationPath("trainerKnowledge")
                         .WithResponse("Thanks!"),
                     FormHelper.BuildConversationPath("trainerKnowledge")
-                        .WithResponse("Okay, thanks for the feedback."))
+                        .WithResponse("Okay, thanks for the feedback"))
                 .WithBranch(_dialogFactory,
                     "trainerKnowledge",
-                    "Is your trainer knowledgable enough to teach your course?",
+                    "Next question, is your trainer good?",
                     FormHelper.BuildConversationPath("overallSatisfaction")
                         .WithResponse("Thanks"),
                     FormHelper.BuildConversationPath("overallSatisfaction")
-                        .WithResponse("Okay, thanks for that."))
+                        .WithResponse("Okay, thanks for that"))
                 .WithBranch(_dialogFactory,
                     "overallSatisfaction",
-                    "Overall, are you satisfied with your training?",
+                    "Overall, are you satisfied with your apprenticeship?",
                     FormHelper.BuildConversationPath("finish")
                         .WithResponse("Great, thanks for your feedback. It’s really helpful"),
-                    FormHelper.BuildConversationPath("additionalFeedback"))
-                .WithFreeTextEntry(_dialogFactory,
-                    "additionalFeedback",
-                    "Okay, sorry to hear that. Can you tell me a bit more about it ?",
                     FormHelper.BuildConversationPath("finish")
-                        .WithResponse(
-                            $"Okay, thanks. I'll pass that information to our to team - it'll help us improve things."))
+                        .WithResponse("Okay, sorry to hear that"))
+                //.WithFreeTextEntry(_dialogFactory,
+                //    "additionalFeedback",
+                //    "Okay, sorry to hear that. Tell me some details and I'll pass it on to our team",
+                //    FormHelper.BuildConversationPath("finish")
+                //        .WithResponse(
+                //            $"Okay, thanks. I'll pass that to our to team - it'll help us improve things"))
                 .WithDynamicEnd(_dialogFactory,
                     "finish", 3,
                     FormHelper.BuildConversationEndOption()
                         .WithResponse("Keep up the good work!"),
                     FormHelper.BuildConversationEndOption()
                         .WithResponse(
-                            $"If you have a problem with your apprenticeship, it’s a good idea to speak to your employer’s ‘Human Resources’ staff.")
+                            $"If you have a problem with your apprenticeship, it’s a good idea to speak to your employer’s ‘Human Resources’ staff")
                         .WithResponse(
                             $"If you’ve talked to them already, you might want to make a formal complaint: https://www.gov.uk/complainfurthereducationapprenticeship"));
         }

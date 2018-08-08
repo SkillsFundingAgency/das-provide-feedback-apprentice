@@ -37,8 +37,8 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                 {
                     async (dc, args, next) =>
                     {
-                        var state = ConversationState<SurveyState>.Get(dc.Context);
-                        state.SurveyScore = 0;
+                        var convoState = ConversationState<SurveyState>.Get(dc.Context);
+                        convoState.SurveyScore = 0;
 
                         foreach (var r in nextStep.Responses)
                         {
@@ -50,8 +50,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                     },
                     async (dc, args, next) =>
                     {
-                        var state = ConversationState<SurveyState>.Get(dc.Context);
-                        await dc.End(state);
+                        await dc.End();
                     }
                 }
             );
@@ -101,7 +100,10 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 
                     await dc.Begin(activeBranch.DialogTarget);
                 },
-                async (dc, args, next) => { await dc.End(); }
+                async (dc, args, next) =>
+                {
+                    await dc.End();
+                }
             });
 
             return dialogs;
@@ -119,8 +121,6 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                 },
                 async (dc, args, next) =>
                 {
-                    await dc.Context.SendActivity("", inputHint: InputHints.IgnoringInput);
-
                     var state = ConversationState<SurveyState>.Get(dc.Context);
                     var userState = UserState<UserState>.Get(dc.Context);
 
@@ -150,16 +150,16 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                 {
                     async (dc, args, next) =>
                     {
-                        var state = ConversationState<SurveyState>.Get(dc.Context);
+                        var convoState = ConversationState<SurveyState>.Get(dc.Context);
                         var userState = UserState<UserState>.Get(dc.Context);
 
-                        var positive = state.SurveyScore >= requiredScore;
+                        var positive = convoState.SurveyScore >= requiredScore;
 
                         // End the convo, deciding whether to use the positive or negative journey based on the user score
                         var activeEnd = positive ? positiveEnd : negativeEnd;
 
                         _logger.LogDebug(
-                            $"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} ending");
+                            $"{userState.UserName} has a survey score of {convoState.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} ending");
 
                         foreach (var r in activeEnd.Responses)
                         {
@@ -167,7 +167,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
                             await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
                         }
 
-                        await dc.End(state);
+                        await dc.End(convoState);
                     }
                 });
 

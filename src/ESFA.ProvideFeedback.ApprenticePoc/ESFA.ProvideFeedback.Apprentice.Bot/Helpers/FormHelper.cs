@@ -15,7 +15,7 @@ namespace ESFA.ProvideFeedback.Apprentice.Bot.Helpers
         public static ChoicePromptOptions ConfirmationPromptOptions => new ChoicePromptOptions()
         {
             Choices = BuildConfirmationChoices(),
-            RetryPromptActivity = MessageFactory.Text("I didn't understand that I'm afraid. Please reply yes or no", inputHint: InputHints.ExpectingInput),
+            RetryPromptActivity = MessageFactory.Text("Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’", inputHint: InputHints.ExpectingInput),
         };
 
         private static List<Choice> BuildConfirmationChoices()
