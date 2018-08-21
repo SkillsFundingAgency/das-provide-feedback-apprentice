@@ -1,12 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Configuration;
-using NLog.Fluent;
-
-namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
+﻿namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 {
+    using System.Collections.Generic;
+
+    /// <inheritdoc />
+    /// <summary>
+    ///     Represents a single step of branching dialog.
+    /// </summary>
     public class DialogBranchOption : IDialogStep
     {
-        public List<string> Responses { get; set; }
+        /// <inheritdoc />
         public string DialogTarget { get; set; }
+
+        /// <inheritdoc />
+        public List<string> Responses { get; set; }
     }
 }

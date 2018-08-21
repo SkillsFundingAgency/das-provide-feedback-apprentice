@@ -294,3 +294,4 @@ __pycache__/
 *.odx.cs
 *.xsd.cs
 .DS_Store
+src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/appsettings.Development.json

@@ -1,200 +1,255 @@
-﻿using System.Threading.Tasks;
-using ESFA.ProvideFeedback.Apprentice.Bot.Helpers;
-using ESFA.ProvideFeedback.Apprentice.Bot.Models;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Core.Extensions;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Prompts;
-using Microsoft.Bot.Builder.Prompts.Choices;
-using Microsoft.Bot.Schema;
-using Microsoft.Extensions.Logging;
-using Microsoft.Recognizers.Text;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="BotDialogFactory.cs" company="Education & Skills Funding Agency">
+//   Copyright © 2018 Education & Skills Funding Agency
+// </copyright>
+// <summary>
+//   Factory for adding conversational dialogs to Bots
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace ESFA.ProvideFeedback.Apprentice.Bot.Services
 {
+    using ESFA.ProvideFeedback.Apprentice.Bot.Dto;
+    using ESFA.ProvideFeedback.Apprentice.Bot.Helpers;
+    using ESFA.ProvideFeedback.Apprentice.Bot.Models;
+
+    using Microsoft.Bot.Builder.Core.Extensions;
+    using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Bot.Builder.Prompts;
+    using Microsoft.Bot.Builder.Prompts.Choices;
+    using Microsoft.Bot.Schema;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;
+    using Microsoft.Recognizers.Text;
+
+    using BotConfig = ESFA.ProvideFeedback.Apprentice.Bot.Config.Bot;
+
+    /// <inheritdoc />
     /// <summary>
     /// Factory for adding conversational dialogs to Bots
     /// </summary>
     public class BotDialogFactory : IDialogFactory<DialogSet>
     {
-        private readonly ILogger<BotDialogFactory> _logger;
+        /// <summary>
+        /// The log provider
+        /// </summary>
+        private readonly ILogger<BotDialogFactory> logger;
 
-        public BotDialogFactory(ILogger<BotDialogFactory> log)
+        /// <summary>
+        /// The configuration provider
+        /// </summary>
+        private readonly BotConfig botConfiguration;
+
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="BotDialogFactory"/> class.
+        /// </summary>
+        /// <param name="log"> The log provider. </param>
+        /// <param name="botConfig">the bot configuration object</param>
+        public BotDialogFactory(ILogger<BotDialogFactory> log, BotConfig botConfig)
         {
-            _logger = log;
+            this.botConfiguration = botConfig;
+            this.logger = log;
         }
 
-        public DialogSet BuildApprenticeFeedbackDialog()
+        /// <summary>
+        /// Gets the typing speed.
+        /// </summary>
+        protected int TypingSpeed => botConfiguration.Typing.CharactersPerMinute;
+
+        /// <summary>
+        /// Gets the typing delay.
+        /// </summary>
+        protected int TypingDelay => botConfiguration.Typing.ThinkingTimeDelay;
+
+
+        /// <inheritdoc />
+        public DialogSet Conversation()
         {
             return new DialogSet();
         }
 
-        public DialogSet BuildWelcomeDialog(DialogSet dialogs, string dialogName, IDialogStep nextStep)
+        /// <inheritdoc />
+        public DialogSet BuildBranchingDialog(
+            DialogSet dialogs,
+            string dialogName,
+            string prompt,
+            IDialogStep positiveBranch,
+            IDialogStep negativeBranch)
         {
-            // The main form
-            dialogs.Add("start",
+            dialogs.Add(
+                dialogName,
                 new WaterfallStep[]
-                {
-                    async (dc, args, next) =>
                     {
-                        var convoState = ConversationState<SurveyState>.Get(dc.Context);
-                        convoState.SurveyScore = 0;
+                        async (dc, args, next) =>
+                            {
+                                await dc.Context.AddRealisticTypingDelay(prompt, this.TypingSpeed, this.TypingDelay);
+                                await dc.Prompt(
+                                    "confirmationPrompt",
+                                    prompt,
+                                    FormHelper.ConfirmationPromptOptions);
+                            },
+                        async (dc, args, next) =>
+                            {
+                                SurveyState state = dc.Context.GetConversationState<SurveyState>();
+                                UserState userState = dc.Context.GetUserState<UserState>();
 
-                        foreach (var r in nextStep.Responses)
-                        {
-                            await dc.Context.AddRealisticTypingDelay(r);
-                            await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
-                        }
+                                bool positive =
+                                    args["Value"] is FoundChoice response && response.Value == "yes";
+                                IDialogStep activeBranch;
 
-                        await dc.Begin(nextStep.DialogTarget);
-                    },
-                    async (dc, args, next) =>
-                    {
-                        await dc.End();
-                    }
-                }
-            );
+                                if (positive)
+                                {
+                                    state.SurveyScore++;
+                                    activeBranch = positiveBranch;
+                                }
+                                else
+                                {
+                                    state.SurveyScore--;
+                                    activeBranch = negativeBranch;
+                                }
+
+                                this.logger.LogDebug(
+                                    $"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} conversation tree");
+
+                                await dc.End(dc.ActiveDialog.State);
+                                foreach (var r in activeBranch.Responses)
+                                {
+                                    await dc.Context.SendActivity(
+                                        r,
+                                        inputHint: InputHints.IgnoringInput);
+                                    await dc.Context.AddRealisticTypingDelay(r, this.TypingSpeed, this.TypingDelay);
+                                }
+
+                                await dc.Begin(activeBranch.DialogTarget);
+                            },
+                        async (dc, args, next) => { await dc.End(); }
+                    });
 
             return dialogs;
         }
 
-        public DialogSet BuildBranchingDialog(DialogSet dialogs, string dialogName, string prompt,
-            IDialogStep positiveBranch, IDialogStep negativeBranch)
+        /// <inheritdoc />
+        public DialogSet BuildChoicePrompt(DialogSet dialogs, string promptName, ListStyle style)
         {
-            dialogs.Add(dialogName, new WaterfallStep[]
-            {
-                async (dc, args, next) =>
-                {
-                    await dc.Context.AddRealisticTypingDelay(prompt);
-                    await dc.Prompt("confirmationPrompt", prompt,
-                        FormHelper.ConfirmationPromptOptions);
-                },
-                async (dc, args, next) =>
-                {
-                    var state = ConversationState<SurveyState>.Get(dc.Context);
-                    var userState = UserState<UserState>.Get(dc.Context);
-
-                    var positive = args["Value"] is FoundChoice response && response.Value == "yes";
-                    IDialogStep activeBranch;
-
-                    if (positive)
-                    {
-                        state.SurveyScore++;
-                        activeBranch = positiveBranch;
-                    }
-                    else
-                    {
-                        state.SurveyScore--;
-                        activeBranch = negativeBranch;
-                    }
-
-                    _logger.LogDebug(
-                        $"{userState.UserName} has a survey score of {state.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} conversation tree");
-
-                    await dc.End(dc.ActiveDialog.State);
-                    foreach (var r in activeBranch.Responses)
-                    {
-                        await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
-                        await dc.Context.AddRealisticTypingDelay(r);
-                    }
-
-                    await dc.Begin(activeBranch.DialogTarget);
-                },
-                async (dc, args, next) =>
-                {
-                    await dc.End();
-                }
-            });
-
+            dialogs.Add(
+                promptName,
+                new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English) { Style = ListStyle.None });
             return dialogs;
         }
 
-        public DialogSet BuildFreeTextDialog(DialogSet dialogs, string dialogName, string prompt, IDialogStep nextStep)
-        {
-            // A free text feedback entry prompt, with a simple echo back to the user
-            dialogs.Add(dialogName, new WaterfallStep[]
-            {
-                async (dc, args, next) =>
-                {
-                    await dc.Context.AddRealisticTypingDelay(prompt);
-                    await dc.Prompt("freeText", prompt);
-                },
-                async (dc, args, next) =>
-                {
-                    var state = ConversationState<SurveyState>.Get(dc.Context);
-                    var userState = UserState<UserState>.Get(dc.Context);
-
-                    var response = args["Text"];
-                    _logger.LogDebug($"{userState.UserName} has wrote {response}");
-
-                    foreach (var r in nextStep.Responses)
-                    {
-                        await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
-                        await dc.Context.AddRealisticTypingDelay(r);
-                    }
-
-                    await dc.Begin(nextStep.DialogTarget);
-                },
-                async (dc, args, next) => { await dc.End(); }
-            });
-
-            return dialogs;
-        }
-
-        public DialogSet BuildDynamicEndDialog(DialogSet dialogs, string dialogName, int requiredScore,
+        /// <inheritdoc />
+        public DialogSet BuildDynamicEndDialog(
+            DialogSet dialogs,
+            string dialogName,
+            int requiredScore,
             IDialogStep positiveEnd,
             IDialogStep negativeEnd)
         {
-            dialogs.Add(dialogName,
+            dialogs.Add(
+                dialogName,
                 new WaterfallStep[]
-                {
-                    async (dc, args, next) =>
                     {
-                        var convoState = ConversationState<SurveyState>.Get(dc.Context);
-                        var userState = UserState<UserState>.Get(dc.Context);
+                        async (dc, args, next) =>
+                            {
+                                SurveyState conversationState = dc.Context.GetConversationState<SurveyState>();
+                                UserState userState = dc.Context.GetUserState<UserState>();
 
-                        var positive = convoState.SurveyScore >= requiredScore;
+                                bool positive = conversationState.SurveyScore >= requiredScore;
 
-                        // End the convo, deciding whether to use the positive or negative journey based on the user score
-                        var activeEnd = positive ? positiveEnd : negativeEnd;
+                                // End the conversation, deciding whether to use the positive or negative journey based on the user score
+                                IDialogStep activeEnd = positive ? positiveEnd : negativeEnd;
 
-                        _logger.LogDebug(
-                            $"{userState.UserName} has a survey score of {convoState.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} ending");
+                                this.logger.LogDebug(
+                                    $"{userState.UserName} has a survey score of {conversationState.SurveyScore} which has triggered the {(positive ? "positive" : "negative")} ending");
 
-                        foreach (var r in activeEnd.Responses)
-                        {
-                            await dc.Context.AddRealisticTypingDelay(r);
-                            await dc.Context.SendActivity(r, inputHint: InputHints.IgnoringInput);
-                        }
+                                foreach (var r in activeEnd.Responses)
+                                {
+                                    await dc.Context.AddRealisticTypingDelay(r, this.TypingSpeed, this.TypingDelay);
+                                    await dc.Context.SendActivity(
+                                        r,
+                                        inputHint: InputHints.IgnoringInput);
+                                }
 
-                        await dc.End(convoState);
-                    }
-                });
+                                await dc.End(conversationState);
+                            }
+                    });
 
             return dialogs;
         }
 
-        public DialogSet BuildChoicePrompt(DialogSet dialogs, string promptName, ListStyle style)
+        /// <inheritdoc />
+        public DialogSet BuildFreeTextDialog(DialogSet dialogs, string dialogName, string prompt, IDialogStep nextStep)
         {
-            dialogs.Add(promptName,
-                new Microsoft.Bot.Builder.Dialogs.ChoicePrompt(Culture.English) {Style = ListStyle.None});
+            // A free text feedback entry prompt, with a simple echo back to the user
+            dialogs.Add(
+                dialogName,
+                new WaterfallStep[]
+                    {
+                        async (dc, args, next) =>
+                            {
+                                await dc.Context.AddRealisticTypingDelay(prompt, this.TypingSpeed, this.TypingDelay);
+                                await dc.Prompt("freeText", prompt);
+                            },
+                        async (dc, args, next) =>
+                            {
+                                SurveyState state = dc.Context.GetConversationState<SurveyState>();
+                                UserState userState = dc.Context.GetUserState<UserState>();
+
+                                object response = args["Text"];
+                                this.logger.LogDebug($"{userState.UserName} has wrote {response}");
+
+                                foreach (string r in nextStep.Responses)
+                                {
+                                    await dc.Context.SendActivity(
+                                        r,
+                                        inputHint: InputHints.IgnoringInput);
+                                    await dc.Context.AddRealisticTypingDelay(r, this.TypingSpeed, this.TypingDelay);
+                                }
+
+                                await dc.Begin(nextStep.DialogTarget);
+                            },
+                        async (dc, args, next) => { await dc.End(); }
+                    });
+
             return dialogs;
         }
 
+        /// <inheritdoc />
         public DialogSet BuildTextPrompt(DialogSet dialogs, string promptName)
         {
             dialogs.Add(promptName, new Microsoft.Bot.Builder.Dialogs.TextPrompt());
             return dialogs;
         }
-    }
 
-    public static class TurnContextExtensions
-    {
-        public static async Task AddRealisticTypingDelay(this ITurnContext ctx, string textToType)
+        /// <inheritdoc />
+        public DialogSet BuildWelcomeDialog(DialogSet dialogs, string dialogName, IDialogStep nextStep)
         {
-            Activity typing = new Activity() { Type = ActivityTypes.Typing };
-            await ctx.SendActivity(typing);
-            await Task.Delay(FormHelper.CalculateTypingTimeInMs(textToType));
+            // The main form
+            dialogs.Add(
+                "start",
+                new WaterfallStep[]
+                    {
+                        async (dc, args, next) =>
+                            {
+                                SurveyState conversationState = dc.Context.GetConversationState<SurveyState>();
+                                UserState userState = dc.Context.GetUserState<UserState>();
+                                conversationState.SurveyScore = 0;
+
+                                foreach (string r in nextStep.Responses)
+                                {
+                                    await dc.Context.AddRealisticTypingDelay(r, this.TypingSpeed, this.TypingDelay);
+                                    await dc.Context.SendActivity(
+                                        r,
+                                        inputHint: InputHints.IgnoringInput);
+                                }
+
+                                await dc.Begin(nextStep.DialogTarget);
+                            },
+                        async (dc, args, next) => { await dc.End(); }
+                    });
+
+            return dialogs;
         }
     }
 }

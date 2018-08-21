@@ -1,15 +1,15 @@
-﻿using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Configuration;
-
-namespace ESFA.ProvideFeedback.Apprentice.NotifyMessageHandler
+﻿namespace ESFA.ProvideFeedback.Apprentice.NotifyMessageHandler
 {
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Configuration;
+
     public class SettingsProvider : ISettingService
     {
         private readonly IConfigurationRoot _config;
 
         public SettingsProvider(ExecutionContext ctx)
         {
-            _config = new ConfigurationBuilder()
+            this._config = new ConfigurationBuilder()
                 .SetBasePath(ctx.FunctionAppDirectory)
                 .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables()
@@ -18,8 +18,10 @@ namespace ESFA.ProvideFeedback.Apprentice.NotifyMessageHandler
 
         public string Get(string parameterName)
         {
-            var parameter = _config[parameterName];
+            var parameter = this._config[parameterName];
             return parameter;
         }
+
+        public SettingsProvider Current => this;
     }
 }

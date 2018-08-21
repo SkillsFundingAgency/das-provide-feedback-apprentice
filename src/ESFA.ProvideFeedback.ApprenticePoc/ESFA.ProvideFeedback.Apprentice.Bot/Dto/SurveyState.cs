@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ESFA.ProvideFeedback.Apprentice.Bot.Models
+namespace ESFA.ProvideFeedback.Apprentice.Bot.Dto
 {
     // <inheritdoc />
     // <summary>

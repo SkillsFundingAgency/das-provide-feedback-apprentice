@@ -5,7 +5,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Azure.WebJobs;
 using Microsoft.WindowsAzure.Storage.Queue;
 
-namespace ESFA.ProvideFeedback.Apprentice.NotifyMessageHandler
+namespace ESFA.ProvideFeedback.Apprentice.NotifyMessageHandler.Helpers
 {
     public static class FunctionsHelper
     {
