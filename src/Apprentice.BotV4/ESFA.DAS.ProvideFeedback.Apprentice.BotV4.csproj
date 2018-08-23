@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <AssemblyTitle>ESFA DAS Provide Feedback - Apprentice Feedback Bot</AssemblyTitle>
+    <Description>A bot designed to allow apprentices to provide feedback on their apprenticeship.</Description>
+    <Company>Education and Skills Funding Agency</Company>
+    <Copyright>Copyright © 2018 Education and Skills Funding Agency</Copyright>
+    <AssemblyName>ESFA.DAS.ProvideFeedback.Apprentice.BotV4</AssemblyName>
+    <PackageId>ESFA.DAS.ProvideFeedback.Apprentice.BotV4</PackageId>
+    <VersionPrefix>2.1.0</VersionPrefix>
+    <VersionSuffix>alpha</VersionSuffix>
+    <NeutralLanguage>en-GB</NeutralLanguage>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Bot.Builder.Core" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Core.Extensions" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.1-preview" />
+  </ItemGroup>
+
+</Project>
