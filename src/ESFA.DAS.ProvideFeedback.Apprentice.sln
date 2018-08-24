@@ -18,13 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Solution Files", "1. Sol
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESFA.DAS.ProvideFeedback.Apprentice.Bot", "Apprentice.Bot\ESFA.DAS.ProvideFeedback.Apprentice.Bot.csproj", "{4021A644-4C13-49F1-89FC-9DDB54C68809}"
-	ProjectSection(ProjectDependencies) = postProject
-		{0A00B002-F39D-463F-9F2C-112493BAADB9} = {0A00B002-F39D-463F-9F2C-112493BAADB9}
-		{68341D2F-56D8-45B5-BE1C-B8F0B7D1D021} = {68341D2F-56D8-45B5-BE1C-B8F0B7D1D021}
-		{300DC3C7-F3D0-4119-8423-2035EECB2C72} = {300DC3C7-F3D0-4119-8423-2035EECB2C72}
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2", "Apprentice.Functions.NotifyMessageHandlerV2\ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.csproj", "{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.BotV4", "Apprentice.BotV4\ESFA.DAS.ProvideFeedback.Apprentice.BotV4.csproj", "{92EB2383-2336-4807-9FCE-3FB149596CDE}"
@@ -44,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors", "Apprentice.Bot.Connectors\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.csproj", "{4EF9EF47-6941-44A4-ACF0-3594A0E75D8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Apprentice.Bot.Dialogs", "Apprentice.Bot.Dialogs\Apprentice.Bot.Dialogs.csproj", "{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Apprentice.Bot.Dialogs", "Apprentice.Bot.Dialogs\Apprentice.Bot.Dialogs.csproj", "{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,10 +57,6 @@ Global
 		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4021A644-4C13-49F1-89FC-9DDB54C68809}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4021A644-4C13-49F1-89FC-9DDB54C68809}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4021A644-4C13-49F1-89FC-9DDB54C68809}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4021A644-4C13-49F1-89FC-9DDB54C68809}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
