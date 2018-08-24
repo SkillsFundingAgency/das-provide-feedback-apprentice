@@ -59,7 +59,7 @@
                                     }));
 
                         // Add state management middleware for conversation and user state.
-                        var path = Path.Combine(Path.GetTempPath(), nameof(FeedbackBot));
+                        string path = Path.Combine(Path.GetTempPath(), nameof(FeedbackBot));
                         if (!Directory.Exists(path))
                         {
                             Directory.CreateDirectory(path);

@@ -140,12 +140,23 @@
                         break;
                     }
 
+                case "expire":
+                    {
+                        // TODO: Create an IBotCommandHandler implementation to deal with this
+                        if (userInfo.ApprenticeFeedback.StartDate != default(DateTime))
+                        {
+                            userInfo.ApprenticeFeedback.StartDate = userInfo.ApprenticeFeedback.StartDate.AddDays(-30);
+                        }
+                        break;
+                    }
+
                 case "start":
                     {
                         // TODO: Create an IBotCommandHandler implementation to deal with this
                         try
                         {
                             userInfo.ApprenticeFeedback = new ApprenticeFeedback();
+
                             if (strings.Length > 1)
                             {
                                 string dialogId = strings[1];
@@ -169,7 +180,8 @@
 
                 case "help":
                     {
-                        await dc.Begin(RootDialog.Id);
+                        var menu = new List<string> { "status", "reset", "start" };
+                        await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
                         break;
                     }
 
@@ -208,19 +220,44 @@
 
             await this.HandleCommands(context, message);
 
+            if (userInfo.ApprenticeFeedback.StartDate != default(DateTime))
+            await this.CheckForCompleteFlag(userInfo, dc);
+            await this.CheckForExpiry(userInfo, dc);
+
             if (!context.Responded)
             {
-                if (userInfo.ApprenticeFeedback.Responses.Any())
-                {
-                    await dc.Context.SendActivity(
-                        $"Thanks for your interest, but it looks like you've already given us some feedback!");
-                }
-                else
-                {
-                    // 0f92aa88-e7d7-4f6f-8621-869ac321574e
-                    await dc.Begin(RootDialog.Id);
-                }
+                await this.StartFeedback(userInfo, dc);
             }
+        }
+
+        private async Task CheckForCompleteFlag(UserInfo userInfo, DialogContext dc)
+        {
+            if (userInfo.ApprenticeFeedback.Progress == ProgressState.Complete)
+            {
+                await dc.Context.SendActivity(
+                    $"Thanks for your interest, but it looks like you've already given us some feedback!");
+
+                dc.EndAll();
+            }
+        }
+
+        private async Task CheckForExpiry(UserInfo userInfo, DialogContext dc)
+        {
+            if (userInfo.ApprenticeFeedback.Progress == ProgressState.Expired || userInfo.ApprenticeFeedback.StartDate < DateTime.Now.AddDays(-7)) // TODO: add to config
+            {
+                await dc.Context.SendActivity(
+                    $"Thanks for that - but I'm afraid you've missed the deadline this time. \n "
+                    + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far ");
+
+                userInfo.ApprenticeFeedback.Progress = ProgressState.Expired;
+
+                dc.EndAll();
+            }
+        }
+
+        private async Task StartFeedback(UserInfo userInfo, DialogContext dc)
+        {
+            await dc.Begin(RootDialog.Id);
         }
     }
 }

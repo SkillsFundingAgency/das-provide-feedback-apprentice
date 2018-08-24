@@ -9,6 +9,7 @@
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
@@ -53,9 +54,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 
         private static async Task StepA(DialogContext dc)
         {
-            // Ensure that the DialogState is clean
-            ApprenticeFeedback state = await dc.BeginState<ApprenticeFeedback>(StateKey);
-            state.SurveyId = Id;
+            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
+
+            userInfo.ApprenticeFeedback.StartDate = DateTime.Now;
+            userInfo.ApprenticeFeedback.Progress = ProgressState.NotStarted;
+
+            userInfo.ApprenticeFeedback.SurveyId = Id;
 
             await dc.Context.SendActivity(
                 "Here’s your quarterly apprenticeship survey. You agreed to participate when you started your apprenticeship",
@@ -72,12 +77,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 
         private static async Task StepB(DialogContext dc, IDictionary<string, object> args)
         {
-            ApprenticeFeedback state = await dc.GetDialogState<ApprenticeFeedback>(StateKey);
+            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
+
+            userInfo.ApprenticeFeedback.Progress = ProgressState.Enagaged;
+
             PolarQuestionResponse response = await dc.GetPolarQuestionResponse(
                                                  args,
                                                  "Over the last 6 months, have you received at least 25 days of training? Please type ‘YES’ or ‘YES’");
 
-            state.Responses.Add(response);
+            userInfo.ApprenticeFeedback.Responses.Add(response);
 
             if (response.IsPositive)
             {
@@ -93,12 +102,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 
         private static async Task StepC(DialogContext dc, IDictionary<string, object> args)
         {
-            ApprenticeFeedback state = await dc.GetDialogState<ApprenticeFeedback>(StateKey);
+            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
+
+            userInfo.ApprenticeFeedback.Progress = ProgressState.Enagaged;
+
             PolarQuestionResponse response = await dc.GetPolarQuestionResponse(
                                                  args,
                                                  "Next question, is your trainer good?");
 
-            state.Responses.Add(response);
+            userInfo.ApprenticeFeedback.Responses.Add(response);
 
             if (response.IsPositive)
             {
@@ -114,12 +127,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 
         private static async Task SurveyEnd(DialogContext dc, IDictionary<string, object> args)
         {
-            ApprenticeFeedback state = await dc.GetDialogState<ApprenticeFeedback>(StateKey);
+            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
+
+            userInfo.ApprenticeFeedback.Progress = ProgressState.Enagaged;
+
             PolarQuestionResponse response = await dc.GetPolarQuestionResponse(
                                                  args,
                                                  "Overall, are you satisfied with your apprenticeship?");
 
-            state.Responses.Add(response);
+            userInfo.ApprenticeFeedback.Responses.Add(response);
 
             if (response.IsPositive)
             {
@@ -130,9 +147,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
                 await dc.Context.SendActivity("Okay, sorry to hear that");
             }
 
-            int maxScore = state.Responses.Count;
+            int maxScore = userInfo.ApprenticeFeedback.Responses.Count;
 
-            if (state.Score >= maxScore)
+            if (userInfo.ApprenticeFeedback.Score >= maxScore)
             {
                 await dc.Context.SendActivity("Keep up the good work!");
             }
@@ -142,15 +159,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
                     "If you have a problem with your apprenticeship, it’s a good idea to speak to your employer’s ‘Human Resources’ staff");
             }
 
-            if (state.Score < 0)
+            if (userInfo.ApprenticeFeedback.Score < 0)
             {
                 await dc.Context.SendActivity(
                     "If you’ve talked to them already, you might want to make a formal complaint: https://www.gov.uk/complainfurthereducationapprenticeship");
             }
 
-            // Save dialog state to user state and end the dialog.
-            UserInfo userState = UserState<UserInfo>.Get(dc.Context);
-            userState.ApprenticeFeedback = state;
+            userInfo.ApprenticeFeedback.Progress = ProgressState.Complete;
+            userInfo.ApprenticeFeedback.EndDate = DateTime.Now;
 
             await dc.End();
         }

@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Notify" Version="2.1.0" />
     <PackageReference Include="SFA.DAS.Notifications.Api.Client" Version="2.1.12" />
   </ItemGroup>
 
@@ -12,18 +13,6 @@
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
     <ProjectReference Include="..\Apprentice.Infrastructure\ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.csproj" />
     <ProjectReference Include="..\Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Options">
-      <HintPath>..\..\..\..\..\..\Users\steve_\.nuget\packages\microsoft.extensions.options\2.0.0\lib\netstandard2.0\Microsoft.Extensions.Options.dll</HintPath>
-    </Reference>
-    <Reference Include="Notify">
-      <HintPath>..\..\..\..\..\..\Users\steve_\.nuget\packages\notify\2.1.0\lib\netstandard2.0\Notify.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Configuration.ConfigurationManager">
-      <HintPath>..\..\..\..\..\..\Users\steve_\.nuget\packages\system.configuration.configurationmanager\4.5.0\ref\netstandard2.0\System.Configuration.ConfigurationManager.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
