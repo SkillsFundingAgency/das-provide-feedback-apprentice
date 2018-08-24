@@ -1,5 +1,5 @@
-# das-poc-provide-feedback
+# das-provide-feedback-apprentice
 
-Proof of concept work relating to the provide feedback service
+Apprentice Feedback Bot
 
-## list of POCs ##
+Documentation TBC!
