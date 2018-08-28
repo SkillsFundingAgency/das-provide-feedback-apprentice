@@ -9,11 +9,17 @@
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.Configuration
 {
+    using System.Collections.Generic;
+
     /// <summary>
     /// The bot configuration class.
     /// </summary>
     public class Bot
     {
+        public List<string> AdminCommands { get; set; }
+
+        public int DefaultConversationExpiryDays { get; set; }
+
         /// <summary>
         /// Gets or sets the typing configuration.
         /// </summary>
