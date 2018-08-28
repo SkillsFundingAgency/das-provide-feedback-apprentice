@@ -21,8 +21,12 @@
                 "Standard"
             ]
         },
-        "microsoftAppId": {
-            "type": "string"
+        "microsoftAppCredentials": {
+            "type": "secureObject",
+            "defaultValue": {
+                "Id": "",
+                "Password": ""
+            }
         },
         "functionAppName": {
             "type": "string"
@@ -35,9 +39,45 @@
         },
         "cosmosDbName": {
             "type": "string"
+        },
+        "cosmosDbThroughput": {
+            "type": "int"
+        },
+        "botClientCredentials": {
+            "type": "secureObject",
+            "defaultValue": {
+                "BaseAddress": "",
+                "AuthToken": ""
+            }
+        },
+        "notifyCredentials": {
+            "type": "secureObject",
+            "defaultValue": {
+                "TemplateId": "",
+                "SmsSenderId": "",
+                "ClientApiKey": ""
+            }
+        },
+        "loggingRedisConnectionString": {
+            "type": "securestring"
         }
     },
-    "variables": {},
+    "variables": {
+        "azureCosmosEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]",
+        "data": {
+            "DatabaseName": "ApprenticeFeedback",
+            "FeedbackTable": "FeedbackResponses",
+            "ConversationLogTable": "Conversations",
+            "ConversationLogPartitionKey": "/conversation/id",
+            "SessionStateTable": "feedback-bot-sessions",
+            "SessionLogTable": "Sessions",
+            "SessionLogPartitionKey": "/mobile_number"
+        },
+        "queues": {
+            "OutgoingMessageQueueName": "sms-outgoing-messages",
+            "IncomingMessageQueueName": "sms-incoming-messages"
+        }
+    },
     "resources": [
         {
             "apiVersion": "2017-05-10",
@@ -121,6 +161,60 @@
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                                 "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
+                            },
+                            {
+                                "name": "MicrosoftAppId",
+                                "value": "[parameters('microsoftAppCredentials').Id]"
+                            },
+                            {
+                                "name": "MicrosoftAppPassword",
+                                "value": "[parameters('microsoftAppCredentials').Password]"
+                            },
+                            {
+                                "name": "Azure:CosmosEndpoint",
+                                "value": "[variables('azureCosmosEndpoint')]"
+                            },
+                            {
+                                "name": "Azure:CosmosKey",
+                                "value": "[reference('CosmosDb').outputs.PrimaryMasterKey.value]"
+                            },
+                            {
+                                "name": "Azure:CosmosDefaultThroughput",
+                                "value": "[string(parameters('cosmosDbThroughput'))]"
+                            },
+                            {
+                                "name": "Data:DatabaseName",
+                                "value": "[variables('data').DatabaseName]"
+                            },
+                            {
+                                "name": "Data:FeedbackTable",
+                                "value": "[variables('data').FeedbackTable]"
+                            },
+                            {
+                                "name": "Data:ConversationLogTable",
+                                "value": "[variables('data').ConversationLogTable]"
+                            },
+                            {
+                                "name": "Data:ConversationLogPartitionKey",
+                                "value": "[variables('data').ConversationLogPartitionKey]"
+                            },
+                            {
+                                "name": "Data:SessionStateTable",
+                                "value": "[variables('data').SessionStateTable]"
+                            }
+                        ]
+                    },
+                    "appServiceConnectionStrings": {
+                        "value": [
+                            {
+                                "name": "Redis",
+                                "connectionString": "[parameters('loggingRedisConnectionString')]",
+                                "type": "Custom"
+                            },
+                            {
+                                "name": "StorageAccount",
+                                "connectionString": "[reference('StorageAccount').outputs.storageConnectionString.value]",
+                                "type": "Custom"
                             }
                         ]
                     }
@@ -148,7 +242,7 @@
                         "value": "[concat('https://', parameters('appServiceName'), '.azurewebsites.net/api/messages')]"
                     },
                     "microsoftAppId": {
-                        "value": "[parameters('microsoftAppId')]"
+                        "value": "[parameters('microsoftAppCredentials').Id]"
                     }
                 }
             }
@@ -190,6 +284,74 @@
                             {
                                 "name": "FUNCTIONS_EXTENSION_VERSION",
                                 "value": "~2"
+                            },
+                            {
+                                "name": "AzureCosmosEndpoint",
+                                "value": "[variables('azureCosmosEndpoint')]"
+                            },
+                            {
+                                "name": "AzureCosmosKey",
+                                "value": "[reference('CosmosDb').outputs.PrimaryMasterKey.value]"
+                            },
+                            {
+                                "name": "AzureCosmos",
+                                "value": "[string(parameters('cosmosDbThroughput'))]"
+                            },
+                            {
+                                "name": "DatabaseName",
+                                "value": "[variables('data').DatabaseName]"
+                            },
+                            {
+                                "name": "FeedbackTable",
+                                "value": "[variables('data').FeedbackTable]"
+                            },
+                            {
+                                "name": "ConversationLogTable",
+                                "value": "[variables('data').ConversationLogTable]"
+                            },
+                            {
+                                "name": "ConversationLogPartitionKey",
+                                "value": "[variables('data').ConversationLogPartitionKey]"
+                            },
+                            {
+                                "name": "SessionLogTable",
+                                "value": "[variables('data').SessionLogTable]"
+                            },
+                            {
+                                "name": "SessionLogPartitionKey",
+                                "value": "[variables('data').SessionLogPartitionKey]"
+                            },
+                            {
+                                "name": "SessionStateTable",
+                                "value": "[variables('data').SessionStateTable]"
+                            },
+                            {
+                                "name": "SmsOutgoingMessageQueueName",
+                                "value": "[variables('queues').OutgoingMessageQueueName]"
+                            },
+                            {
+                                "name": "SmsIncomingMessageQueueName",
+                                "value": "[variables('queues').IncomingMessageQueueName]"
+                            },
+                            {
+                                "name": "BotClientAuthToken",
+                                "value": "[parameters('botClientCredentials').AuthToken]"
+                            },
+                            {
+                                "name": "BotClientBaseAddress",
+                                "value": "[parameters('botClientCredentials').BaseAddress]"
+                            },
+                            {
+                                "name": "NotifyTemplateId",
+                                "value": "[parameters('notifyCredentials').TemplateId]"
+                            },
+                            {
+                                "name": "NotifySmsSenderId",
+                                "value": "[parameters('notifyCredentials').SmsSenderId]"
+                            },
+                            {
+                                "name": "NotifyClientApiKey",
+                                "value": "[parameters('notifyCredentials').ClientApiKey]"
                             }
                         ]
                     }
