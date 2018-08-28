@@ -23,13 +23,36 @@
         },
         "microsoftAppId": {
             "type": "string"
+        },
+        "functionAppName": {
+            "type": "string"
+        },
+        "storageAccountName": {
+            "type": "string"
         }
     },
     "variables": {},
     "resources": [
         {
             "apiVersion": "2017-05-10",
-            "name": "ApplicationInsights",
+            "name": "StorageAccount",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/storage-account-arm.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "storageAccountName": {
+                        "value": "[parameters('storageAccountName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "BotServiceApplicationInsights",
             "type": "Microsoft.Resources/deployments",
             "properties": {
                 "mode": "Incremental",
@@ -43,6 +66,26 @@
                     },
                     "attachedService": {
                         "value": "[parameters('appServiceName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "FunctionAppApplicationInsights",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/application-insights.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appInsightsName": {
+                        "value": "[parameters('functionAppName')]"
+                    },
+                    "attachedService": {
+                        "value": "[parameters('functionAppName')]"
                     }
                 }
             }
@@ -70,8 +113,8 @@
                     "appServiceAppSettings": {
                         "value": [
                             {
-                                "name": "ApplicationInsights:InstrumentationKey",
-                                "value": "[reference('ApplicationInsights').outputs.InstrumentationKey.value]"
+                                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
                             }
                         ]
                     }
@@ -100,6 +143,49 @@
                     },
                     "microsoftAppId": {
                         "value": "[parameters('microsoftAppId')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "FunctionApp",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/function-app.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "functionAppName": {
+                        "value": "[parameters('functionAppName')]"
+                    },
+                    "appServicePlanName": {
+                        "value": "[parameters('sharedAppServicePlanName')]"
+                    },
+                    "appServicePlanResourceGroup": {
+                        "value": "[parameters('sharedAppServicePlanResourceGroup')]"
+                    },
+                    "functionAppAppSettings": {
+                        "value": [
+                            {
+                                "name": "AzureWebJobsDashboard",
+                                "value": "[reference('StorageAccount').outputs.storageConnectionString.value]"
+                            },
+                            {
+                                "name": "AzureWebJobsStorage",
+                                "value": "[reference('StorageAccount').outputs.storageConnectionString.value]"
+                            },
+                            {
+                                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                                "value": "[reference('FunctionAppApplicationInsights').outputs.InstrumentationKey.value]"
+                            },
+                            {
+                                "name": "FUNCTIONS_EXTENSION_VERSION",
+                                "value": "~2"
+                            }
+                        ]
                     }
                 }
             }
