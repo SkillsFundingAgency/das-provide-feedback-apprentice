@@ -29,6 +29,9 @@
         },
         "storageAccountName": {
             "type": "string"
+        },
+        "serviceBusNamespaceName": {
+            "type": "string"
         }
     },
     "variables": {},
@@ -186,6 +189,23 @@
                                 "value": "~2"
                             }
                         ]
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "ServiceBus",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/service-bus.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "serviceBusNamespaceName": {
+                        "value": "[parameters('serviceBusNamespaceName')]"
                     }
                 }
             }
