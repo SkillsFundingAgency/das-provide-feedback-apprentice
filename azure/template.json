@@ -32,6 +32,9 @@
         },
         "serviceBusNamespaceName": {
             "type": "string"
+        },
+        "cosmosDbName": {
+            "type": "string"
         }
     },
     "variables": {},
@@ -206,6 +209,29 @@
                 "parameters": {
                     "serviceBusNamespaceName": {
                         "value": "[parameters('serviceBusNamespaceName')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "CosmosDb",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/cosmos-db.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "cosmosDbName": {
+                        "value": "[parameters('cosmosDbName')]"
+                    },
+                    "cosmosDbType": {
+                        "value": "GlobalDocumentDB"
+                    },
+                    "defaultConsistencyLevel": {
+                        "value": "Strong"
                     }
                 }
             }
