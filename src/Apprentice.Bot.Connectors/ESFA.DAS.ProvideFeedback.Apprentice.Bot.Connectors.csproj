@@ -1,11 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Middleware\" />
+    <PackageReference Include="Microsoft.Bot.Schema" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Core" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Core.Extensions" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.0.1-preview" />
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.1-preview" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
+    <ProjectReference Include="..\Apprentice.Infrastructure\ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
