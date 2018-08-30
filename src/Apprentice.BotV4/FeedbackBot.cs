@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
@@ -14,20 +15,31 @@
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Schema;
+    using Microsoft.Extensions.Localization;
     using Microsoft.Extensions.Logging;
-
-    using Newtonsoft.Json;
 
     public class FeedbackBot : IBot
     {
+        private readonly IEnumerable<IBotDialogCommand> commands;
+
         private readonly ILogger<FeedbackBot> logger;
 
-        public FeedbackBot(ILogger<FeedbackBot> logger)
+        private readonly IDialogFactory dialogFactory;
+
+        private readonly List<ISurvey> surveys = new List<ISurvey>();
+
+        public FeedbackBot(ILogger<FeedbackBot> logger, IEnumerable<IBotDialogCommand> commands)
         {
             this.logger = logger;
+            this.commands = commands;
+
+            this.dialogFactory = new DialogFactory(); // TODO: Inject
+            this.surveys.Add(new InMemoryApprenticeFeedbackSurvey()); // TODO: List resolve
+
+            this.Dialogs = this.BuildDialogs();
         }
 
-        private DialogSet Dialogs { get; } = BuildDialogs();
+        private DialogSet Dialogs { get; }
 
         public async Task OnTurn(ITurnContext context)
         {
@@ -56,14 +68,19 @@
             }
         }
 
-        private static DialogSet BuildDialogs()
+        // TODO: add dynamic user-created dialogs from database 
+        private DialogSet BuildDialogs()
         {
             DialogSet dialogs = new DialogSet();
 
             dialogs.Add(RootDialog.Id, RootDialog.Instance);
-            dialogs.Add(SurveyRunner.Id, SurveyRunner.Instance);
-            dialogs.Add(ApprenticeFeedbackV3.Id, ApprenticeFeedbackV3.Instance);
-            dialogs.Add(ApprenticeFeedbackV4.Id, ApprenticeFeedbackV4.Instance);
+
+            foreach (ISurvey survey in this.surveys)
+            {
+                LinearSurveyDialog dialog = this.dialogFactory.Create<LinearSurveyDialog>(survey);
+                dialogs.Add(survey.Id, dialog);
+            }
+
             return dialogs;
         }
 
@@ -103,93 +120,47 @@
             return channelId;
         }
 
-        private async Task HandleCommands(ITurnContext context, string message)
+        private async Task HandleCommands(ITurnContext context)
         {
             UserInfo userInfo = UserState<UserInfo>.Get(context);
             ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(context);
 
             DialogContext dc = this.Dialogs.CreateContext(context, conversationInfo);
 
-            var strings = message.Split(" ", StringSplitOptions.RemoveEmptyEntries);
-
-            var command = strings.First();
-
-            switch (command)
+            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dc));
+            if (command != null)
             {
-                case "stop":
+                await command.ExecuteAsync(dc);
+            }
+            else
+            {
+                if (userInfo.SurveyState.StartDate != default(DateTime))
+                {
+                    if (userInfo.SurveyState.Progress == ProgressState.Complete)
                     {
-                        // TODO: Create an IBotCommandHandler implementation to deal with this
-                        await dc.Context.SendActivity($"Feedback canceled");
+                        await dc.Context.SendActivity(
+                            $"Thanks for your interest, but it looks like you've already given us some feedback!");
+
                         dc.EndAll();
-                        break;
                     }
-
-                case "status":
+                    else
                     {
-                        // TODO: Create an IBotCommandHandler implementation to deal with this
-                        await dc.Context.SendActivity($"{JsonConvert.SerializeObject(userInfo)}");
-                        break;
-                    }
-
-                case "reset":
-                    {
-                        // TODO: Create an IBotCommandHandler implementation to deal with this
-                        userInfo.ApprenticeFeedback = new ApprenticeFeedback();
-                        await dc.Context.SendActivity($"OK. Starting again!");
-                        await dc.Begin(RootDialog.Id);
-                        break;
-                    }
-
-                case "expire":
-                    {
-                        // TODO: Create an IBotCommandHandler implementation to deal with this
-                        if (userInfo.ApprenticeFeedback.StartDate != default(DateTime))
+                        if (userInfo.SurveyState.Progress == ProgressState.Expired 
+                            || userInfo.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
                         {
-                            userInfo.ApprenticeFeedback.StartDate = userInfo.ApprenticeFeedback.StartDate.AddDays(-30);
+                            userInfo.SurveyState.Progress = ProgressState.Expired;
+
+                            await dc.Context.SendActivity(
+                                $"Thanks for that - but I'm afraid you've missed the deadline this time.");
+                            await dc.Context.SendActivity(
+                                $"I'll get in touch when it's time to give feedback again. Thanks for your help so far");
+
+                            dc.EndAll();
                         }
-                        break;
                     }
+                }
 
-                case "start":
-                    {
-                        // TODO: Create an IBotCommandHandler implementation to deal with this
-                        try
-                        {
-                            userInfo.ApprenticeFeedback = new ApprenticeFeedback();
-
-                            if (strings.Length > 1)
-                            {
-                                string dialogId = strings[1];
-                                await dc.Begin(dialogId);
-                            }
-                            else
-                            {
-                                await dc.Begin(SurveyRunner.Id);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            this.logger.LogError(e.Message);
-#if DEBUG
-                            await dc.Context.SendActivity($"DEBUG: {e.ToString()}");
-#endif
-                        }
-
-                        break;
-                    }
-
-                case "help":
-                    {
-                        var menu = new List<string> { "status", "reset", "start" };
-                        await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
-                        break;
-                    }
-
-                default:
-                    {
-                        await dc.Continue();
-                        break;
-                    }
+                await dc.Continue(); 
             }
         }
         
@@ -216,48 +187,12 @@
 
             DialogContext dc = this.Dialogs.CreateContext(context, conversationInfo);
 
-            string message = context.Activity.Text.ToLowerInvariant();
-
-            await this.HandleCommands(context, message);
-
-            if (userInfo.ApprenticeFeedback.StartDate != default(DateTime))
-            await this.CheckForCompleteFlag(userInfo, dc);
-            await this.CheckForExpiry(userInfo, dc);
+            await this.HandleCommands(context);
 
             if (!context.Responded)
             {
-                await this.StartFeedback(userInfo, dc);
+                await dc.Begin(RootDialog.Id);
             }
-        }
-
-        private async Task CheckForCompleteFlag(UserInfo userInfo, DialogContext dc)
-        {
-            if (userInfo.ApprenticeFeedback.Progress == ProgressState.Complete)
-            {
-                await dc.Context.SendActivity(
-                    $"Thanks for your interest, but it looks like you've already given us some feedback!");
-
-                dc.EndAll();
-            }
-        }
-
-        private async Task CheckForExpiry(UserInfo userInfo, DialogContext dc)
-        {
-            if (userInfo.ApprenticeFeedback.Progress == ProgressState.Expired || userInfo.ApprenticeFeedback.StartDate < DateTime.Now.AddDays(-7)) // TODO: add to config
-            {
-                await dc.Context.SendActivity(
-                    $"Thanks for that - but I'm afraid you've missed the deadline this time. \n "
-                    + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far ");
-
-                userInfo.ApprenticeFeedback.Progress = ProgressState.Expired;
-
-                dc.EndAll();
-            }
-        }
-
-        private async Task StartFeedback(UserInfo userInfo, DialogContext dc)
-        {
-            await dc.Begin(RootDialog.Id);
         }
     }
 }
