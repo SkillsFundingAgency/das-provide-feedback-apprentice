@@ -7,6 +7,6 @@
     /// </summary>
     public class UserInfo
     {
-        public ApprenticeFeedback ApprenticeFeedback { get; set; }
+        public SurveyState SurveyState { get; set; }
     }
 }
