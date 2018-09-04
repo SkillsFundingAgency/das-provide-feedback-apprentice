@@ -7,7 +7,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.Configuration;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -22,10 +22,10 @@
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    using AzureConfiguration = Infrastructure.Configuration.Azure;
-    using BotConfiguration = Infrastructure.Configuration.Bot;
-    using DataConfiguration = Infrastructure.Configuration.Data;
-    using NotifyConfiguration = Infrastructure.Configuration.Notify;
+    using AzureConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+    using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
+    using NotifyConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
 
     public class Startup
     {

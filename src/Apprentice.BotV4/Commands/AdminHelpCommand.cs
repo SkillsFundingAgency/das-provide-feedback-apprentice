@@ -6,24 +6,7 @@
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
 
-    using BotConfiguration = Infrastructure.Configuration.Bot;
-
-    public class HelpCommand : UserCommand
-    {
-        private readonly BotConfiguration configuration;
-
-        public HelpCommand(BotConfiguration configuration)
-            : base("help")
-        {
-            this.configuration = configuration;
-        }
-
-        public override async Task ExecuteAsync(DialogContext dc)
-        {
-            // TODO: write some help text
-            await dc.Context.SendActivity(MessageFactory.Text("help text goes here"));
-        }
-    }
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
 
     public class AdminHelpCommand : AdminCommand
     {

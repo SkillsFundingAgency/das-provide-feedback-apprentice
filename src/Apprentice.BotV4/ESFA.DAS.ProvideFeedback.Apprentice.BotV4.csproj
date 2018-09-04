@@ -7,7 +7,7 @@
     <Copyright>Copyright © 2018 Education and Skills Funding Agency</Copyright>
     <AssemblyName>ESFA.DAS.ProvideFeedback.Apprentice.BotV4</AssemblyName>
     <PackageId>ESFA.DAS.ProvideFeedback.Apprentice.BotV4</PackageId>
-    <VersionPrefix>2.2.0</VersionPrefix>
+    <VersionPrefix>2.3.0</VersionPrefix>
     <VersionSuffix>alpha</VersionSuffix>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <TargetFramework>netcoreapp2.0</TargetFramework>

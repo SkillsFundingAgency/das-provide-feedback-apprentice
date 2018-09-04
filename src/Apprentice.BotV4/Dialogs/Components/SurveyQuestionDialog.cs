@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
