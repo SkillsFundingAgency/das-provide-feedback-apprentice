@@ -21,36 +21,31 @@
             var steps = new WaterfallStep[]
                             {
                                 async (dc, args, next) => { await Menu(dc); },
-                                async (dc, args, next) => { await TakeSurvey(dc); },
+                                async (dc, args, next) => { await Start(dc); },
                                 async (dc, args, next) => { await dc.End(); }
                             };
 
             this.Dialogs.Add(Id, steps);
-
-            // Define the prompts used in this conversation flow.
-            this.Dialogs.Add("textPrompt", new TextPrompt());
-            this.Dialogs.Add("multiChoicePrompt", new ChoicePrompt(Culture.English) { Style = ListStyle.None });
         }
 
         public static RootDialog Instance { get; } = new RootDialog();
 
         private static async Task Menu(DialogContext dc)
         {
-            var menu = new List<string> { "status", "reset", "start" };
+            var menu = new List<string> { "start", "stop", "reset", "expire", "status" };
             await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
         }
 
-        private static async Task TakeSurvey(DialogContext dc)
+        private static async Task Start(DialogContext dc)
         {
+            // TODO: Add bot survey builder admin interface
             string result = dc.Context.Activity.Text.Trim().ToLowerInvariant();
-
-            await dc.Begin(result);
-        }
-
-        private static async Task WakeWord(DialogContext dc)
-        {
-            var menu = new List<string> { "status", "reset", "start" };
-            await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
+            IDialog dialog = dc.Dialogs.Find(result);
+            if (dialog != null)
+            {
+                await dc.Begin(result);
+            }
+            
         }
     }
 }
