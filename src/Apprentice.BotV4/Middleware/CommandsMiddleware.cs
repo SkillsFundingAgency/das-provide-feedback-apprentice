@@ -10,6 +10,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
     using System.Globalization;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+
     using global::ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder;
@@ -20,8 +23,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
     /// <inheritdoc />
     public class CommandsMiddleware : IMiddleware
     {
+        private readonly IEnumerable<IBotDialogCommand> commands;
+
+        public CommandsMiddleware(IEnumerable<IBotDialogCommand> commands)
+        {
+            this.commands = commands;
+        }
+
         /// <summary>
-        /// Finalizes an instance of the <see cref="CosmosConversationLog"/> class. 
+        /// Finalizes an instance of the <see cref="CommandsMiddleware"/> class. 
         /// </summary>
         ~CommandsMiddleware()
         {

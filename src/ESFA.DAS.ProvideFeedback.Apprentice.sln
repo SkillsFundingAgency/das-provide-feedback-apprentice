@@ -37,7 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors", "Apprentice.Bot.Connectors\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.csproj", "{4EF9EF47-6941-44A4-ACF0-3594A0E75D8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Apprentice.Bot.Dialogs", "Apprentice.Bot.Dialogs\Apprentice.Bot.Dialogs.csproj", "{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs", "Apprentice.Bot.Dialogs\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.csproj", "{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Test", "..\test\Apprentice.Bot.Dialogs.Test\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Test.csproj", "{DD665A3C-1137-4FB8-B996-B45FD12BAF40}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +91,10 @@ Global
 		{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD665A3C-1137-4FB8-B996-B45FD12BAF40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD665A3C-1137-4FB8-B996-B45FD12BAF40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD665A3C-1137-4FB8-B996-B45FD12BAF40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD665A3C-1137-4FB8-B996-B45FD12BAF40}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
