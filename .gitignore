@@ -296,3 +296,4 @@ __pycache__/
 .DS_Store
 src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/appsettings.Development.json
 **/*.settings.json
+**/*settings*.Development.json

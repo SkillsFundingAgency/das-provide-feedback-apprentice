@@ -8,7 +8,7 @@
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
 
-    using BotConfiguration = Infrastructure.Configuration.Bot;
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
 
     public sealed class ExpireCommand : AdminCommand
     {

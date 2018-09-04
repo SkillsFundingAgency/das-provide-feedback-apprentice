@@ -1,7 +1,5 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands
 {
-    using System;
-    using System.Configuration;
     using System.Threading;
     using System.Threading.Tasks;
 

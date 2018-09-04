@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.Configuration
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
 {
     /// <summary>
     /// Settings class for connection strings.

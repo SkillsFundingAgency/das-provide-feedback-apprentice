@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Dto
 {
     public class SmsMessage
     {

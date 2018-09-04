@@ -3,9 +3,10 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.Helpers;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands;
 
     using Microsoft.Extensions.Options;
 

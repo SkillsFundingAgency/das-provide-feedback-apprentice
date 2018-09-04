@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers
 {
     using System.Collections.Generic;
 

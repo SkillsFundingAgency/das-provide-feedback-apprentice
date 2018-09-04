@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands
 {
     using System.Collections.Generic;
 
