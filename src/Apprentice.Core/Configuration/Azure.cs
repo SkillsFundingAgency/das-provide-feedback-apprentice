@@ -6,7 +6,7 @@
 //   The azure config.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.Configuration
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
 {
     /// <summary>
     /// Configuration for Azure.

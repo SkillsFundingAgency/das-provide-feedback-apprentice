@@ -26,7 +26,7 @@
 
             if (userInfo.SurveyState.StartDate != default(DateTime))
             {
-                userInfo.SurveyState.StartDate = 
+                userInfo.SurveyState.StartDate =
                     userInfo.SurveyState.StartDate.AddDays(this.botConfiguration.DefaultConversationExpiryDays * -1);
             }
 
