@@ -1,11 +1,13 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
 {
     using System;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
@@ -38,7 +40,7 @@
                     
                     userInfo.SurveyState.SurveyId = dialogId;
                     userInfo.SurveyState.StartDate = DateTime.Now;
-                    userInfo.SurveyState.Progress = ProgressState.Enagaged;
+                    userInfo.SurveyState.Progress = ProgressState.InProgress;
 
                     await dc.Begin(dialogId);
                 }

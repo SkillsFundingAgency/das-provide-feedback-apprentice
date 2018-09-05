@@ -1,4 +1,7 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +9,6 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;

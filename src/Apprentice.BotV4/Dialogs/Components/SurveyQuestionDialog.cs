@@ -1,4 +1,5 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +7,6 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
@@ -30,11 +30,6 @@
 
         public int Score { get; private set; } = 1;
 
-        public SurveyQuestionDialog AddResponse(IResponse response)
-        {
-            this.Responses.Add(response);
-            return this;
-        }
 
         public SurveyQuestionDialog Build()
         {
@@ -55,7 +50,13 @@
 
         public SurveyQuestionDialog WithPrompt(string prompt)
         {
-            this.Prompt = prompt;
+            this.PromptText = prompt;
+            return this;
+        }
+
+        public SurveyQuestionDialog WithResponse(IResponse response)
+        {
+            this.Responses.Add(response);
             return this;
         }
 

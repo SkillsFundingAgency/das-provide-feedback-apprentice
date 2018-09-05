@@ -1,4 +1,6 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +8,6 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
@@ -22,7 +23,7 @@
         protected override async Task Step(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
         {
             UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
-            
+
             foreach (IResponse r in this.Responses)
             {
                 if (r is PredicateResponse predicatedResponse)

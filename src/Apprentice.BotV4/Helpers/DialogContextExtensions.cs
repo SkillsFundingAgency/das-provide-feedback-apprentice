@@ -1,4 +1,6 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers
 {
     using System;
     using System.Collections.Generic;
@@ -26,7 +28,6 @@
         {
             await dc.Prompt("multiChoicePrompt", questionText, FormHelper.PolarQuestionOptions);
         }
-
 
         public static async Task<BinaryQuestionResponse> GetPolarQuestionResponse(this DialogContext dc, IDictionary<string, object> args, string questionText, int score = 0)
         {

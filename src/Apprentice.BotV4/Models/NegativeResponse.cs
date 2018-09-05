@@ -1,4 +1,6 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
 {
     public class NegativeResponse : ConditionalResponse<BinaryQuestionResponse>
     {

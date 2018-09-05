@@ -1,10 +1,10 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
 {
     using System;
     using System.Text;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
@@ -22,6 +22,9 @@
         {
             UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
             await dc.Context.SendActivity($"{JsonConvert.SerializeObject(userInfo, Formatting.Indented )}");
+
+            ConversationInfo state = ConversationState<ConversationInfo>.Get(dc.Context);
+            await dc.Context.SendActivity($"{JsonConvert.SerializeObject(state, Formatting.Indented)}");
         }
     }
 }
