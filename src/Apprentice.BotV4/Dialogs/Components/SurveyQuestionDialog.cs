@@ -1,10 +1,13 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
@@ -19,17 +22,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
     public sealed class SurveyQuestionDialog : DialogContainer
     {
+        private readonly PromptConfiguration configuration = new PromptConfiguration();
+
         public SurveyQuestionDialog(string id)
             : base(id)
         {
         }
 
-        public string Prompt { get; private set; }
+        public string PromptText { get; private set; }
 
         public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
 
         public int Score { get; private set; } = 1;
-
 
         public SurveyQuestionDialog Build()
         {
@@ -72,78 +76,19 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
             return this;
         }
 
-        private async Task AskPolarQuestion(DialogContext dc, string questionText)
-        {
-            await dc.Prompt($"{this.DialogId}-prompt", questionText, this.BuildPolarQuestionOptions(dc));
-        }
-
-        private List<Choice> BuildConfirmationChoices()
-        {
-            return new List<Choice>()
-                       {
-                           new Choice
-                               {
-                                   Action = new CardAction(
-                                       text: "yes",
-                                       title: "yes",
-                                       value: "yes"),
-                                   Value = "yes",
-                                   Synonyms = new List<string>()
-                                                  {
-                                                      "true",
-                                                      "yep",
-                                                      "yeah",
-                                                      "ok",
-                                                      "y"
-                                                  }
-                               },
-                           new Choice
-                               {
-                                   Action = new CardAction(text: "no", title: "no", value: "no"),
-                                   Value = "no",
-                                   Synonyms = new List<string>()
-                                                  {
-                                                      "false",
-                                                      "nope",
-                                                      "nah",
-                                                      "negative",
-                                                      "n"
-                                                  }
-                               },
-                       };
-        }
-
-        private ChoicePromptOptions BuildPolarQuestionOptions(DialogContext dc)
-        {
-            return new ChoicePromptOptions()
-                       {
-                           Choices = this.BuildConfirmationChoices(),
-                           RetryPromptActivity = this.GenerateRetryPrompt(dc)
-                       };
-        }
-
-        private Activity GenerateRetryPrompt(DialogContext dc)
-        {
-            return MessageFactory.Text(
-                $"Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’",
-                inputHint: InputHints.ExpectingInput);
-        }
-
         private async Task Question(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
         {
-            // Ask question A
-            await dc.Context.SendTypingActivity(this.Prompt);
-            await this.AskPolarQuestion(dc, this.Prompt);
+            await dc.Context.SendTypingActivity(this.PromptText);
+            await dc.Prompt($"{this.DialogId}-prompt", this.PromptText, PromptConfiguration.Options);
         }
 
         private async Task Response(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
         {
             UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
-            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
 
-            userInfo.SurveyState.Progress = ProgressState.Enagaged;
+            userInfo.SurveyState.Progress = ProgressState.InProgress;
 
-            BinaryQuestionResponse response = await dc.GetPolarQuestionResponse(args, this.Prompt, this.Score);
+            BinaryQuestionResponse response = await this.ParseResponse(dc, args, this.PromptText, this.Score);
 
             userInfo.SurveyState.Responses.Add(response);
 
@@ -164,5 +109,62 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
             // Ask next question
             await next();
         }
+
+        /// <summary>
+        /// TODO: pull this out into a configuration object injected at bot start
+        /// </summary>
+        internal class PromptConfiguration
+        {
+
+            public static ChoicePromptOptions Options => new ChoicePromptOptions()
+            {
+                Choices = Choices,
+                RetryPromptString = RetryPromptString,
+            };
+
+            private static Choice NegativeChoice => new Choice
+            {
+                Value = "no",
+                Synonyms = new List<string>() { "false", "nope", "nah", "negative", "n" }
+            };
+
+            private static Choice PositiveChoice => new Choice
+            {
+                Value = "yes",
+                Synonyms = new List<string>() { "true", "yep", "yeah", "ok", "y" }
+            };
+
+            private static List<Choice> Choices => new List<Choice> { PositiveChoice, NegativeChoice };
+
+            private static Activity RetryPromptActivity => MessageFactory.Text(
+                RetryPromptString,
+                inputHint: InputHints.ExpectingInput);
+
+            private static readonly string RetryPromptString = $"Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’";
+        }
+
+        private async Task<BinaryQuestionResponse> ParseResponse(DialogContext dc, IDictionary<string, object> args, string questionText, int score = 0)
+        {
+            return await Task.Run(
+                () =>
+                {
+                    string utterance = dc.Context.Activity.Text;                // What did they say?
+                    string intent = (args["Value"] as FoundChoice)?.Value;      // What did they mean?
+                    bool positive = intent == "yes";                            // Was it positive?
+
+                    BinaryQuestionResponse feedbackResponse =
+                        new BinaryQuestionResponse
+                        {
+                            Question = questionText,
+                            Answer = utterance,
+                            Intent = intent,
+                            Score = positive ? score : -score
+                        };
+
+                    return feedbackResponse;
+                });
+        }
     }
+
+
 }
