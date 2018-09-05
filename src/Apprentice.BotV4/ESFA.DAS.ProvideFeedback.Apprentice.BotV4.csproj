@@ -22,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Apprentice.Bot.Dialogs\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
   </ItemGroup>
 
