@@ -18,7 +18,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
     using Microsoft.Bot.Schema;
     using Microsoft.Recognizers.Text;
 
-    using ChoicePrompt = Microsoft.Bot.Builder.Dialogs.ChoicePrompt;
+    using ChoicePrompt = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.ChoicePrompt;
+    using ChoicePromptOptions = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.ChoicePromptOptions;
 
     public sealed class SurveyQuestionDialog : DialogContainer
     {
