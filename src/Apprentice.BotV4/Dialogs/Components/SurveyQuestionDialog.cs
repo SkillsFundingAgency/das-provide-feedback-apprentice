@@ -118,6 +118,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
             public static ChoicePromptOptions Options => new ChoicePromptOptions()
             {
+                Attempts = 3,
+                TooManyAttemptsString = "Oops, too many incorrect attempts!",
                 Choices = Choices,
                 RetryPromptString = RetryPromptString,
             };
