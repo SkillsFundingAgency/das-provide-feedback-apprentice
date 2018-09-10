@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
 {
@@ -13,7 +14,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
-    using global::ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Core.Extensions;

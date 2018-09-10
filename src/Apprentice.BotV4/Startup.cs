@@ -1,4 +1,7 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+using Newtonsoft.Json.Serialization;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
     using System;
     using System.Globalization;
@@ -6,7 +9,6 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
 
     using Microsoft.AspNetCore.Builder;
@@ -53,14 +55,18 @@
             app.UseDefaultFiles().UseStaticFiles().UseBotFramework();
         }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // configure JSON serializer
+            // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
             JsonConvert.DefaultSettings = () =>
                 {
                     JsonSerializerSettings settings = new JsonSerializerSettings();
+                    settings.Formatting = Formatting.Indented;
                     settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
                     return settings;
+
+                    
                 };
 
             // add config options

@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.1-preview" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
+  </ItemGroup>
+
 </Project>

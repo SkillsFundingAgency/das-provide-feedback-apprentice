@@ -1,7 +1,7 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
-{
-    using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models
+{
     public enum ProgressState
     {
         /// <summary>
@@ -14,7 +14,7 @@
         /// Feedback is in progress.
         /// </summary>
         [EnumMember(Value = "inProgress")]
-        Enagaged,
+        InProgress,
 
         /// <summary>
         /// Feedback has been completed
@@ -26,6 +26,18 @@
         /// Feedback cycle has expired before user completed the survey
         /// </summary>
         [EnumMember(Value = "expired")]
-        Expired
+        Expired,
+
+        /// <summary>
+        /// User has opted out of the survey
+        /// </summary>
+        [EnumMember(Value = "optedOut")]
+        OptedOut,
+
+        /// <summary>
+        /// User has entered too many bad responses, so we've banned them from this survey
+        /// </summary>
+        [EnumMember(Value = "blackListed")]
+        BlackListed
     }
 }

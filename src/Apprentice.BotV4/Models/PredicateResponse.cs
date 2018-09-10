@@ -1,8 +1,8 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
 {
     using System;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.State;
 
     public class PredicateResponse : ConditionalResponse<UserInfo>
     {

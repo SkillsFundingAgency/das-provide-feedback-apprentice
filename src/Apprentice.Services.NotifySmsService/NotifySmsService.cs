@@ -10,18 +10,20 @@
 
     using Microsoft.Extensions.Options;
 
+    using NotifyConfig = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
+
     using Notify.Client;
 
     public class NotifySmsService : ISmsService
     {
         private readonly NotificationClient notifyClient;
 
-        private readonly IOptions<Notify> notifyConfiguration;
+        private readonly IOptions<NotifyConfig> notifyConfiguration;
 
         private readonly ICommandHandlerAsync<NotifySendSmsCommand> sendSmsCommandHandler;
 
         public NotifySmsService(
-            IOptions<Notify> notifyConfiguration,
+            IOptions<NotifyConfig> notifyConfiguration,
             ICommandHandlerAsync<NotifySendSmsCommand> sendSmsCommandHandler)
         {
             this.notifyConfiguration = notifyConfiguration;
