@@ -18,10 +18,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
             set => this[nameof(TooManyAttemptsString)] = (object)value;
         }
 
-        public Dictionary<int, string> TooManyAttemptsStringCollection
+        public Dictionary<long, string> RetryPromptsCollection
         {
-            get => this.GetProperty<Dictionary<int, string>>(nameof(TooManyAttemptsStringCollection));
-            set => this[nameof(TooManyAttemptsStringCollection)] = (object)value;
+            get => this.GetProperty<Dictionary<long, string>>(nameof(this.RetryPromptsCollection));
+            set => this[nameof(this.RetryPromptsCollection)] = (object)value;
         }
     }
 }

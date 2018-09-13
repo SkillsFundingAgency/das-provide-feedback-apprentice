@@ -28,7 +28,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
             [QueueTrigger("sms-outgoing-messages")]
-            dynamic outgoingSms,
+            dynamic outgoingSms, // cast to Bot.Core queue object
             TraceWriter log,
             ExecutionContext context)
         {

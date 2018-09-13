@@ -42,6 +42,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
                     userInfo.SurveyState.StartDate = DateTime.Now;
                     userInfo.SurveyState.Progress = ProgressState.InProgress;
 
+                    // TODO: check dialog collection
                     await dc.Begin(dialogId);
                 }
                 else

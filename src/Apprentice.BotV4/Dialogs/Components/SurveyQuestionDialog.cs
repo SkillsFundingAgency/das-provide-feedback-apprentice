@@ -117,20 +117,28 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
         internal class PromptConfiguration
         {
 
+            // TODO: add these strings to CommonStrings.en-GB.resx
             public static ChoicePromptOptions Options => new ChoicePromptOptions()
             {
                 Attempts = 3,
-                TooManyAttemptsString = "Oops, too many incorrect attempts!",
+                TooManyAttemptsString = "Sorry I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!",
                 Choices = Choices,
                 RetryPromptString = RetryPromptString,
+                RetryPromptsCollection = new Dictionary<long, string>()
+                                             {
+                                                 { 1, "Sorry, I'm just a simple bot. Please type 'Yes' or 'No'" },
+                                                 { 2, "Please could you answer 'Yes' or 'No' - I'm not that clever I'm afraid" }
+                                             }
             };
 
+            // TODO: add these strings to CommonStrings.en-GB.resx
             private static Choice NegativeChoice => new Choice
             {
                 Value = "no",
                 Synonyms = new List<string>() { "false", "nope", "nah", "negative", "n" }
             };
 
+            // TODO: add these strings to CommonStrings.en-GB.resx
             private static Choice PositiveChoice => new Choice
             {
                 Value = "yes",
@@ -143,9 +151,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
                 RetryPromptString,
                 inputHint: InputHints.ExpectingInput);
 
+            // TODO: add these strings to CommonStrings.en-GB.resx
             private static readonly string RetryPromptString = $"Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’";
         }
 
+        // TODO: add these strings to CommonStrings.en-GB.resx
         private async Task<BinaryQuestionResponse> ParseResponse(DialogContext dc, IDictionary<string, object> args, string questionText, int score = 0)
         {
             return await Task.Run(
