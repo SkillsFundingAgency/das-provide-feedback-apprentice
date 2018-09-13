@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
 {
     using System;
     using System.Linq;
