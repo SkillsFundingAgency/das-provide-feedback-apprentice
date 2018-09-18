@@ -1,15 +1,12 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
@@ -77,6 +74,33 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
             return this;
         }
 
+        // TODO: add these strings to CommonStrings.en-GB.resx
+        private async Task<BinaryQuestionResponse> ParseResponse(
+            DialogContext dc,
+            IDictionary<string, object> args,
+            string questionText,
+            int score = 0)
+        {
+            return await Task.Run(
+                       () =>
+                           {
+                               string utterance = dc.Context.Activity.Text; // What did they say?
+                               string intent = (args["Value"] as FoundChoice)?.Value; // What did they mean?
+                               bool positive = intent == "yes"; // Was it positive?
+
+                               BinaryQuestionResponse feedbackResponse =
+                                   new BinaryQuestionResponse
+                                       {
+                                           Question = questionText,
+                                           Answer = utterance,
+                                           Intent = intent,
+                                           Score = positive ? score : -score
+                                       };
+
+                               return feedbackResponse;
+                           });
+        }
+
         private async Task Question(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
         {
             await dc.Context.SendTypingActivity(this.PromptText);
@@ -116,58 +140,45 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
         /// </summary>
         internal class PromptConfiguration
         {
+            // TODO: add these strings to CommonStrings.en-GB.resx
+            private static readonly string RetryPromptString =
+                $"Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’";
 
-            public static ChoicePromptOptions Options => new ChoicePromptOptions()
-            {
-                Attempts = 3,
-                TooManyAttemptsString = "Oops, too many incorrect attempts!",
-                Choices = Choices,
-                RetryPromptString = RetryPromptString,
-            };
-
-            private static Choice NegativeChoice => new Choice
-            {
-                Value = "no",
-                Synonyms = new List<string>() { "false", "nope", "nah", "negative", "n" }
-            };
-
-            private static Choice PositiveChoice => new Choice
-            {
-                Value = "yes",
-                Synonyms = new List<string>() { "true", "yep", "yeah", "ok", "y" }
-            };
+            // TODO: add these strings to CommonStrings.en-GB.resx
+            public static ChoicePromptOptions Options =>
+                new ChoicePromptOptions()
+                    {
+                        Attempts = 3,
+                        TooManyAttemptsString =
+                            "Sorry I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!",
+                        Choices = Choices,
+                        RetryPromptString = RetryPromptString,
+                        RetryPromptsCollection =
+                            new Dictionary<long, string>()
+                                {
+                                    {
+                                        1,
+                                        "Sorry, I'm just a simple bot. Please type 'Yes' or 'No'"
+                                    },
+                                    {
+                                        2,
+                                        "Please could you answer 'Yes' or 'No' - I'm not that clever I'm afraid"
+                                    }
+                                }
+                    };
 
             private static List<Choice> Choices => new List<Choice> { PositiveChoice, NegativeChoice };
 
-            private static Activity RetryPromptActivity => MessageFactory.Text(
-                RetryPromptString,
-                inputHint: InputHints.ExpectingInput);
+            // TODO: add these strings to CommonStrings.en-GB.resx
+            private static Choice NegativeChoice =>
+                new Choice { Value = "no", Synonyms = new List<string>() { "false", "nope", "nah", "negative", "n" } };
 
-            private static readonly string RetryPromptString = $"Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’";
-        }
+            // TODO: add these strings to CommonStrings.en-GB.resx
+            private static Choice PositiveChoice =>
+                new Choice { Value = "yes", Synonyms = new List<string>() { "true", "yep", "yeah", "ok", "y" } };
 
-        private async Task<BinaryQuestionResponse> ParseResponse(DialogContext dc, IDictionary<string, object> args, string questionText, int score = 0)
-        {
-            return await Task.Run(
-                () =>
-                {
-                    string utterance = dc.Context.Activity.Text;                // What did they say?
-                    string intent = (args["Value"] as FoundChoice)?.Value;      // What did they mean?
-                    bool positive = intent == "yes";                            // Was it positive?
-
-                    BinaryQuestionResponse feedbackResponse =
-                        new BinaryQuestionResponse
-                        {
-                            Question = questionText,
-                            Answer = utterance,
-                            Intent = intent,
-                            Score = positive ? score : -score
-                        };
-
-                    return feedbackResponse;
-                });
+            private static Activity RetryPromptActivity =>
+                MessageFactory.Text(RetryPromptString, inputHint: InputHints.ExpectingInput);
         }
     }
-
-
 }

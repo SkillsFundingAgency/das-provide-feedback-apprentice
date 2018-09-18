@@ -380,6 +380,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data
         /// Create the cosmos Db database and collection
         /// </summary>
         /// <returns>The <see cref="Task"/></returns>
+        /// TODO: update this, you dinosaur!
         private async Task<DocumentCollection> GetOrCreateCollectionAsync()
         {
             try

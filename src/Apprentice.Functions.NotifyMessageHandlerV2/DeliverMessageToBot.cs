@@ -80,7 +80,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         private static async Task<BotConversation> GetConversationByMobileNumber(string mobileNumber)
         {
             // TODO: extract this and inject an instance of IBotConversationProvider
-            DocumentCollection collection = await DocumentClient.GetDocumentCollectionAsync();
+            await DocumentClient.GetDocumentCollectionAsync();
             BotConversation conversation = await DocumentClient.GetItemAsync<BotConversation>(c => c.MobileNumber == mobileNumber);
             return conversation;
         }
