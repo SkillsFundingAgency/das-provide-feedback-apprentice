@@ -1,46 +1,54 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
-{
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿//using System.Threading;
+//using Microsoft.Bot.Builder;
 
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+//namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+//{
+//    using System.Collections.Generic;
+//    using System.Threading.Tasks;
 
-    using Microsoft.Bot.Builder.Dialogs;
+//    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
-    public abstract class SingleStepDialog : DialogContainer
-    {
-        protected SingleStepDialog(string id)
-            : base(id)
-        {
-        }
+//    using Microsoft.Bot.Builder.Dialogs;
 
-        public ICollection<IResponse> Responses { get; protected set; } = new List<IResponse>();
+//    public abstract class SingleStepDialog : ComponentDialog
+//    {
+//        protected SingleStepDialog(string id)
+//            : base(id)
+//        {
+//        }
 
-        public SingleStepDialog AddResponse(IResponse response)
-        {
-            this.Responses.Add(response);
-            return this;
-        }
+//        public ICollection<IResponse> Responses { get; protected set; } = new List<IResponse>();
 
-        public SingleStepDialog Build()
-        {
-            var steps = new WaterfallStep[]
-                            {
-                                async (dc, args, next) => { await this.Step(dc, args, next); },
-                                async (dc, args, next) => { await dc.End(); }
-                            };
+//        public SingleStepDialog AddResponse(IResponse response)
+//        {
+//            this.Responses.Add(response);
+//            return this;
+//        }
 
-            this.Dialogs.Add(this.DialogId, steps);
+//        public SingleStepDialog Build()
+//        {
+//            WaterfallDialog dialog = new WaterfallDialog("step", new WaterfallStep[] {StepDialogAsync, EndDialogAsync});
+//            this.AddDialog(dialog);
 
-            return this;
-        }
+//            return this;
+//        }
 
-        public SingleStepDialog WithResponses(ICollection<IResponse> responses)
-        {
-            this.Responses = responses;
-            return this;
-        }
+//        private async Task<DialogTurnResult> EndDialogAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+//        {
+//            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+//        }
 
-        protected abstract Task Step(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next);
-    }
-}
+//        private async Task<DialogTurnResult> StepDialogAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+//        {
+//            return await this.Step(stepContext, cancellationToken);
+//        }
+
+//        public SingleStepDialog WithResponses(ICollection<IResponse> responses)
+//        {
+//            this.Responses = responses;
+//            return this;
+//        }
+
+//        protected abstract Task<DialogTurnResult> Step(WaterfallStepContext turnContext, CancellationToken cancellationToken = default(CancellationToken));
+//    }
+//}

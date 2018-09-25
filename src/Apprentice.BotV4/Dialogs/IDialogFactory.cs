@@ -13,7 +13,7 @@
         /// <param name="step">The step DTO</param>
         /// <returns>a new <see cref="DialogContainer"/></returns>
         T Create<T>(ISurveyStep step)
-            where T : DialogContainer;
+            where T : ComponentDialog;
 
         /// <summary>
         /// Create a survey DialogContainer
@@ -22,6 +22,6 @@
         /// <param name="survey">The survey DTO</param>
         /// <returns>a new <see cref="DialogContainer"/></returns>
         T Create<T>(ISurvey survey)
-            where T : DialogContainer;
+            where T : ComponentDialog;
     }
 }
