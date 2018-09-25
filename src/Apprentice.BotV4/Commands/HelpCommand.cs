@@ -7,7 +7,7 @@
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
 
-    public class HelpCommand : UserCommand
+    public class HelpCommand : UserCommand, IBotDialogCommand
     {
         private readonly Bot configuration;
 

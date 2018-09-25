@@ -11,7 +11,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
 
     using Newtonsoft.Json;
 
-    public sealed class StatusCommand : AdminCommand
+    public sealed class StatusCommand : AdminCommand, IBotDialogCommand
     {
         public StatusCommand()
             : base("status")

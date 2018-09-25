@@ -8,7 +8,7 @@
 
     using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
 
-    public class AdminHelpCommand : AdminCommand
+    public class AdminHelpCommand : AdminCommand, IBotDialogCommand
     {
         private readonly BotConfiguration configuration;
 

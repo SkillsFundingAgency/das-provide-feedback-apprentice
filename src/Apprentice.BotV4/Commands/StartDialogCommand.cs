@@ -13,7 +13,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Logging;
 
-    public sealed class StartDialogCommand : AdminCommand
+    public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
         private readonly ILogger<FeedbackBot> logger;
 

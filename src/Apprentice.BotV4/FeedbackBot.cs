@@ -22,21 +22,21 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
     public class FeedbackBot : IBot
     {
-        private readonly IEnumerable<IBotDialogCommand> commands;
-
         private readonly ILogger<FeedbackBot> logger;
 
         private readonly IDialogFactory dialogFactory;
 
-        private readonly List<ISurvey> surveys = new List<ISurvey>();
+        private readonly IEnumerable<IBotDialogCommand> commands;
 
-        public FeedbackBot(ILogger<FeedbackBot> logger, IEnumerable<IBotDialogCommand> commands)
+        private readonly IEnumerable<ISurvey> surveys;
+
+        public FeedbackBot(ILogger<FeedbackBot> logger, IDialogFactory dialogFactory, IEnumerable<IBotDialogCommand> commands, IEnumerable<ISurvey> surveys)
         {
             this.logger = logger;
-            this.commands = commands;
+            this.dialogFactory = dialogFactory;
 
-            this.dialogFactory = new DialogFactory(); // TODO: Inject
-            this.surveys.Add(new InMemoryApprenticeFeedbackSurvey()); // TODO: List resolve
+            this.commands = commands;
+            this.surveys = surveys;
 
             this.Dialogs = this.BuildDialogs();
         }

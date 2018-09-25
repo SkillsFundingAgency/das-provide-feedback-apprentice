@@ -10,7 +10,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
 
     using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
 
-    public sealed class ExpireCommand : AdminCommand
+    public sealed class ExpireCommand : AdminCommand, IBotDialogCommand
     {
         private readonly BotConfiguration botConfiguration;
 

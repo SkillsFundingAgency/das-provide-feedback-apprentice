@@ -5,7 +5,7 @@
 
     using Microsoft.Bot.Builder.Dialogs;
 
-    public abstract class UserCommand : IBotDialogCommand
+    public abstract class UserCommand
     {
         protected UserCommand(string triggerWord)
             => this.Trigger = triggerWord ?? throw new ArgumentNullException(nameof(triggerWord));

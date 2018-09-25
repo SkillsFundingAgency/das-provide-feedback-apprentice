@@ -5,7 +5,7 @@
 
     using Microsoft.Bot.Builder.Dialogs;
 
-    public sealed class OptOutCommand : UserCommand
+    public sealed class OptOutCommand : UserCommand, IBotDialogCommand
     {
         public OptOutCommand()
             : base("stop")

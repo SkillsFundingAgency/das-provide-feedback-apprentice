@@ -13,7 +13,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Schema;
 
-    public sealed class ResetDialogCommand : AdminCommand
+    public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
     {
 
         public ResetDialogCommand()

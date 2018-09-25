@@ -1,4 +1,8 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+﻿using System.Reflection;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 using Newtonsoft.Json.Serialization;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
@@ -88,13 +92,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                             options.SupportedUICultures = supportedCultures;
                         });
 
-            // TODO: invoke a list resolver for this
-            services.AddSingleton<IBotDialogCommand, ExpireCommand>();
-            services.AddSingleton<IBotDialogCommand, AdminHelpCommand>();
-            services.AddSingleton<IBotDialogCommand, OptOutCommand>();
-            services.AddSingleton<IBotDialogCommand, ResetDialogCommand>();
-            services.AddSingleton<IBotDialogCommand, StartDialogCommand>();
-            services.AddSingleton<IBotDialogCommand, StatusCommand>();
+            services.AddSingleton<IDialogFactory, DialogFactory>();
+
+            services.RegisterAllTypes<IBotDialogCommand>(new[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Transient);
+            services.RegisterAllTypes<ISurvey>(new[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Transient);
 
             services.AddBot<FeedbackBot>(
                 options =>
