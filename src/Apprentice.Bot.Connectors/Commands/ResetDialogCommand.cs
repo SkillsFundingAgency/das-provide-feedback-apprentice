@@ -1,18 +1,10 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+﻿using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-
-    using Microsoft.Bot.Builder.Core.Extensions;
-    using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Schema;
-
     public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
     {
 
@@ -30,7 +22,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
             conversationInfo.Clear();
 
             await dc.Context.SendActivity($"OK. Resetting conversation...");
-            await dc.Replace(RootDialog.Id);
+            await dc.Continue();
 
         }
     }

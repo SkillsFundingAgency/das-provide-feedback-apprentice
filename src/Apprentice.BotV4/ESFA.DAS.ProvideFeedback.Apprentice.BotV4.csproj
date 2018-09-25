@@ -11,10 +11,13 @@
     <VersionSuffix>alpha</VersionSuffix>
     <NeutralLanguage>en-GB</NeutralLanguage>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <UserSecretsId>d38ad486-13e2-44a4-9cc0-dd1f37bee67a</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="4.0.1-preview" />
     <PackageReference Include="Microsoft.Bot.Builder.Core" Version="4.0.1-preview" />
     <PackageReference Include="Microsoft.Bot.Builder.Core.Extensions" Version="4.0.1-preview" />
     <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.0.1-preview" />
@@ -22,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Apprentice.Bot.Connectors\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.csproj" />
     <ProjectReference Include="..\Apprentice.Bot.Dialogs\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
   </ItemGroup>

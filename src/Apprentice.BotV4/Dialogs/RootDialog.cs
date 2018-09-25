@@ -32,8 +32,9 @@
 
         private static async Task Menu(DialogContext dc)
         {
-            //var menu = new List<string> { "start", "stop", "reset", "expire", "status" };
-            //await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
+            var menu = new List<string> { "start", "stop", "reset", "expire", "status" };
+            await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "How can I help you?"));
+            //await dc.Continue();
         }
 
         private static async Task Start(DialogContext dc)

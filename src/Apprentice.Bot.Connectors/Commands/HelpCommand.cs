@@ -1,17 +1,14 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
+﻿using System.Threading.Tasks;
+using Microsoft.Bot.Builder.Core.Extensions;
+using Microsoft.Bot.Builder.Dialogs;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
-    using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-
-    using Microsoft.Bot.Builder.Core.Extensions;
-    using Microsoft.Bot.Builder.Dialogs;
-
     public class HelpCommand : UserCommand, IBotDialogCommand
     {
-        private readonly Bot configuration;
+        private readonly Core.Configuration.Bot configuration;
 
-        public HelpCommand(Bot configuration)
+        public HelpCommand(Core.Configuration.Bot configuration)
             : base("help")
         {
             this.configuration = configuration;

@@ -14,9 +14,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
     /// </summary>
     public class ConnectionStrings
     {
-        /// <summary>
-        /// Gets or sets the connection string for the azure storage account.
-        /// </summary>
         public string StorageAccount { get; set; }
+
+        public string ServiceBus { get; set; }
     }
 }

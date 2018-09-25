@@ -1,25 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Core.Extensions;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-
-
-    using Microsoft.Bot.Builder;
-    using Microsoft.Bot.Builder.Core.Extensions;
-    using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Schema;
-
     /// <inheritdoc />
     public class CommandsMiddleware : IMiddleware
     {

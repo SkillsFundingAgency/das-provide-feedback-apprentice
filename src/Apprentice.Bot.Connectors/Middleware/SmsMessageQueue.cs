@@ -18,5 +18,10 @@
         {
             throw new System.NotImplementedException();
         }
+
+        public Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

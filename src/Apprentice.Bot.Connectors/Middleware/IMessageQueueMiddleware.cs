@@ -5,7 +5,7 @@
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
 
-    public interface IMessageQueueMiddleware
+    public interface IMessageQueueMiddleware : IMiddleware
     {
         /// <summary>
         /// Adds a message to the queue, ready for processing </summary>

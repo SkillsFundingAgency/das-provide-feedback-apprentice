@@ -1,10 +1,9 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Bot.Builder.Dialogs;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Microsoft.Bot.Builder.Dialogs;
-
     public abstract class AdminCommand
     {
         protected AdminCommand(string triggerWord) 
@@ -17,7 +16,7 @@
         public bool IsTriggered(DialogContext dc)
         {
             // TODO: check auth
-            return dc.Context.Activity.Text.ToLowerInvariant().StartsWith(this.Trigger);
+            return dc.Context.Activity.Text.ToLowerInvariant().StartsWith(this.Trigger, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

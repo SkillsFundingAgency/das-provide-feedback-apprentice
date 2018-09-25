@@ -1,5 +1,8 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+using Microsoft.Extensions.Options;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
@@ -7,8 +10,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
@@ -30,13 +31,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
         private readonly IEnumerable<ISurvey> surveys;
 
-        public FeedbackBot(ILogger<FeedbackBot> logger, IDialogFactory dialogFactory, IEnumerable<IBotDialogCommand> commands, IEnumerable<ISurvey> surveys)
-        {
-            this.logger = logger;
-            this.dialogFactory = dialogFactory;
+        private readonly Features featureToggles;
 
-            this.commands = commands;
-            this.surveys = surveys;
+        public FeedbackBot(ILogger<FeedbackBot> logger, IDialogFactory dialogFactory, IEnumerable<IBotDialogCommand> commands, IEnumerable<ISurvey> surveys, IOptions<Features> featureToggles)
+        {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this.dialogFactory = dialogFactory ?? throw new ArgumentNullException(nameof(dialogFactory));
+
+            this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
+            this.surveys = surveys ?? throw new ArgumentNullException(nameof(surveys));
+
+            this.featureToggles = featureToggles.Value ?? throw new ArgumentNullException(nameof(featureToggles));
 
             this.Dialogs = this.BuildDialogs();
         }
@@ -122,6 +127,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             return channelId;
         }
 
+        /// <summary>
+        /// TODO: Add to middleware intercepts
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         private async Task HandleCommands(ITurnContext context)
         {
             UserInfo userInfo = UserState<UserInfo>.Get(context);
@@ -148,6 +158,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                 {
                     case ProgressState.NotStarted:
                         // Not sure how they got here, fix the session!
+                        await dc.Continue();
                         break;
 
                     case ProgressState.InProgress:

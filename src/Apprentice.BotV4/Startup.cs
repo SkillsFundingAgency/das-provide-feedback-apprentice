@@ -1,8 +1,12 @@
 ﻿using System.Reflection;
+using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
+using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
 using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
 using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Serialization;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
@@ -10,14 +14,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using System;
     using System.Globalization;
     using System.IO;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Localization;
+    using Microsoft.Bot.Builder.Azure;
     using Microsoft.Bot.Builder.BotFramework;
     using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -28,13 +31,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
 
-    using AzureConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
-    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
-    using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
-    using NotifyConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
+    using AzureSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
+    using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+    using DataSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
+    using NotifySettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
+    using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
     public class Startup
     {
+        private ILoggerFactory _loggerFactory;
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public Startup(IHostingEnvironment env)
@@ -69,17 +75,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     settings.Formatting = Formatting.Indented;
                     settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
                     return settings;
-
-                    
                 };
 
-            // add config options
+            // bind configuration settings
             services.AddOptions()
-                .BindConfiguration<AzureConfiguration>(this.Configuration)
-                .BindConfiguration<BotConfiguration>(this.Configuration)
+                .BindConfiguration<AzureSettings>(this.Configuration)
+                .BindConfiguration<BotSettings>(this.Configuration)
                 .BindConfiguration<ConnectionStrings>(this.Configuration)
-                .BindConfiguration<DataConfiguration>(this.Configuration)
-                .BindConfiguration<NotifyConfiguration>(this.Configuration);
+                .BindConfiguration<DataSettings>(this.Configuration)
+                .BindConfiguration<NotifySettings>(this.Configuration)
+                .BindConfiguration<FeatureToggles>(this.Configuration);
 
             // add & configure localization
             services.AddLocalization(options => options.ResourcesPath = "Resources")
@@ -92,37 +97,46 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                             options.SupportedUICultures = supportedCultures;
                         });
 
-            services.AddSingleton<IDialogFactory, DialogFactory>();
+            // add & register services
+            services.AddSingleton<IDialogFactory, DialogFactory>()
+                    .AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>()
+                    //.AddTransient<ILogger>(provider => _loggerFactory.CreateLogger<FeedbackBot>())
+                    .RegisterAllTypes<IBotDialogCommand>(new[] { typeof(IBotDialogCommand).Assembly }, ServiceLifetime.Transient)
+                    .RegisterAllTypes<ISurvey>(new[] { typeof(ISurvey).Assembly }, ServiceLifetime.Transient);
 
-            services.RegisterAllTypes<IBotDialogCommand>(new[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Transient);
-            services.RegisterAllTypes<ISurvey>(new[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Transient);
-
+            // add & configure bot framework
             services.AddBot<FeedbackBot>(
                 options =>
                     {
+                        //ILogger logger = _loggerFactory.CreateLogger<FeedbackBot>();
+
                         options.CredentialProvider = new ConfigurationCredentialProvider(this.Configuration);
                         options.Middleware.Add(
                             new CatchExceptionMiddleware<Exception>(
                                 async (context, exception) =>
                                     {
                                         await context.TraceActivity($"{nameof(FeedbackBot)} Exception", exception);
+                                        //logger.LogError(exception, $"{nameof(FeedbackBot)} Exception");
 #if DEBUG
                                         await context.SendActivity($"Sorry, it looks like something went wrong! {exception.Message}");
 #endif
                                     }));
 
-                        // Add state management middleware for conversation and user state.
-                        string path = Path.Combine(Path.GetTempPath(), nameof(FeedbackBot));
-                        if (!Directory.Exists(path))
-                        {
-                            Directory.CreateDirectory(path);
-                        }
+                        IStorage dataStore = ConfigureStateDataStore(this.Configuration);
 
-                        IStorage storage = new FileStorage(path);
-
-                        options.Middleware.Add(new ConversationState<ConversationInfo>(storage));
-                        options.Middleware.Add(new UserState<UserInfo>(storage));
+                        options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
+                        options.Middleware.Add(new UserState<UserInfo>(dataStore));
+                        //options.Middleware.Add<AzureStorageQueueSmsRelay>(services);
+                        options.Middleware.Add<IMessageQueueMiddleware>(services);
                     });
+        }
+
+        private static AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
+        {
+            AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
+                configuration["ConnectionStrings:StorageAccount"],
+                configuration["Data:SessionStateTable"]);
+            return azureBlobStorage;
         }
     }
 }

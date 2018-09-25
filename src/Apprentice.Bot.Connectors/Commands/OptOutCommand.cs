@@ -1,10 +1,8 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
+﻿using System.Threading.Tasks;
+using Microsoft.Bot.Builder.Dialogs;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
-    using System;
-    using System.Threading.Tasks;
-
-    using Microsoft.Bot.Builder.Dialogs;
-
     public sealed class OptOutCommand : UserCommand, IBotDialogCommand
     {
         public OptOutCommand()
