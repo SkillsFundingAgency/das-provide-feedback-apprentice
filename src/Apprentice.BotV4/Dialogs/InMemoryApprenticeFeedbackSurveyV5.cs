@@ -15,10 +15,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
             "That's the end of the survey for now. We'll be in touch again later in the year.";
 
         private const string IntroOptOut =
-            "It's just 3 questions and it'll really help us improve things. But if you want to opt out, please type ‘stop’";
+            "Normal SMS charges apply. To stop receiving these messages, please type ‘Stop’";
 
         private const string IntroWelcome =
-            "Here’s your quarterly apprenticeship survey. You agreed to participate when you started your apprenticeship";
+            "Here’s your apprenticeship survey from the Department for Education.";
+
+        private const string IntroJustThreeQuestions =
+            "It's just 3 questions and it'll really help us improve apprenticeships.";
 
         private const string QuestionsHelpingWithJob =
             "Is your apprenticeship helping you with your job?";
@@ -92,6 +95,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
                 },
                 new StaticResponse()
                 {
+                    Id = nameof(IntroJustThreeQuestions),
+                    Prompt = IntroJustThreeQuestions
+                },
+                new StaticResponse()
+                {
                     Id = nameof(IntroOptOut),
                     Prompt = IntroOptOut
                 }
@@ -158,7 +166,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
                 {
                     Id = nameof(FinishSpeakToYourEmployer),
                     Predicate = u =>
-                        u.SurveyState.Score < 300,
+                        u.SurveyState.Score < 300 && u.SurveyState.Score >= 200,
                     Prompt = FinishWeWillBeInTouch
                 },
                 new PredicateResponse()

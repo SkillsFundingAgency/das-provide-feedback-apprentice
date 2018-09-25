@@ -1,4 +1,6 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+﻿using System.Linq;
+using System.Text;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
@@ -24,18 +26,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
         {
             UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
 
-            foreach (IResponse r in this.Responses)
+            if (Configuration.CollateResponses)
             {
-                if (r is PredicateResponse predicatedResponse)
-                {
-                    if (!predicatedResponse.IsValid(userInfo))
-                    {
-                        continue;
-                    }
-                }
+                await RespondAsSingleMessage(this.Responses, dc, userInfo);
+            }
 
-                await dc.Context.SendTypingActivity(r.Prompt);
-                await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
+            else
+            {
+                await RespondAsMultipleMessages(this.Responses, dc, userInfo);
             }
 
             await next();

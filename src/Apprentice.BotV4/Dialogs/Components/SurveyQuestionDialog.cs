@@ -1,3 +1,6 @@
+using System.Linq;
+using System.Text;
+
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System.Collections.Generic;
@@ -20,12 +23,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
     public sealed class SurveyQuestionDialog : DialogContainer
     {
-        private readonly PromptConfiguration configuration = new PromptConfiguration();
-
         public SurveyQuestionDialog(string id)
             : base(id)
         {
+            Configuration = new DialogConfiguration();
         }
+
+        public DialogConfiguration Configuration { get; }
 
         public string PromptText { get; private set; }
 
@@ -117,22 +121,61 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
             userInfo.SurveyState.Responses.Add(response);
 
-            foreach (IResponse r in this.Responses)
+            if (Configuration.CollateResponses)
             {
-                if (r is ConditionalResponse<BinaryQuestionResponse> conditionalResponse)
-                {
-                    if (!conditionalResponse.IsValid(response))
-                    {
-                        continue;
-                    }
-                }
+                await RespondAsSingleMessage(this.Responses, dc, response);
+            }
 
-                await dc.Context.SendTypingActivity(r.Prompt);
-                await dc.Context.SendActivity(r.Prompt);
+            else
+            {
+                await RespondAsMultipleMessages(this.Responses, dc, response);
             }
 
             // Ask next question
             await next();
+        }
+
+        private async Task RespondAsMultipleMessages(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response)
+        {
+            foreach (IResponse r in responses)
+            {
+                if (r is ConditionalResponse<BinaryQuestionResponse> conditionalResponse && !conditionalResponse.IsValid(response))
+                {
+                    continue;
+                }
+
+                if (Configuration.RealisticTypingDelay)
+                {
+                    await Task.Delay(Configuration.ThinkingTimeDelayMs + (r.Prompt.Length / Configuration.CharactersPerMinute));
+                    await dc.Context.SendTypingActivity(r.Prompt);
+                }
+
+                await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
+            }
+        }
+
+        private async Task RespondAsSingleMessage(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (IResponse r in responses)
+            {
+                if (r is ConditionalResponse<BinaryQuestionResponse> conditionalResponse && !conditionalResponse.IsValid(response))
+                {
+                    continue;
+                }
+
+                sb.AppendLine(r.Prompt);
+            }
+
+            var reply = sb.ToString();
+
+            if (Configuration.RealisticTypingDelay)
+            {
+                await Task.Delay(Configuration.ThinkingTimeDelayMs + (reply.Length / Configuration.CharactersPerMinute));
+                await dc.Context.SendTypingActivity(reply);
+            }
+
+            await dc.Context.SendActivity(reply, InputHints.IgnoringInput);
         }
 
         /// <summary>
