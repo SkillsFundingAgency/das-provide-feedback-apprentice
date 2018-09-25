@@ -138,31 +138,50 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             {
                 if (userInfo.SurveyState.StartDate != default(DateTime))
                 {
-                    if (userInfo.SurveyState.Progress == ProgressState.Complete)
+                    if (userInfo.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
                     {
-                        await dc.Context.SendActivity(
-                            $"Thanks for your interest, but it looks like you've already given us some feedback!");
-
-                        dc.EndAll();
-                    }
-                    else
-                    {
-                        if (userInfo.SurveyState.Progress == ProgressState.Expired 
-                            || userInfo.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
-                        {
-                            userInfo.SurveyState.Progress = ProgressState.Expired;
-
-                            await dc.Context.SendActivity(
-                                $"Thanks for that - but I'm afraid you've missed the deadline this time.");
-                            await dc.Context.SendActivity(
-                                $"I'll get in touch when it's time to give feedback again. Thanks for your help so far");
-
-                            dc.EndAll();
-                        }
+                        userInfo.SurveyState.Progress = ProgressState.Expired;
                     }
                 }
 
-                await dc.Continue(); 
+                switch (userInfo.SurveyState.Progress)
+                {
+                    case ProgressState.NotStarted:
+                        // Not sure how they got here, fix the session!
+                        break;
+
+                    case ProgressState.InProgress:
+                        // Continue as normal
+                        await dc.Continue();
+                        break;
+
+                    case ProgressState.Complete:
+                        // Survey already completed, so let them know
+                        await dc.Context.SendActivity($"Thanks for your interest, but it looks like you've already given us some feedback!");
+
+                        dc.EndAll();
+                        break;
+
+                    case ProgressState.Expired:
+                        // User took too long to reply
+                        await dc.Context.SendActivity($"Thanks for that - but I'm afraid you've missed the deadline this time.");
+                        await dc.Context.SendActivity($"I'll get in touch when it's time to give feedback again. Thanks for your help so far");
+
+                        dc.EndAll();
+                        break;
+
+                    case ProgressState.OptedOut:
+                        dc.EndAll();
+                        break;
+
+                    case ProgressState.BlackListed:
+                        dc.EndAll();
+                        break;
+
+                    default:
+                        await dc.Continue();
+                        break;
+                }
             }
         }
         

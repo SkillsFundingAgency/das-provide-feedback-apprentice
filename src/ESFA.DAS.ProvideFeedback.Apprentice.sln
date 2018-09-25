@@ -32,8 +32,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 		{A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF} = {A74AFFF7-8C75-41AE-9CF6-2D0FEB1664BF}
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandler", "Apprentice.Functions.NotifyMessageHandler\ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandler.csproj", "{1E56AEC2-1BF6-426C-93EF-6460B2B0830F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Services", "Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj", "{95036AA0-435E-4753-A78B-F6E210EE9AA1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService", "Apprentice.Services.NotifySmsService\ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.csproj", "{014E3D2F-4B23-457E-BB49-FED93FA31FE4}"
@@ -72,10 +70,6 @@ Global
 		{92EB2383-2336-4807-9FCE-3FB149596CDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92EB2383-2336-4807-9FCE-3FB149596CDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92EB2383-2336-4807-9FCE-3FB149596CDE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E56AEC2-1BF6-426C-93EF-6460B2B0830F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E56AEC2-1BF6-426C-93EF-6460B2B0830F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1E56AEC2-1BF6-426C-93EF-6460B2B0830F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E56AEC2-1BF6-426C-93EF-6460B2B0830F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{95036AA0-435E-4753-A78B-F6E210EE9AA1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{95036AA0-435E-4753-A78B-F6E210EE9AA1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95036AA0-435E-4753-A78B-F6E210EE9AA1}.Release|Any CPU.ActiveCfg = Release|Any CPU

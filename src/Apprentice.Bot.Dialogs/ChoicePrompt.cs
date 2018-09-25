@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Prompts.Choices;
+using Microsoft.Bot.Schema;
+
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
 {
     using System;
@@ -28,20 +33,31 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
         /// <returns></returns>
         protected override async Task OnPrompt(DialogContext dc, PromptOptions options, bool isRetry)
         {
-            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
             UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
 
             if (isRetry)
             {
                 try
                 {
-                    ChoicePromptOptions retryOptions = options as ChoicePromptOptions;
-                    conversationInfo.Attempts++;
-
-                    if (retryOptions != null)
+                    if (options is ChoicePromptOptions retryOptions)
                     {
+                        long retries = 1;
+                        var hasAttempts = dc.ActiveDialog.State.ContainsKey("Retries");
+
+                        if (hasAttempts)
+                        {
+                            retries = (long)dc.ActiveDialog.State["Retries"];
+                            retries++;
+
+                            dc.ActiveDialog.State["Retries"] = retries;
+                        }
+                        else
+                        {
+                            dc.ActiveDialog.State.Add("Retries", retries);
+                        }
+
                         // Too many retries - replace the retry prompt and terminate the dialog
-                        if (retryOptions.Attempts <= conversationInfo.Attempts)
+                        if (retryOptions.Attempts <= retries)
                         {
                             options.RetryPromptString = retryOptions.TooManyAttemptsString;
                             userInfo.SurveyState.Progress = ProgressState.BlackListed;
@@ -53,21 +69,28 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
                         else if (retryOptions.RetryPromptsCollection.Any())
                         {
                             options.RetryPromptString =
-                                retryOptions.RetryPromptsCollection.Single(s => s.Key == conversationInfo.Attempts).Value
+                                retryOptions.RetryPromptsCollection.Single(s => s.Key == retries).Value
                                 ?? retryOptions.RetryPromptString;
                         }
-
                     }
                 }
                 catch (Exception e)
                 {
                     await dc.Context.TraceActivity(e.Message);
                 }
-
-
             }
 
             await base.OnPrompt(dc, options, isRetry);
         }
+
+
+        protected override async Task<ChoiceResult> OnRecognize(DialogContext dc, PromptOptions options)
+        {
+            //ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
+            //conversationInfo.Attempts = 0;
+
+            return await base.OnRecognize(dc, options);
+        }
     }
+
 }
