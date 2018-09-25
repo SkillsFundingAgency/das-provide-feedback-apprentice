@@ -1,4 +1,7 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+using Microsoft.Extensions.Options;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 {
     using System;
     using System.Collections.Generic;
@@ -13,6 +16,13 @@
 
     public class DialogFactory : IDialogFactory
     {
+        private readonly Features _features;
+
+        public DialogFactory(IOptions<Features> features)
+        {
+            _features = features.Value ?? throw new ArgumentNullException(nameof(features));
+        }
+
         public T Create<T>(ISurveyStep step)
             where T : DialogContainer
         {
