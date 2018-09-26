@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+
+using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
@@ -10,11 +12,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
         {   
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             // TODO: Add to suppression list here
-            await dc.Context.SendActivity($"OK. You have opted out successfully.");
-            dc.EndAll();
+            await dc.Context.SendActivityAsync($"OK. You have opted out successfully.", cancellationToken: cancellationToken);
+            return await dc.CancelAllDialogsAsync(cancellationToken);
         }
     }
 }

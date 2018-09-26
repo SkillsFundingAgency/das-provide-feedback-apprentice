@@ -1,37 +1,18 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Extensions.Logging;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
-    public sealed class ApprenticeFeedbackSecretTrigger : AdminCommand, IBotDialogCommand
-    {
-        public ApprenticeFeedbackSecretTrigger() : base("I like avocado")
-        {
-
-        }
-
-        public override async Task ExecuteAsync(DialogContext dc)
-        {
-            var dialogId = "afb-v3";
-
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
-            userInfo.SurveyState = new SurveyState
-            {
-                SurveyId = dialogId, StartDate = DateTime.Now, Progress = ProgressState.InProgress
-            };
-
-
-            await dc.Begin(dialogId);
-        }
-    }
-
     public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
+        private readonly FeedbackBotAccessors _accessors;
+
         //private readonly ILogger logger;
 
         //public StartDialogCommand(ILogger logger)
@@ -40,16 +21,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
         //    this.logger = logger;
         //}
 
-        public StartDialogCommand() : base("start")
+        public StartDialogCommand(FeedbackBotAccessors accessors)
+            : base("start")
         {
-            
+            _accessors = accessors ?? throw new ArgumentNullException(nameof(accessors));
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             try
             {
-                UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+                UserInfo userInfo = await _accessors.UserProfile.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
                 userInfo.SurveyState = new SurveyState();
 
                 string message = dc.Context.Activity.Text.ToLowerInvariant();
@@ -65,19 +47,21 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
                     userInfo.SurveyState.Progress = ProgressState.InProgress;
 
                     // TODO: check dialog collection
-                    await dc.Begin(dialogId);
+                    return await dc.BeginDialogAsync(dialogId, null, cancellationToken);
                 }
                 else
                 {
                     // this.logger.LogError($"could not find dialogId in command \"{ message }\"");
+                    return await dc.CancelAllDialogsAsync(cancellationToken);
                 }
             }
             catch (Exception e)
             {
                 // this.logger.LogError(e.Message);
 #if DEBUG
-                await dc.Context.SendActivity($"DEBUG: {e}");
+                await dc.Context.SendActivityAsync($"DEBUG: {e}", cancellationToken: cancellationToken);
 #endif
+                return await dc.CancelAllDialogsAsync(cancellationToken);
             }
         }
     }

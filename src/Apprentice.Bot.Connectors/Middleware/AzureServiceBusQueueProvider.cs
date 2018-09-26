@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Bot.Builder;
@@ -67,13 +68,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
             queueClient.CloseAsync();
         }
 
-        public async Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            if (context.Activity.Type == ActivityTypes.Message)
+            if (turnContext.Activity.Type == ActivityTypes.Message)
             {
                 // Create a send activity handler to grab all response activities 
                 // from the activity list.
-                context.OnSendActivities(
+                turnContext.OnSendActivities(
                     async (activityContext, activityList, activityNext) =>
                     {
                         //dynamic channelData = context.Activity.ChannelData;
@@ -89,7 +91,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
                                 continue;
                             }
 
-                            await this.EnqueueMessageAsync(context, activity);
+                            await this.EnqueueMessageAsync(turnContext, activity);
                         }
 
                         return await activityNext();
@@ -97,7 +99,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
             }
 
             // Pass execution on to the next layer in the pipeline.
-            await next();
+            await next.Invoke(cancellationToken);
         }
 
         public async Task EnqueueMessageAsync(ITurnContext context, Activity activity)

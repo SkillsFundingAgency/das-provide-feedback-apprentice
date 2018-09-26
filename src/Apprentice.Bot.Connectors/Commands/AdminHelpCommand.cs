@@ -1,6 +1,8 @@
-﻿using System.Linq;
+﻿using System.Threading;
+using Microsoft.Bot.Builder;
+
+using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
@@ -17,13 +19,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
             this.configuration = configuration;
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             var menu = this.configuration.AdminCommands;
             if (menu.Any())
             {
-                await dc.Context.SendActivity(MessageFactory.SuggestedActions(menu, "Administrative tasks available:"));
+                await dc.Context.SendActivityAsync(MessageFactory.SuggestedActions(menu, "Administrative tasks available:"), cancellationToken);
             }
+
+            return await dc.ContinueDialogAsync(cancellationToken);
         }
     }
 }

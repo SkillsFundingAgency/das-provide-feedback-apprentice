@@ -1,4 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
+using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
@@ -8,18 +14,23 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
     public sealed class StatusCommand : AdminCommand, IBotDialogCommand
     {
-        public StatusCommand()
+        private readonly FeedbackBotAccessors _accessors;
+
+        public StatusCommand(FeedbackBotAccessors accessors)
             : base("status")
         {
+            _accessors = accessors ?? throw new ArgumentNullException(nameof(accessors));
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
-            await dc.Context.SendActivity($"{JsonConvert.SerializeObject(userInfo, Formatting.Indented )}");
+            UserInfo userInfo = await _accessors.UserProfile.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
+            await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(userInfo, Formatting.Indented )}", cancellationToken: cancellationToken);
 
-            ConversationInfo state = ConversationState<ConversationInfo>.Get(dc.Context);
-            await dc.Context.SendActivity($"{JsonConvert.SerializeObject(state, Formatting.Indented)}");
+            DialogState dialogState = await _accessors.ConversationDialogState.GetAsync(dc.Context, () => new DialogState(), cancellationToken);
+            await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(dialogState, Formatting.Indented)}", cancellationToken: cancellationToken);
+
+            return await dc.ContinueDialogAsync(cancellationToken);
         }
     }
 }

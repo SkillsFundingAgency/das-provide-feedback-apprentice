@@ -11,7 +11,7 @@
         /// </summary>
         /// <typeparam name="T">The type of step to create</typeparam>
         /// <param name="step">The step DTO</param>
-        /// <returns>a new <see cref="DialogContainer"/></returns>
+        /// <returns>a new <see cref="ComponentDialog"/></returns>
         T Create<T>(ISurveyStep step)
             where T : ComponentDialog;
 
@@ -20,7 +20,7 @@
         /// </summary>
         /// <typeparam name="T">The type of survey to create</typeparam>
         /// <param name="survey">The survey DTO</param>
-        /// <returns>a new <see cref="DialogContainer"/></returns>
+        /// <returns>a new <see cref="ComponentDialog"/></returns>
         T Create<T>(ISurvey survey)
             where T : ComponentDialog;
     }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
@@ -25,13 +26,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
             // cleanup
         }
 
-        /// <inheritdoc />
-        public async Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(context);
-            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(context);
-
-            await next();
+            await next(cancellationToken);
         }
     }
 }

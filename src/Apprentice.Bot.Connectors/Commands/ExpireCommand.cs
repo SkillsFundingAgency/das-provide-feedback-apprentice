@@ -1,7 +1,8 @@
-﻿using System;
+﻿using System.Threading;
+using System;
 using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder.Core.Extensions;
 using Microsoft.Bot.Builder.Dialogs;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
@@ -10,17 +11,19 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 
     public sealed class ExpireCommand : AdminCommand, IBotDialogCommand
     {
+        private readonly FeedbackBotAccessors _accessors;
         private readonly BotConfiguration botConfiguration;
 
-        public ExpireCommand(BotConfiguration botConfiguration)
+        public ExpireCommand(FeedbackBotAccessors accessors, BotConfiguration botConfiguration)
             : base("expire")
         {
+            _accessors = accessors ?? throw new ArgumentNullException(nameof(accessors));
             this.botConfiguration = botConfiguration;
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            UserInfo userInfo = await _accessors.UserProfile.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
 
             if (userInfo.SurveyState.StartDate != default(DateTime))
             {
@@ -28,7 +31,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
                     userInfo.SurveyState.StartDate.AddDays(this.botConfiguration.DefaultConversationExpiryDays * -1);
             }
 
-            await dc.Context.SendActivity($"OK. Setting the conversation progress to 'expired' ");
+            await dc.Context.SendActivityAsync($"OK. Setting the conversation progress to 'expired' ", cancellationToken: cancellationToken);
+            return await dc.ContinueDialogAsync(cancellationToken);
         }
     }
 }

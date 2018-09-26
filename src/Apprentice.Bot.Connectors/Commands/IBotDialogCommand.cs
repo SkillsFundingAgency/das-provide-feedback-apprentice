@@ -1,4 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using Microsoft.Bot.Builder;
+
+using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
@@ -7,7 +10,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
     {
         string Trigger { get; }
 
-        Task ExecuteAsync(DialogContext dc);
+        Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken);
 
         bool IsTriggered(DialogContext dc);
     }

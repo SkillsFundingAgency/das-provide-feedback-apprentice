@@ -1,15 +1,19 @@
 ﻿using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands
 {
-    public class HelpCommand : UserCommand, IBotDialogCommand
-    {
-        private readonly Core.Configuration.Bot configuration;
+    using System.Threading.Tasks;
 
-        public HelpCommand(Core.Configuration.Bot configuration)
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+
+    using Microsoft.Bot.Builder.Dialogs;
+
+    public class HelpCommand : UserCommand
+    {
+        private readonly Bot configuration;
+
+        public HelpCommand(Bot configuration)
             : base("help")
         {
             this.configuration = configuration;
@@ -19,7 +23,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
         {
             // TODO: write some help text
             await dc.Context.SendActivityAsync(MessageFactory.Text("help text goes here"), cancellationToken);
-            return await dc.ContinueDialogAsync(cancellationToken);
+            return await dc.EndDialogAsync(cancellationToken: cancellationToken);
         }
     }
 }
