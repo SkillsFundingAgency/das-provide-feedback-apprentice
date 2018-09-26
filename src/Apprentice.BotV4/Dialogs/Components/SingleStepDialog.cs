@@ -16,9 +16,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
     public class DialogConfiguration
     {
         public bool CollateResponses { get; set; } = true;
-        public bool RealisticTypingDelay { get; set; } = true;
-        public int CharactersPerMinute { get; set; } = 600;
-        public int ThinkingTimeDelayMs { get; set; } = 1000;
+        public bool RealisticTypingDelay { get; set; } = false;
+        public int CharactersPerMinute { get; set; } = 1500;
+        public int ThinkingTimeDelayMs { get; set; } = 0;
     }
 
     public abstract class SingleStepDialog : DialogContainer
@@ -73,8 +73,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
                 if (Configuration.RealisticTypingDelay)
                 {
-                    await Task.Delay(Configuration.ThinkingTimeDelayMs + (r.Prompt.Length / Configuration.CharactersPerMinute));
-                    await dc.Context.SendTypingActivity(r.Prompt);
+                    await dc.Context.SendTypingActivity(r.Prompt, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
                 }
 
                 await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
@@ -98,8 +97,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
             if (Configuration.RealisticTypingDelay)
             {
-                await Task.Delay(Configuration.ThinkingTimeDelayMs + (response.Length / Configuration.CharactersPerMinute));
-                await dc.Context.SendTypingActivity(response);
+                await dc.Context.SendTypingActivity(response, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
             }
 
             await dc.Context.SendActivity(response, InputHints.IgnoringInput);

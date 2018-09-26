@@ -99,7 +99,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
             // add & register services
             services.AddSingleton<IDialogFactory, DialogFactory>()
-                    .AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>()
+                    .AddSingleton<IMessageQueueMiddleware, AzureStorageQueueSmsRelay>()
+                    .AddSingleton<ISmsQueueProvider, AzureStorageSmsQueueClient>()
                     //.AddTransient<ILogger>(provider => _loggerFactory.CreateLogger<FeedbackBot>())
                     .RegisterAllTypes<IBotDialogCommand>(new[] { typeof(IBotDialogCommand).Assembly }, ServiceLifetime.Transient)
                     .RegisterAllTypes<ISurvey>(new[] { typeof(ISurvey).Assembly }, ServiceLifetime.Transient);

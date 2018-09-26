@@ -8,28 +8,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
-    public sealed class ApprenticeFeedbackSecretTrigger : AdminCommand, IBotDialogCommand
-    {
-        public ApprenticeFeedbackSecretTrigger() : base("I like avocado")
-        {
-
-        }
-
-        public override async Task ExecuteAsync(DialogContext dc)
-        {
-            var dialogId = "afb-v3";
-
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
-            userInfo.SurveyState = new SurveyState
-            {
-                SurveyId = dialogId, StartDate = DateTime.Now, Progress = ProgressState.InProgress
-            };
-
-
-            await dc.Begin(dialogId);
-        }
-    }
-
     public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
         //private readonly ILogger logger;

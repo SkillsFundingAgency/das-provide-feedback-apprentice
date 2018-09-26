@@ -107,7 +107,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
         private async Task Question(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
         {
-            await dc.Context.SendTypingActivity(this.PromptText);
+            if (Configuration.RealisticTypingDelay)
+            {
+                await dc.Context.SendTypingActivity(this.PromptText, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
+            }
             await dc.Prompt($"{this.DialogId}-prompt", this.PromptText, PromptConfiguration.Options);
         }
 
@@ -123,19 +126,19 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
             if (Configuration.CollateResponses)
             {
-                await RespondAsSingleMessage(this.Responses, dc, response);
+                await RespondAsSingleMessage(this.Responses, dc, response, userInfo);
             }
 
             else
             {
-                await RespondAsMultipleMessages(this.Responses, dc, response);
+                await RespondAsMultipleMessages(this.Responses, dc, response, userInfo);
             }
 
             // Ask next question
             await next();
         }
 
-        private async Task RespondAsMultipleMessages(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response)
+        private async Task RespondAsMultipleMessages(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response, UserInfo userInfo)
         {
             foreach (IResponse r in responses)
             {
@@ -143,23 +146,30 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
                 {
                     continue;
                 }
+                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(userInfo))
+                {
+                    continue;
+                }
 
                 if (Configuration.RealisticTypingDelay)
                 {
-                    await Task.Delay(Configuration.ThinkingTimeDelayMs + (r.Prompt.Length / Configuration.CharactersPerMinute));
-                    await dc.Context.SendTypingActivity(r.Prompt);
+                    await dc.Context.SendTypingActivity(r.Prompt, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
                 }
 
                 await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
             }
         }
 
-        private async Task RespondAsSingleMessage(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response)
+        private async Task RespondAsSingleMessage(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response, UserInfo userInfo)
         {
             StringBuilder sb = new StringBuilder();
             foreach (IResponse r in responses)
             {
                 if (r is ConditionalResponse<BinaryQuestionResponse> conditionalResponse && !conditionalResponse.IsValid(response))
+                {
+                    continue;
+                }
+                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(userInfo))
                 {
                     continue;
                 }
@@ -171,8 +181,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
             if (Configuration.RealisticTypingDelay)
             {
-                await Task.Delay(Configuration.ThinkingTimeDelayMs + (reply.Length / Configuration.CharactersPerMinute));
-                await dc.Context.SendTypingActivity(reply);
+                await dc.Context.SendTypingActivity(reply, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
             }
 
             await dc.Context.SendActivity(reply, InputHints.IgnoringInput);

@@ -7,11 +7,11 @@
 
     public class SmsMessageQueue : IMessageQueueMiddleware
     {
-        private readonly IQueueProvider queueProvider;
+        private readonly ISmsQueueProvider smsQueueProvider;
 
-        public SmsMessageQueue(IQueueProvider queueProvider)
+        public SmsMessageQueue(ISmsQueueProvider smsQueueProvider)
         {
-            this.queueProvider = queueProvider;
+            this.smsQueueProvider = smsQueueProvider;
         }
 
         public Task EnqueueMessageAsync(ITurnContext context, Activity activity)
