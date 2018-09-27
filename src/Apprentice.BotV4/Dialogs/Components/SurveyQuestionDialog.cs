@@ -194,7 +194,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
         {
             // TODO: add these strings to CommonStrings.en-GB.resx
             private static readonly string RetryPromptString =
-                $"Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’";
+                $"Sorry, I didn't catch that. Please type 'Yes' or 'No'";
 
             // TODO: add these strings to CommonStrings.en-GB.resx
             public static ChoicePromptOptions Options =>
@@ -202,7 +202,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
                     {
                         Attempts = 3,
                         TooManyAttemptsString =
-                            "Sorry I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!",
+                            "Sorry, I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye! ",
                         Choices = Choices,
                         RetryPromptString = RetryPromptString,
                         RetryPromptsCollection =
@@ -210,11 +210,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
                                 {
                                     {
                                         1,
-                                        "Sorry, I'm just a simple bot. Please type 'Yes' or 'No'"
+                                        RetryPromptString
                                     },
                                     {
                                         2,
-                                        "Please could you answer 'Yes' or 'No' - I'm not that clever I'm afraid"
+                                        "Please could you answer 'Yes' or 'No'"
                                     }
                                 }
                     };
