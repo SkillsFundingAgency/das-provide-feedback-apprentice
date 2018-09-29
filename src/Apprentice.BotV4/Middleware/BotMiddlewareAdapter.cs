@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
 {
+    using System.Threading;
+
     public class BotMiddlewareAdapter<TMiddleware> : IMiddleware
         where TMiddleware : IMiddleware
     {
@@ -32,9 +34,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
         /// <param name="context">the Turn Context</param>
         /// <param name="next">the next middleware OnTurn processor</param>
         /// <returns>The <see cref="T:System.Threading.Tasks.Task" /></returns>
-        public Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        public Task OnTurnAsync(
+            ITurnContext turnContext,
+            NextDelegate next,
+            CancellationToken cancellationToken = new CancellationToken())
         {
-            return this.middleware.Value.OnTurn(context, next);
+            return this.middleware.Value.OnTurnAsync(turnContext, next, cancellationToken);
         }
     }
 }
