@@ -17,13 +17,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
         public SurveyState SurveyState { get; set; }
     }
 
-
+    [Serializable]
     public class UserProfile
     {
         public SurveyState SurveyState { get; set; }
-        public string Name { get; set; }
-        public int Age { get; set; }
+
         public string TelephoneNumber { get; set; }
+
+        public string IlrNumber { get; set; }
+
+        public string StandardOrProgram { get; set; }
     }
 
     public class TopicState

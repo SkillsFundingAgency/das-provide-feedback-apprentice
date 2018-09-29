@@ -1,29 +1,31 @@
-﻿using System.Threading.Tasks;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder.Core.Extensions;
-using Microsoft.Bot.Builder.Dialogs;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+    using Microsoft.Bot.Builder.Dialogs;
+
     public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
     {
+        private readonly FeedbackBotState state;
 
-        public ResetDialogCommand()
+        public ResetDialogCommand(FeedbackBotState state)
             : base("reset")
         {
+            this.state = state;
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
             userInfo.SurveyState = new SurveyState();
 
-            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(dc.Context);
-            conversationInfo.Clear();
+            await this.state.ConversationState.ClearStateAsync(dc.Context, cancellationToken);
 
-            await dc.Context.SendActivity($"OK. Resetting conversation...");
-            await dc.Continue();
-
+            await dc.Context.SendActivityAsync($"OK. Resetting conversation...", cancellationToken: cancellationToken);
+            return await dc.ContinueDialogAsync(cancellationToken);
         }
     }
 }

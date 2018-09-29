@@ -1,28 +1,30 @@
-﻿using System;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors
 {
+    using System;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+    using Microsoft.Bot.Builder;
+    using Microsoft.Bot.Builder.Dialogs;
+
     /// <summary>
     /// This class is created as a Singleton and passed into the IBot-derived constructor.
-    ///  - See <see cref="MultiTurnPromptsBot"/> constructor for how that is injected.
+    ///  - See <see cref="FeedbackBot"/> constructor for how that is injected.
     ///  - See the Startup.cs file for more details on creating the Singleton that gets
     ///    injected into the constructor.
     /// </summary>
-    public class FeedbackBotAccessors
+    public class FeedbackBotState
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MultiTurnPromptsBotAccessors"/> class.
+        /// Initializes a new instance of the <see cref="FeedbackBotState"/> class.
         /// Contains the <see cref="ConversationState"/> and associated <see cref="IStatePropertyAccessor{T}"/>.
         /// </summary>
         /// <param name="conversationState">The state object that stores the dialog state.</param>
         /// <param name="userState">The state object that stores the user state.</param>
-        public FeedbackBotAccessors(ConversationState conversationState, UserState userState)
+        public FeedbackBotState(ConversationState conversationState, UserState userState)
         {
-            ConversationState = conversationState ?? throw new ArgumentNullException(nameof(conversationState));
-            UserState = userState ?? throw new ArgumentNullException(nameof(userState));
+            this.ConversationState = conversationState ?? throw new ArgumentNullException(nameof(conversationState));
+            this.UserState = userState ?? throw new ArgumentNullException(nameof(userState));
         }
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         /// <value>
         /// The accessor stores user data.
         /// </value>
-        public IStatePropertyAccessor<UserInfo> UserProfile { get; set; }
+        public IStatePropertyAccessor<UserInfo> UserInfo { get; set; }
 
         /// <summary>
         /// Gets the <see cref="ConversationState"/> object for the conversation.
