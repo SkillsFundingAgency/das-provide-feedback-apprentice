@@ -9,7 +9,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
     using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Builder.Prompts.Choices;
+    using Microsoft.Bot.Builder.Dialogs.Choices;
+    using Microsoft.Bot.Schema;
 
     public static class DialogContextExtensions
     {
@@ -26,7 +27,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers
 
         public static async Task AskPolarQuestion(this DialogContext dc, string questionText)
         {
-            await dc.Prompt("multiChoicePrompt", questionText, FormHelper.PolarQuestionOptions);
+            var prompOptions = FormHelper.PolarQuestionOptions;
+            prompOptions.Prompt = new Activity
+                                      {
+                                          Type = ActivityTypes.Message,
+                                          Text = questionText
+                                      };
+            await dc.PromptAsync("multiChoicePrompt", prompOptions);
         }
 
         public static async Task<BinaryQuestionResponse> GetPolarQuestionResponse(this DialogContext dc, IDictionary<string, object> args, string questionText, int score = 0)

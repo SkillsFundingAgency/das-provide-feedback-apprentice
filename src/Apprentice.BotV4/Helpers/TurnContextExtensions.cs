@@ -22,9 +22,9 @@
         public static async Task SendActivityWithRealisticDelay(this ITurnContext ctx, string textToType, int charactersPerMinute, int thinkingTimeDelay, string inputHint)
         {
             Activity typing = new Activity() { Type = ActivityTypes.Typing, InputHint = InputHints.IgnoringInput };
-            await ctx.SendActivity(typing);
+            await ctx.SendActivityAsync(typing);
             await Task.Delay(FormHelper.CalculateTypingTime(textToType, charactersPerMinute, thinkingTimeDelay));
-            await ctx.SendActivity(textToType, inputHint);
+            await ctx.SendActivityAsync(textToType, inputHint);
         }
 
         public static async Task SendTypingActivity(
@@ -34,7 +34,7 @@
             int thinkingTimeDelay = 1000)
         {
             Activity typing = new Activity() { Type = ActivityTypes.Typing, InputHint = InputHints.IgnoringInput };
-            await ctx.SendActivity(typing);
+            await ctx.SendActivityAsync(typing);
             await Task.Delay(FormHelper.CalculateTypingTime(textToType, charactersPerMinute, thinkingTimeDelay));
         }
     }

@@ -2,9 +2,11 @@
 {
     using System.Collections.Generic;
 
-    using Microsoft.Bot.Builder.Core.Extensions;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
+
+    using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Builder.Prompts.Choices;
+    using Microsoft.Bot.Builder.Dialogs.Choices;
     using Microsoft.Bot.Schema;
 
     public static class FormHelper
@@ -16,7 +18,7 @@
             new ChoicePromptOptions()
                 {
                     Choices = BuildConfirmationChoices(),
-                    RetryPromptActivity = MessageFactory.Text(
+                    RetryPrompt = MessageFactory.Text(
                         "Sorry, I'm just a simple bot. Please type ‘Yes’ or ‘No’",
                         inputHint: InputHints.ExpectingInput),
                 };
