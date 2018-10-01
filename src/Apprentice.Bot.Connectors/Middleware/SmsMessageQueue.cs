@@ -1,5 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     using Microsoft.Bot.Builder;
@@ -19,7 +20,10 @@
             throw new System.NotImplementedException();
         }
 
-        public Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        public Task OnTurnAsync(
+            ITurnContext turnContext,
+            NextDelegate next,
+            CancellationToken cancellationToken = new CancellationToken())
         {
             throw new System.NotImplementedException();
         }

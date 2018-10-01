@@ -1,20 +1,21 @@
-﻿using System;
-using System.Globalization;
-using System.Text;
-using System.Threading;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Schema;
-using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage.Queue;
-using Newtonsoft.Json;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System;
+    using System.Globalization;
+    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+
+    using Microsoft.Azure.ServiceBus;
+    using Microsoft.Bot.Builder;
+    using Microsoft.Bot.Schema;
+    using Microsoft.Extensions.Options;
+    using Microsoft.WindowsAzure.Storage.Queue;
+
+    using Newtonsoft.Json;
 
     using AzureConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
     using ConnectionStrings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.ConnectionStrings;
@@ -31,20 +32,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 
         private readonly ConnectionStrings connectionStrings;
 
-        //private static readonly Lazy<IQueueClient> LazyClient =
-        //    new Lazy<IQueueClient>(CreateClient);
-
-        //public static IQueueClient Client => LazyClient.Value;
-
-        //private static IQueueClient CreateClient()
-        //{
-        //    string ServiceBusConnectionString = this.connectionStrings.ServiceBus;
-        //    string QueueName = this.notifyConfig.OutgoingMessageQueueName;
-
-        //    return queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
-        //}
-
-        static IQueueClient queueClient;
+        private static IQueueClient queueClient;
 
         public AzureServiceBusQueueSmsRelay(
             IOptions<AzureConfiguration> azureConfigOptions,
@@ -57,10 +45,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
             this.notifyConfig = notifyConfigOptions.Value;
             this.connectionStrings = connectionStrings.Value;
 
-            string ServiceBusConnectionString = this.connectionStrings.ServiceBus;
-            string QueueName = this.notifyConfig.OutgoingMessageQueueName;
-
-            queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+            queueClient = new QueueClient(this.connectionStrings.ServiceBus, this.notifyConfig.OutgoingMessageQueueName);
         }
 
         ~AzureServiceBusQueueSmsRelay()
@@ -68,7 +53,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
             queueClient.CloseAsync();
         }
 
-        public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next,
+        /// <inheritdoc />
+        public async Task OnTurnAsync(
+            ITurnContext turnContext,
+            NextDelegate next,
             CancellationToken cancellationToken = new CancellationToken())
         {
             if (turnContext.Activity.Type == ActivityTypes.Message)

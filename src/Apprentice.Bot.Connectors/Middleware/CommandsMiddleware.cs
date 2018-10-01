@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Core.Extensions;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+    using Microsoft.Bot.Builder;
+
     /// <inheritdoc />
     public class CommandsMiddleware : IMiddleware
     {
@@ -26,7 +27,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
             // cleanup
         }
 
-        public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next,
+        public async Task OnTurnAsync(
+            ITurnContext turnContext,
+            NextDelegate next,
             CancellationToken cancellationToken = new CancellationToken())
         {
             await next(cancellationToken);

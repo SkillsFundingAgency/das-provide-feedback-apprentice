@@ -12,6 +12,8 @@ using Newtonsoft.Json;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System.Threading;
+
     using AzureConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
     using ConnectionStrings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.ConnectionStrings;
     using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
@@ -23,29 +25,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
     /// </summary>
     public class AzureStorageQueueSmsRelay : IMessageQueueMiddleware
     {
-        /// <summary>
-        /// The configuration of the Azure instance
-        /// </summary>
         private readonly AzureConfiguration azureConfig;
 
-        /// <summary>
-        /// The database configuration
-        /// </summary>
         private readonly DataConfiguration dataConfig;
 
-        /// <summary>
-        /// The database configuration
-        /// </summary>
         private readonly NotifyConfiguration notifyConfig;
 
-        /// <summary>
-        /// The connection strings configuration.
-        /// </summary>
         private readonly ConnectionStrings connectionStrings;
 
-        /// <summary>
-        /// The azure storage queue client
-        /// </summary>
         private readonly CloudQueueClient queueClient;
 
         /// <summary>
@@ -86,8 +73,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
         /// </summary>
         /// <param name="context">The turn context</param>
         /// <param name="next">the next OnTurn operation in the pipeline</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>The <see cref="T:System.Threading.Tasks.Task" /></returns>
-        public async Task OnTurn(ITurnContext context, MiddlewareSet.NextDelegate next)
+        public async Task OnTurnAsync(
+            ITurnContext context,
+            NextDelegate next,
+            CancellationToken cancellationToken = new CancellationToken())
         {
             if (context.Activity.Type == ActivityTypes.Message)
             {
@@ -95,36 +86,37 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
                 // from the activity list.
                 context.OnSendActivities(
                     async (activityContext, activityList, activityNext) =>
-                    {
-                        dynamic channelData = context.Activity.ChannelData;
-                        if (channelData?.NotifyMessage == null)
                         {
-                            return await activityNext();
-                        }
-
-                        foreach (Activity activity in activityList)
-                        {
-                            if (activity.Type != ActivityTypes.Message || !activity.HasContent())
+                            dynamic channelData = context.Activity.ChannelData;
+                            if (channelData?.NotifyMessage == null)
                             {
-                                continue;
+                                return await activityNext();
                             }
 
-                            await this.EnqueueMessageAsync(context, activity);
-                        }
+                            foreach (Activity activity in activityList)
+                            {
+                                if (activity.Type != ActivityTypes.Message || !activity.HasContent())
+                                {
+                                    continue;
+                                }
 
-                        return await activityNext();
-                    });
+                                await this.EnqueueMessageAsync(context, activity);
+                            }
+
+                            return await activityNext();
+                        });
             }
 
             // Pass execution on to the next layer in the pipeline.
-            await next();
+            await next.Invoke(cancellationToken);
         }
 
+        /// <inheritdoc />
         /// <summary>
         /// Adds a message on to the Azure Storage Queue, ready for processing </summary>
-        /// <param name="context"> The <see cref="ITurnContext" /> of the conversation turn/> </param>
-        /// <param name="activity"> The <see cref="Activity"/> that will be used for the queue message </param>
-        /// <returns> The <see cref="Task"/>. </returns>
+        /// <param name="context"> The <see cref="T:Microsoft.Bot.Builder.ITurnContext" /> of the conversation turn/&gt; </param>
+        /// <param name="activity"> The <see cref="T:Microsoft.Bot.Schema.Activity" /> that will be used for the queue message </param>
+        /// <returns> The <see cref="T:System.Threading.Tasks.Task" />. </returns>
         public async Task EnqueueMessageAsync(ITurnContext context, Activity activity)
         {
             CloudQueue messageQueue = this.queueClient.GetQueueReference(this.notifyConfig.OutgoingMessageQueueName);
