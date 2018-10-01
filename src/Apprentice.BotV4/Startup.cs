@@ -1,13 +1,10 @@
-﻿using System.Reflection;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
-using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
-using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
 using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.Extensions.Logging;
+using Microsoft.Bot.Builder.Azure;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
@@ -16,6 +13,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using System.Linq;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
+
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Bot.Builder;
@@ -41,9 +41,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
     public class Startup
     {
-        private ILoggerFactory _loggerFactory;
+        private ILoggerFactory loggerFactory;
 
-        private bool _isProduction = false;
+        private bool isProduction = false;
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
@@ -59,8 +59,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            this.loggerFactory = loggerFactory;
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -102,53 +104,76 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                         });
 
             // add & register services
-            services.AddSingleton<IDialogFactory, DialogFactory>()
-                    .AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>()
-                    //.AddTransient<ILogger>(provider => _loggerFactory.CreateLogger<FeedbackBot>())
-                    .RegisterAllTypes<IBotDialogCommand>(new[] { typeof(IBotDialogCommand).Assembly }, ServiceLifetime.Transient)
-                    .RegisterAllTypes<ISurvey>(new[] { typeof(ISurvey).Assembly }, ServiceLifetime.Transient);
+            //services.AddTransient<ILogger>(provider => loggerFactory.CreateLogger<FeedbackBot>());
+
+            // services.AddSingleton<IDialogFactory, DialogFactory>();
+            services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>();
+
+            services.RegisterAllTypes<IBotDialogCommand>(new[] { typeof(IBotDialogCommand).Assembly }, ServiceLifetime.Transient);
+            services.RegisterAllTypes<ISurvey>(new[] { typeof(ISurvey).Assembly }, ServiceLifetime.Transient);
+
+            string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
+            string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;
+
+            // Loads .bot configuration file and adds a singleton that your Bot can access through dependency injection.
+            BotConfiguration botConfig = BotConfiguration.Load(botFilePath ?? @".\BotConfiguration.bot", secretKey);
+            services.AddSingleton(sp => botConfig ?? throw new InvalidOperationException($"The .bot config file could not be loaded."));
+
+            // Add BotServices singleton.
+            // Create the connected services from .bot file.
+            // services.AddSingleton(sp => new BotServices(botConfig));
+
+            // Retrieve current endpoint.
+            var environment = this.isProduction ? "production" : "development";
+            var service = botConfig.Services.FirstOrDefault(s => s.Type == "endpoint" && s.Name == environment);
+            if (!(service is EndpointService endpointService))
+            {
+                throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{environment}'.");
+            }
+
+            // // Storage configuration name or ID from the .bot file.
+            // const string StorageConfigurationId = "<STORAGE-NAME-OR-ID-FROM-BOT-FILE>";
+            // var blobConfig = botConfig.FindServiceByNameOrId(StorageConfigurationId);
+            // if (!(blobConfig is BlobStorageService blobStorageConfig))
+            // {
+            //    throw new InvalidOperationException($"The .bot file does not contain an blob storage with name '{StorageConfigurationId}'.");
+            // }
+            // // Default container name.
+            // const string DefaultBotContainer = "<DEFAULT-CONTAINER>";
+            // var storageContainer = string.IsNullOrWhiteSpace(blobStorageConfig.Container) ? DefaultBotContainer : blobStorageConfig.Container;
+            // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage(blobStorageConfig.ConnectionString, storageContainer);
+
+            IStorage dataStore = this.ConfigureStateDataStore(this.Configuration);
 
             // add & configure bot framework
             services.AddBot<FeedbackBot>(
                 options =>
                     {
-                        //ILogger logger = _loggerFactory.CreateLogger<FeedbackBot>();
+                        options.CredentialProvider = new SimpleCredentialProvider(endpointService.AppId, endpointService.AppPassword);
 
-                        var secretKey = Configuration.GetSection("botFileSecret")?.Value;
-                        var botFilePath = Configuration.GetSection("botFilePath")?.Value;
 
-                        // Loads .bot configuration file and adds a singleton that your Bot can access through dependency injection.
-                        var botConfig = BotConfiguration.Load(botFilePath ?? @".\BotConfiguration.bot", secretKey);
-                        services.AddSingleton(sp => botConfig ?? throw new InvalidOperationException($"The .bot config file could not be loaded. ({botConfig})"));
-
-                        // Retrieve current endpoint.
-                        var environment = _isProduction ? "production" : "development";
-                        var service = botConfig.Services.Where(s => s.Type == "endpoint" && s.Name == environment).FirstOrDefault();
-                        if (!(service is EndpointService endpointService))
-                        {
-                            throw new InvalidOperationException($"The .bot file does not contain an endpoint with name '{environment}'.");
-                                        //logger.LogError(exception, $"{nameof(FeedbackBot)} Exception");
-                        }
-
-                        IStorage dataStore = ConfigureStateDataStore(this.Configuration);
-                        ILogger logger = _loggerFactory.CreateLogger<FeedbackBot>();
+                        ILogger logger = this.loggerFactory.CreateLogger<FeedbackBot>();
 
                         // Catches any errors that occur during a conversation turn and logs them.
                         options.OnTurnError = async (context, exception) =>
-                            logger.LogError($"Exception caught : {exception}");
-                            await context.SendActivityAsync("Sorry, it looks like something went wrong.");
-                        };
-
-                        IStorage dataStore = new MemoryStorage();
+                            {
+                                logger.LogError($"Exception caught : {exception}");
+                                await context.SendActivityAsync("Sorry, it looks like something went wrong.");
+                            };
 
                         var conversationState = new ConversationState(dataStore);
                         options.State.Add(conversationState);
 
                         var userState = new UserState(dataStore);
                         options.State.Add(userState);
+
+                        // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
+                        // options.Middleware.Add(new UserState<UserInfo>(dataStore));
+                        //options.Middleware.Add<AzureStorageQueueSmsRelay>(services);
+                        //options.Middleware.Add<IMessageQueueMiddleware>(services);
                     });
 
-            services.AddSingleton<FeedbackBotAccessors>(sp =>
+            services.AddSingleton<FeedbackBotState>(sp =>
             {
                 // We need to grab the conversationState we added on the options in the previous step
                 var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
@@ -166,31 +191,26 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                 if (userState == null)
                 {
                     throw new InvalidOperationException("UserState must be defined and added before adding user-scoped state accessors.");
-                        options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-                        options.Middleware.Add(new UserState<UserInfo>(dataStore));
-                        //options.Middleware.Add<AzureStorageQueueSmsRelay>(services);
-                        options.Middleware.Add<IMessageQueueMiddleware>(services);
                 }
 
                 // Create the custom state accessor.
                 // State accessors enable other components to read and write individual properties of state.
-                var accessors = new FeedbackBotAccessors(conversationState, userState)
+                var feedbackBotState = new FeedbackBotState(conversationState, userState)
                 {
                     ConversationDialogState = conversationState.CreateProperty<DialogState>("DialogState"),
-                    UserProfile = userState.CreateProperty<UserProfile>("UserProfile"),
+                    UserInfo = userState.CreateProperty<UserInfo>("UserInfo"),
                 };
 
-                return accessors;
+                return feedbackBotState;
             });
         }
 
-        private static AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
+        private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
         {
             AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
                 configuration["ConnectionStrings:StorageAccount"],
                 configuration["Data:SessionStateTable"]);
             return azureBlobStorage;
         }
-    }
     }
 }
