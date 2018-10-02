@@ -1,25 +1,26 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Extensions.Options;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot;
     using Microsoft.Bot.Builder;
-    using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Localization;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
 
     public class FeedbackBot : IBot
     {
@@ -33,39 +34,63 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
         private readonly Features featureToggles;
 
-        public FeedbackBot(ILogger<FeedbackBot> logger, IDialogFactory dialogFactory, IEnumerable<IBotDialogCommand> commands, IEnumerable<ISurvey> surveys, IOptions<Features> featureToggles)
+        private readonly IStatePropertyAccessor<DialogState> dialogStateAccessor;
+        private readonly IStatePropertyAccessor<UserProfile> userProfileAccessor;
+
+        //private readonly UserState userState;
+        //private readonly ConversationState conversationState;
+
+        private readonly FeedbackBotState state;
+
+        //public FeedbackBot(ILoggerFactory loggerFactory, IDialogFactory dialogFactory, IEnumerable<IBotDialogCommand> commands, IEnumerable<ISurvey> surveys, IOptions<Features> featureToggles)
+        public FeedbackBot(FeedbackBotState state, ILoggerFactory loggerFactory, IEnumerable<IBotDialogCommand> commands)
         {
-            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.dialogFactory = dialogFactory ?? throw new ArgumentNullException(nameof(dialogFactory));
+            if (loggerFactory == null)
+            {
+                throw new System.ArgumentNullException(nameof(loggerFactory));
+            }
 
+            this.logger = loggerFactory.CreateLogger<FeedbackBot>();
+
+            this.dialogStateAccessor = state.ConversationState.CreateProperty<DialogState>(nameof(DialogState));
+            this.userProfileAccessor = state.ConversationState.CreateProperty<UserProfile>(nameof(UserProfile));
+
+            //this.dialogFactory = dialogFactory ?? throw new ArgumentNullException(nameof(dialogFactory));
+
+            this.state = state;
             this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
-            this.surveys = surveys ?? throw new ArgumentNullException(nameof(surveys));
+            //this.surveys = surveys ?? throw new ArgumentNullException(nameof(surveys));
 
-            this.featureToggles = featureToggles.Value ?? throw new ArgumentNullException(nameof(featureToggles));
+            // this.featureToggles = featureToggles.Value ?? throw new ArgumentNullException(nameof(featureToggles));
 
             this.Dialogs = this.BuildDialogs();
         }
 
         private DialogSet Dialogs { get; }
 
-        public async Task OnTurn(ITurnContext context)
+        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = new CancellationToken())
         {
+            var activity = turnContext.Activity;
+
+            // Create a dialog context
+            var dc = await this.Dialogs.CreateContextAsync(turnContext, cancellationToken);
+
             try
             {
-                BotChannel channel = await Task.Run(() => this.ConfigureChannel(context));
+                BotChannel channel = this.ConfigureChannel(turnContext);
 
-                switch (context.Activity.Type)
+                switch (turnContext.Activity.Type)
                 {
                     case ActivityTypes.Message:
-                        await this.HandleMessage(context);
+                        await this.HandleMessageAsync(dc, cancellationToken);
                         break;
 
                     case ActivityTypes.ConversationUpdate:
-                        await this.HandleConversationUpdate(context, channel);
+                        await this.HandleConversationUpdateAsync(turnContext, channel, cancellationToken);
                         break;
 
                     default:
-                        this.logger.LogInformation($"Encountered an unknown activity type of {context.Activity.Type}");
+                        this.logger.LogInformation($"Encountered an unknown activity type of {turnContext.Activity.Type}");
                         break;
                 }
             }
@@ -78,18 +103,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         // TODO: add dynamic user-created dialogs from database 
         private DialogSet BuildDialogs()
         {
-            DialogSet dialogs = new DialogSet();
+            DialogSet dialogs = new DialogSet(this.dialogStateAccessor);
+            dialogs.Add(RootDialog.Instance);
 
-            dialogs.Add(RootDialog.Id, RootDialog.Instance);
-
-            foreach (ISurvey survey in this.surveys)
-            {
-                LinearSurveyDialog dialog = this.dialogFactory.Create<LinearSurveyDialog>(survey);
-                dialogs.Add(survey.Id, dialog);
-            }
+            //foreach (ISurvey survey in this.surveys)
+            //{
+            //    LinearSurveyDialog dialog = this.dialogFactory.Create<LinearSurveyDialog>(survey);
+            //    dialogs.Add(survey.Id, dialog);
+            //}
 
             return dialogs;
-        }
+        } 
 
         private BotChannel ConfigureChannel(ITurnContext context)
         {
@@ -131,72 +155,70 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         /// TODO: Add to middleware intercepts
         /// </summary>
         /// <param name="context"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task HandleCommands(ITurnContext context)
+        private async Task HandleCommandsAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(context);
-            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(context);
-
-            DialogContext dc = this.Dialogs.CreateContext(context, conversationInfo);
-
             IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dc));
             if (command != null)
             {
-                await command.ExecuteAsync(dc);
+                await command.ExecuteAsync(dc, cancellationToken);
             }
             else
             {
-                if (userInfo.SurveyState.StartDate != default(DateTime))
+                var userProfile = await this.userProfileAccessor.GetAsync(dc.Context, cancellationToken: cancellationToken);
+
+                if (userProfile.SurveyState.StartDate != default(DateTime))
                 {
-                    if (userInfo.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
+                    if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
                     {
-                        userInfo.SurveyState.Progress = ProgressState.Expired;
+                        userProfile.SurveyState.Progress = ProgressState.Expired;
                     }
                 }
 
-                switch (userInfo.SurveyState.Progress)
+                switch (userProfile.SurveyState.Progress)
                 {
                     case ProgressState.NotStarted:
                         // Not sure how they got here, fix the session!
-                        await dc.Continue();
+                        await dc.ContinueDialogAsync(cancellationToken);
                         break;
 
                     case ProgressState.InProgress:
                         // Continue as normal
-                        await dc.Continue();
+                        await dc.ContinueDialogAsync(cancellationToken);
                         break;
 
                     case ProgressState.Complete:
                         // Survey already completed, so let them know
-                        await dc.Context.SendActivity($"Thanks for your interest, but it looks like you've already given us some feedback!");
+                        await dc.Context.SendActivityAsync($"Thanks for your interest, but it looks like you've already given us some feedback!", cancellationToken: cancellationToken);
 
-                        dc.EndAll();
+                        await dc.CancelAllDialogsAsync(cancellationToken);
                         break;
 
                     case ProgressState.Expired:
                         // User took too long to reply
-                        await dc.Context.SendActivity($"Thanks for that - but I'm afraid you've missed the deadline this time.");
-                        await dc.Context.SendActivity($"I'll get in touch when it's time to give feedback again. Thanks for your help so far");
+                        await dc.Context.SendActivityAsync($"Thanks for that - but I'm afraid you've missed the deadline this time.", cancellationToken: cancellationToken);
+                        await dc.Context.SendActivityAsync($"I'll get in touch when it's time to give feedback again. Thanks for your help so far", cancellationToken: cancellationToken);
 
-                        dc.EndAll();
+                        await dc.CancelAllDialogsAsync(cancellationToken);
                         break;
 
                     case ProgressState.OptedOut:
-                        dc.EndAll();
+                        await dc.CancelAllDialogsAsync(cancellationToken);
                         break;
 
                     case ProgressState.BlackListed:
-                        dc.EndAll();
+                        await dc.CancelAllDialogsAsync(cancellationToken);
                         break;
 
                     default:
-                        await dc.Continue();
+                        await dc.ContinueDialogAsync(cancellationToken);
                         break;
                 }
             }
         }
         
-        private async Task HandleConversationUpdate(ITurnContext context, BotChannel channel)
+        private async Task HandleConversationUpdateAsync(ITurnContext context, BotChannel channel, CancellationToken cancellationToken)
         {
             foreach (ChannelAccount newMember in context.Activity.MembersAdded)
             {
@@ -205,26 +227,23 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                 {
                     if (newMember.Id != context.Activity.Recipient.Id)
                     {
-                        await context.SendActivity(
-                            $"Hello! I'm Bertie the Apprentice Feedback Bot. Please reply with 'help' if you would like to see a list of my capabilities");
+                        await context.SendActivityAsync(
+                            $"Hello! I'm Bertie the Apprentice Feedback Bot. Please reply with 'help' if you would like to see a list of my capabilities",
+                            cancellationToken: cancellationToken);
                     }
                 }
             }
         }
 
-        private async Task HandleMessage(ITurnContext context)
+        private async Task HandleMessageAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(context);
-            ConversationInfo conversationInfo = ConversationState<ConversationInfo>.Get(context);
+            await this.HandleCommandsAsync(dc, cancellationToken);
 
-            DialogContext dc = this.Dialogs.CreateContext(context, conversationInfo);
-
-            await this.HandleCommands(context);
-
-            if (!context.Responded)
+            if (!dc.Context.Responded)
             {
-                await dc.Begin(RootDialog.Id);
+                await dc.BeginDialogAsync(RootDialog.Id, cancellationToken: cancellationToken);
             }
         }
+
     }
 }
