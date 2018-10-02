@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Features.cs" company="Education & Skills Funding Agency">
+// <copyright file="Azure.cs" company="Education & Skills Funding Agency">
 //   Copyright © 2018 Education & Skills Funding Agency
 // </copyright>
 // <summary>

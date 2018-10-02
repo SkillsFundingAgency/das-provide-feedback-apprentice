@@ -1,133 +1,143 @@
-﻿//namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
-//{
-//    using System;
-//    using System.Collections.Generic;
-//    using System.Globalization;
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+using Microsoft.Extensions.Options;
 
-//    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components;
-//    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
-//    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
 
-//    using Microsoft.AspNetCore.Http;
-//    using Microsoft.Bot.Builder.Dialogs;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 
-//    public class DialogFactory : IDialogFactory
-//    {
-//        public T Create<T>(ISurveyStep step)
-//            where T : DialogContainer
-//        {
-//            return (T)this.Create(typeof(T), step);
-//        }
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.Bot.Builder.Dialogs;
 
-//        public T Create<T>(ISurvey survey)
-//            where T : DialogContainer
-//        {
-//            return (T)this.Create(typeof(T), survey);
-//        }
+    public class DialogFactory : IDialogFactory
+    {
+        private readonly Features _features;
 
-//        public DialogContainer Create(Type type, ISurveyStep step)
-//        {
-//            if (type == typeof(SurveyQuestionDialog))
-//            {
-//                return this.CreateSurveyQuestionDialog(step);
-//            }
+        public DialogFactory(IOptions<Features> features)
+        {
+            _features = features.Value ?? throw new ArgumentNullException(nameof(features));
+        }
 
-//            if (type == typeof(SurveyStartDialog))
-//            {
-//                return this.CreateSurveyStartDialog(step);
-//            }
+        public T Create<T>(ISurveyStep step)
+            where T : DialogContainer
+        {
+            return (T)this.Create(typeof(T), step);
+        }
 
-//            if (type == typeof(SurveyEndDialog))
-//            {
-//                return this.CreateSurveyEndDialog(step);
-//            }
+        public T Create<T>(ISurvey survey)
+            where T : DialogContainer
+        {
+            return (T)this.Create(typeof(T), survey);
+        }
 
-//            throw new DialogFactoryException($"Could not create DialogContainer : Unsupported type [{type.FullName}]");
-//        }
+        public DialogContainer Create(Type type, ISurveyStep step)
+        {
+            if (type == typeof(SurveyQuestionDialog))
+            {
+                return this.CreateSurveyQuestionDialog(step);
+            }
 
-//        private DialogContainer Create(Type type, ISurvey survey)
-//        {
-//            if (type == typeof(LinearSurveyDialog))
-//            {
-//                return this.CreateLinearSurveyDialog(survey);
-//            }
+            if (type == typeof(SurveyStartDialog))
+            {
+                return this.CreateSurveyStartDialog(step);
+            }
 
-//            throw new DialogFactoryException($"Could not create DialogContainer : Unsupported type [{type.FullName}]");
-//        }
+            if (type == typeof(SurveyEndDialog))
+            {
+                return this.CreateSurveyEndDialog(step);
+            }
 
-//        private LinearSurveyDialog CreateLinearSurveyDialog(ISurvey survey)
-//        {
-//            var dialogs = new List<IDialog>();
-//            foreach (var s in survey.Steps)
-//            {
-//                switch (s)
-//                {
-//                    case StartStep startStep:
-//                        dialogs.Add(this.Create<SurveyStartDialog>(startStep)); 
-//                        break;
+            throw new DialogFactoryException($"Could not create DialogContainer : Unsupported type [{type.FullName}]");
+        }
 
-//                    case EndStep endStep:
-//                        dialogs.Add(this.Create<SurveyEndDialog>(endStep));
-//                        break;
+        private DialogContainer Create(Type type, ISurvey survey)
+        {
+            if (type == typeof(LinearSurveyDialog))
+            {
+                return this.CreateLinearSurveyDialog(survey);
+            }
 
-//                    case QuestionStep questionStep:
-//                        dialogs.Add(this.Create<SurveyQuestionDialog>(questionStep));
-//                        break;
+            throw new DialogFactoryException($"Could not create DialogContainer : Unsupported type [{type.FullName}]");
+        }
 
-//                    default:
-//                        throw new DialogFactoryException($"Could not create LinearSurveyDialog step : Unsupported type [{s.GetType().FullName}]");
-//                }
-//            }
+        private LinearSurveyDialog CreateLinearSurveyDialog(ISurvey survey)
+        {
+            var dialogs = new List<IDialog>();
+            foreach (var s in survey.Steps)
+            {
+                switch (s)
+                {
+                    case StartStep startStep:
+                        dialogs.Add(this.Create<SurveyStartDialog>(startStep)); 
+                        break;
 
-//            return new LinearSurveyDialog(survey.Id)
-//                .WithSteps(survey.Steps)
-//                .Build(this);
-//        }
+                    case EndStep endStep:
+                        dialogs.Add(this.Create<SurveyEndDialog>(endStep));
+                        break;
 
-//        private SurveyQuestionDialog CreateSurveyQuestionDialog(ISurveyStep step)
-//        {
-//            switch (step)
-//            {
-//                case QuestionStep questionStep:
-//                    return new SurveyQuestionDialog(questionStep.Id)
-//                        .WithPrompt(questionStep.Prompt)
-//                        .WithResponses(questionStep.Responses)
-//                        .WithScore(questionStep.Score)
-//                        .Build();
-//                default:
-//                    throw new DialogFactoryException($"Could not create SurveyQuestionDialog : Unsupported type [{step.GetType().FullName}]");
-//            }
-//        }
+                    case QuestionStep questionStep:
+                        dialogs.Add(this.Create<SurveyQuestionDialog>(questionStep));
+                        break;
 
-//        private SingleStepDialog CreateSingleStepDialog(ISurveyStep step)
-//        {
-//            switch (step)
-//            {
-//                case StartStep startStep:
-//                    return new SurveyStartDialog(startStep.Id)
-//                        .WithResponses(startStep.Responses)
-//                        .Build();
-//                case EndStep endStep:
-//                    return new SurveyEndDialog(endStep.Id)
-//                        .WithResponses(endStep.Responses)
-//                        .Build();
-//                default:
-//                    throw new DialogFactoryException($"Could not create SingleStepDialog : Unsupported type [{step.GetType().FullName}]");
-//            }
-//        }
+                    default:
+                        throw new DialogFactoryException($"Could not create LinearSurveyDialog step : Unsupported type [{s.GetType().FullName}]");
+                }
+            }
 
-//        private SingleStepDialog CreateSurveyStartDialog(ISurveyStep startStep)
-//        {
-//            return new SurveyStartDialog(startStep.Id)
-//                .WithResponses(startStep.Responses)
-//                .Build();
-//        }
+            return new LinearSurveyDialog(survey.Id)
+                .WithSteps(survey.Steps)
+                .Build(this);
+        }
 
-//        private SingleStepDialog CreateSurveyEndDialog(ISurveyStep endStep)
-//        {
-//            return new SurveyEndDialog(endStep.Id)
-//                .WithResponses(endStep.Responses)
-//                .Build();
-//        }
-//    }
-//}
+        private SurveyQuestionDialog CreateSurveyQuestionDialog(ISurveyStep step)
+        {
+            switch (step)
+            {
+                case QuestionStep questionStep:
+                    return new SurveyQuestionDialog(questionStep.Id)
+                        .WithPrompt(questionStep.Prompt)
+                        .WithResponses(questionStep.Responses)
+                        .WithScore(questionStep.Score)
+                        .Build();
+                default:
+                    throw new DialogFactoryException($"Could not create SurveyQuestionDialog : Unsupported type [{step.GetType().FullName}]");
+            }
+        }
+
+        private SingleStepDialog CreateSingleStepDialog(ISurveyStep step)
+        {
+            switch (step)
+            {
+                case StartStep startStep:
+                    return new SurveyStartDialog(startStep.Id)
+                        .WithResponses(startStep.Responses)
+                        .Build();
+                case EndStep endStep:
+                    return new SurveyEndDialog(endStep.Id)
+                        .WithResponses(endStep.Responses)
+                        .Build();
+                default:
+                    throw new DialogFactoryException($"Could not create SingleStepDialog : Unsupported type [{step.GetType().FullName}]");
+            }
+        }
+
+        private SingleStepDialog CreateSurveyStartDialog(ISurveyStep startStep)
+        {
+            return new SurveyStartDialog(startStep.Id)
+                .WithResponses(startStep.Responses)
+                .Build();
+        }
+
+        private SingleStepDialog CreateSurveyEndDialog(ISurveyStep endStep)
+        {
+            return new SurveyEndDialog(endStep.Id)
+                .WithResponses(endStep.Responses)
+                .Build();
+        }
+    }
+}

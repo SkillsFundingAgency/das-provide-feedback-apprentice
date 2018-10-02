@@ -16,7 +16,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 
         public abstract Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken);
 
-        public bool IsTriggered(DialogContext dc)
+        public virtual bool IsTriggered(DialogContext dc)
         {
             // TODO: check auth
             return dc.Context.Activity.Text.ToLowerInvariant().StartsWith(this.Trigger, StringComparison.InvariantCultureIgnoreCase);

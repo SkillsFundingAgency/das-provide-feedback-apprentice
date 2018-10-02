@@ -1,54 +1,106 @@
-﻿//using System.Threading;
-//using Microsoft.Bot.Builder;
+﻿using System.Linq;
+using System.Text;
+using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+using Microsoft.Bot.Schema;
 
-//namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
-//{
-//    using System.Collections.Generic;
-//    using System.Threading.Tasks;
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+{
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
-//    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
-//    using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Bot.Builder.Dialogs;
 
-//    public abstract class SingleStepDialog : ComponentDialog
-//    {
-//        protected SingleStepDialog(string id)
-//            : base(id)
-//        {
-//        }
+    public class DialogConfiguration
+    {
+        public bool CollateResponses { get; set; } = true;
+        public bool RealisticTypingDelay { get; set; } = false;
+        public int CharactersPerMinute { get; set; } = 1500;
+        public int ThinkingTimeDelayMs { get; set; } = 0;
+    }
 
-//        public ICollection<IResponse> Responses { get; protected set; } = new List<IResponse>();
+    public abstract class SingleStepDialog : DialogContainer
+    {
+        private readonly DialogConfiguration _configuration;
 
-//        public SingleStepDialog AddResponse(IResponse response)
-//        {
-//            this.Responses.Add(response);
-//            return this;
-//        }
+        protected SingleStepDialog(string id)
+            : base(id)
+        {
+            _configuration = new DialogConfiguration();
+        }
 
-//        public SingleStepDialog Build()
-//        {
-//            WaterfallDialog dialog = new WaterfallDialog("step", new WaterfallStep[] {StepDialogAsync, EndDialogAsync});
-//            this.AddDialog(dialog);
+        public DialogConfiguration Configuration => _configuration;
 
-//            return this;
-//        }
+        public ICollection<IResponse> Responses { get; protected set; } = new List<IResponse>();
 
-//        private async Task<DialogTurnResult> EndDialogAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-//        {
-//            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
-//        }
+        public SingleStepDialog AddResponse(IResponse response)
+        {
+            this.Responses.Add(response);
+            return this;
+        }
 
-//        private async Task<DialogTurnResult> StepDialogAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-//        {
-//            return await this.Step(stepContext, cancellationToken);
-//        }
+        public SingleStepDialog Build()
+        {
+            var steps = new WaterfallStep[]
+                            {
+                                async (dc, args, next) => { await this.Step(dc, args, next); },
+                                async (dc, args, next) => { await dc.End(); }
+                            };
 
-//        public SingleStepDialog WithResponses(ICollection<IResponse> responses)
-//        {
-//            this.Responses = responses;
-//            return this;
-//        }
+            this.Dialogs.Add(this.DialogId, steps);
 
-//        protected abstract Task<DialogTurnResult> Step(WaterfallStepContext turnContext, CancellationToken cancellationToken = default(CancellationToken));
-//    }
-//}
+            return this;
+        }
+
+        public SingleStepDialog WithResponses(ICollection<IResponse> responses)
+        {
+            this.Responses = responses;
+            return this;
+        }
+
+        protected abstract Task Step(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next);
+
+        protected async Task RespondAsMultipleMessages(IEnumerable<IResponse> responses, DialogContext dc, UserInfo userInfo)
+        {
+            foreach (IResponse r in responses)
+            {
+                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(userInfo))
+                {
+                    continue;
+                }
+
+                if (Configuration.RealisticTypingDelay)
+                {
+                    await dc.Context.SendTypingActivity(r.Prompt, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
+                }
+
+                await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
+            }
+        }
+
+        protected async Task RespondAsSingleMessage(IEnumerable<IResponse> responses, DialogContext dc, UserInfo userInfo)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (IResponse r in responses)
+            {
+                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(userInfo))
+                {
+                    continue;
+                }
+
+                sb.AppendLine(r.Prompt);
+            }
+            
+            var response = sb.ToString();
+
+            if (Configuration.RealisticTypingDelay)
+            {
+                await dc.Context.SendTypingActivity(response, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
+            }
+
+            await dc.Context.SendActivity(response, InputHints.IgnoringInput);
+        }
+    }
+}

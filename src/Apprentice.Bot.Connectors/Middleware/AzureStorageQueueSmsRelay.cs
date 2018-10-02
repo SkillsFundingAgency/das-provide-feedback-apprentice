@@ -18,7 +18,45 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
     using ConnectionStrings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.ConnectionStrings;
     using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
     using NotifyConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
-    
+
+    public class AzureStorageSmsQueueClient : ISmsQueueProvider
+    {
+        private readonly CloudQueueClient queueClient;
+
+        private readonly NotifyConfiguration notifyConfig;
+
+        private readonly ConnectionStrings connectionStrings;
+
+        public AzureStorageSmsQueueClient(IOptions<NotifyConfiguration> notifyConfigOptions, IOptions<ConnectionStrings> connectionStringsOptions)
+        {
+            this.notifyConfig = notifyConfigOptions.Value;
+            this.connectionStrings = connectionStringsOptions.Value;
+
+            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(this.connectionStrings.StorageAccount);
+            this.queueClient = storageAccount.CreateCloudQueueClient();
+        }
+
+        ~AzureStorageSmsQueueClient()
+        {
+            // dispose here
+        }
+
+
+        public void Send(string message, string queueName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task SendAsync(string message, string queueName)
+        {
+            CloudQueue messageQueue = this.queueClient.GetQueueReference(queueName);
+            await messageQueue.CreateIfNotExistsAsync();
+
+            CloudQueueMessage queueMessage = new CloudQueueMessage(message);
+            await messageQueue.AddMessageAsync(queueMessage);
+        }
+    }
+
     /// <inheritdoc />
     /// <summary>
     /// Adds middleware to write conversation responses to a Queue for the purposes of using Notify to relay the message.

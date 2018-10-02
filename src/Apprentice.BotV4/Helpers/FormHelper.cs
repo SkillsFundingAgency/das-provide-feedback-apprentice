@@ -32,9 +32,14 @@
         /// <returns>A delay in milliseconds to wait while the bot is 'typing' the response</returns>
         public static int CalculateTypingTime(string textToType, int charactersPerMinute, int thinkingTimeDelay)
         {
-            return !string.IsNullOrEmpty(textToType)
-                       ? thinkingTimeDelay + (textToType.Length * (60 / charactersPerMinute))
-                       : 0;
+            if (string.IsNullOrEmpty(textToType))
+            {
+                return 0;
+            }
+
+            var charactersPerSecond = charactersPerMinute / 60;
+            var typingDelay = textToType.Length / charactersPerSecond * 1000;
+            return thinkingTimeDelay + typingDelay;
         }
 
         /// <summary>
