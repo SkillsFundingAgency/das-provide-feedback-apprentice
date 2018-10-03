@@ -1,55 +1,72 @@
-using System.Linq;
-using System.Text;
-
 namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    using Microsoft.Bot.Builder.Core.Extensions;
+    using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Builder.Prompts;
-    using Microsoft.Bot.Builder.Prompts.Choices;
+    using Microsoft.Bot.Builder.Dialogs.Choices;
     using Microsoft.Bot.Schema;
+    using Microsoft.Extensions.Options;
     using Microsoft.Recognizers.Text;
 
     using ChoicePrompt = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.ChoicePrompt;
-    using ChoicePromptOptions = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.ChoicePromptOptions;
+    using PromptOptions = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.RetryPromptOptions;
 
-    public sealed class SurveyQuestionDialog : DialogContainer
+    using AzureSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
+    using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+    using DataSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
+    using NotifySettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
+    using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
+
+    public sealed class SurveyQuestionDialog : ComponentDialog
     {
-        public SurveyQuestionDialog(string id)
-            : base(id)
-        {
-            Configuration = new DialogConfiguration();
-        }
+        private BotSettings botSettings;
 
-        public DialogConfiguration Configuration { get; }
+        private FeatureToggles features;
+
+        private FeedbackBotState state;
+
+        private DialogConfiguration configuration;
+
+        /// <inheritdoc />
+        public SurveyQuestionDialog(FeedbackBotState state, BotSettings botSettings, FeatureToggles features)
+            : base("survey-question")
+        {
+            this.botSettings = botSettings;
+            this.features = features;
+            this.state = state;
+            this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
+        }
 
         public string PromptText { get; private set; }
 
         public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
 
-        public int Score { get; private set; } = 1;
+        public int PointsAvailable { get; private set; } = 1;
 
-        public SurveyQuestionDialog Build()
+        public SurveyQuestionDialog Build(string id)
         {
             var steps = new WaterfallStep[]
                             {
-                                async (dc, args, next) => { await this.Question(dc, args, next); },
-                                async (dc, args, next) => { await this.Response(dc, args, next); },
-                                async (dc, args, next) => { await dc.End(); }
+                                this.AskQuestionAsync,
+                                this.ProcessResponseAsync,
+                                this.WrapUpAsync,
                             };
 
-            this.Dialogs.Add(this.DialogId, steps);
+            var waterfall = new WaterfallDialog(id, steps);
 
-            // Define the prompts used in this conversation flow.
-            this.Dialogs.Add($"{this.DialogId}-prompt", new ChoicePrompt(Culture.English) { Style = ListStyle.None });
+            this.AddDialog(waterfall);
+
+            this.AddDialog(new ChoicePrompt($"{id}-prompt", defaultLocale: Culture.English) { Style = ListStyle.None });
 
             return this;
         }
@@ -74,117 +91,71 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
         public SurveyQuestionDialog WithScore(int score)
         {
-            this.Score = score;
+            this.PointsAvailable = score;
             return this;
         }
 
-        // TODO: add these strings to CommonStrings.en-GB.resx
-        private async Task<BinaryQuestionResponse> ParseResponse(
-            DialogContext dc,
-            IDictionary<string, object> args,
-            string questionText,
-            int score = 0)
+        private async Task<DialogTurnResult> AskQuestionAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            return await Task.Run(
-                       () =>
-                           {
-                               string utterance = dc.Context.Activity.Text; // What did they say?
-                               string intent = (args["Value"] as FoundChoice)?.Value; // What did they mean?
-                               bool positive = intent == "yes"; // Was it positive?
-
-                               BinaryQuestionResponse feedbackResponse =
-                                   new BinaryQuestionResponse
-                                       {
-                                           Question = questionText,
-                                           Answer = utterance,
-                                           Intent = intent,
-                                           Score = positive ? score : -score
-                                       };
-
-                               return feedbackResponse;
-                           });
-        }
-
-        private async Task Question(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
-        {
-            if (Configuration.RealisticTypingDelay)
+            if (this.configuration.RealisticTypingDelay)
             {
-                await dc.Context.SendTypingActivity(this.PromptText, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
+                await stepContext.Context.SendTypingActivityAsync(this.PromptText, this.configuration.CharactersPerMinute, this.configuration.ThinkingTimeDelayMs);
             }
-            await dc.Prompt($"{this.DialogId}-prompt", this.PromptText, PromptConfiguration.Options);
+
+            var promptOptions = PromptConfiguration.Options;
+
+            return await stepContext.PromptAsync($"{this.Id}-prompt", PromptConfiguration.Options, cancellationToken);
         }
 
-        private async Task Response(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
+        private async Task<DialogTurnResult> ProcessResponseAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+            UserInfo userInfo = await this.state.UserInfo.GetAsync(
+                                    stepContext.Context,
+                                    () => new UserInfo(),
+                                    cancellationToken);
 
             userInfo.SurveyState.Progress = ProgressState.InProgress;
 
-            BinaryQuestionResponse response = await this.ParseResponse(dc, args, this.PromptText, this.Score);
+            BinaryQuestionResponse feedbackResponse = this.CreateResponse(stepContext);
 
-            userInfo.SurveyState.Responses.Add(response);
+            userInfo.SurveyState.Responses.Add(feedbackResponse);
 
-            if (Configuration.CollateResponses)
+            if (this.configuration.CollateResponses)
             {
-                await RespondAsSingleMessage(this.Responses, dc, response, userInfo);
+                await this.Responses.RespondAsSingleMessageAsync(stepContext, this.configuration, cancellationToken);
             }
-
             else
             {
-                await RespondAsMultipleMessages(this.Responses, dc, response, userInfo);
+                await this.Responses.RespondAsMultipleMessagesAsync(stepContext, this.configuration, cancellationToken);
             }
 
             // Ask next question
-            await next();
+            return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
-        private async Task RespondAsMultipleMessages(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response, UserInfo userInfo)
+        private async Task<DialogTurnResult> WrapUpAsync(
+            WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
         {
-            foreach (IResponse r in responses)
-            {
-                if (r is ConditionalResponse<BinaryQuestionResponse> conditionalResponse && !conditionalResponse.IsValid(response))
-                {
-                    continue;
-                }
-                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(userInfo))
-                {
-                    continue;
-                }
-
-                if (Configuration.RealisticTypingDelay)
-                {
-                    await dc.Context.SendTypingActivity(r.Prompt, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
-                }
-
-                await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
-            }
+            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
 
-        private async Task RespondAsSingleMessage(IEnumerable<IResponse> responses, DialogContext dc, BinaryQuestionResponse response, UserInfo userInfo)
+        private BinaryQuestionResponse CreateResponse(WaterfallStepContext stepContext)
         {
-            StringBuilder sb = new StringBuilder();
-            foreach (IResponse r in responses)
-            {
-                if (r is ConditionalResponse<BinaryQuestionResponse> conditionalResponse && !conditionalResponse.IsValid(response))
+            string utterance = stepContext.Context.Activity.Text; // What did they say?
+            string intent = (stepContext.Result as FoundChoice)?.Value; // What did they mean?
+            bool positive = intent == "yes"; // Was it positive?
+
+            BinaryQuestionResponse feedbackResponse =
+                new BinaryQuestionResponse
                 {
-                    continue;
-                }
-                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(userInfo))
-                {
-                    continue;
-                }
+                    Question = this.PromptText,
+                    Answer = utterance,
+                    Intent = intent,
+                    Score = positive ? this.PointsAvailable : -this.PointsAvailable,
+                };
 
-                sb.AppendLine(r.Prompt);
-            }
-
-            var reply = sb.ToString();
-
-            if (Configuration.RealisticTypingDelay)
-            {
-                await dc.Context.SendTypingActivity(reply, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
-            }
-
-            await dc.Context.SendActivity(reply, InputHints.IgnoringInput);
+            return feedbackResponse;
         }
 
         /// <summary>
@@ -197,27 +168,26 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
                 $"Sorry, I didn't catch that. Please type 'Yes' or 'No'";
 
             // TODO: add these strings to CommonStrings.en-GB.resx
-            public static ChoicePromptOptions Options =>
-                new ChoicePromptOptions()
-                    {
-                        Attempts = 3,
-                        TooManyAttemptsString =
-                            "Sorry, I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye! ",
-                        Choices = Choices,
-                        RetryPromptString = RetryPromptString,
-                        RetryPromptsCollection =
-                            new Dictionary<long, string>()
-                                {
-                                    {
-                                        1,
-                                        RetryPromptString
-                                    },
-                                    {
-                                        2,
-                                        "Please could you answer 'Yes' or 'No'"
-                                    }
-                                }
-                    };
+            public static PromptOptions Options
+            {
+                get
+                {
+                    var options = new PromptOptions
+                        {
+                            Attempts = 3,
+                            TooManyAttemptsString = "Sorry, I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye! ",
+                            Choices = Choices,
+                            RetryPrompt = new Activity(type: "message", text: RetryPromptString),
+                            RetryPromptsCollection = new Dictionary<long, string>
+                            {
+                                { 1, RetryPromptString },
+                                { 2, "Please could you answer 'Yes' or 'No'" },
+                            },
+                        };
+
+                    return options;
+                }
+            }
 
             private static List<Choice> Choices => new List<Choice> { PositiveChoice, NegativeChoice };
 
