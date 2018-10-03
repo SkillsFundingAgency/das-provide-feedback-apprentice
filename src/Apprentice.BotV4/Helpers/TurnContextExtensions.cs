@@ -17,17 +17,8 @@
         /// <param name="textToType">the text response that the bot should type. Used to determine the length of the delay</param>
         /// <param name="charactersPerMinute">typing speed in characters per minute</param>
         /// <param name="thinkingTimeDelay">millisecond delay to wait before starting a response</param>
-        /// <param name="inputHint">the input hint to use. Possible values include acceptingInput, ignoringInput, expectingInput</param>
         /// <returns>The <see cref="Task"/></returns>
-        public static async Task SendActivityWithRealisticDelay(this ITurnContext ctx, string textToType, int charactersPerMinute, int thinkingTimeDelay, string inputHint)
-        {
-            Activity typing = new Activity() { Type = ActivityTypes.Typing, InputHint = InputHints.IgnoringInput };
-            await ctx.SendActivityAsync(typing);
-            await Task.Delay(FormHelper.CalculateTypingTime(textToType, charactersPerMinute, thinkingTimeDelay));
-            await ctx.SendActivityAsync(textToType, inputHint);
-        }
-
-        public static async Task SendTypingActivity(
+        public static async Task SendTypingActivityAsync(
             this ITurnContext ctx,
             string textToType,
             int charactersPerMinute = 500,

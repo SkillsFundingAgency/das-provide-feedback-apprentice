@@ -1,11 +1,10 @@
-﻿using Microsoft.Bot.Builder;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 {
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
+    using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Recognizers.Text;
 
@@ -23,7 +22,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
                             {
                                 this.MenuAsync,
                                 this.StartAsync,
-                                this.EndAsync
+                                this.EndAsync,
                             };
         }
 

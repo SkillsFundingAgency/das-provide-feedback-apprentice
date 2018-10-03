@@ -59,13 +59,9 @@
                     throw new ArgumentOutOfRangeException($"Unrecognized type [{step.GetType().FullName}]");
             }
 
-            this.RegisterDialog(step.Id, dialog);
-            return async (dc, args, next) => { await dc.Begin(step.Id); };
-        }
+            this.AddDialog(dialog);
 
-        private void RegisterDialog(string dialogId, IDialog dialog)
-        {
-            this.Dialogs.Add(dialogId, dialog);
+            return async (stepContext, cancellationToken) => await stepContext.BeginDialogAsync(step.Id, cancellationToken: cancellationToken);
         }
     }
 }

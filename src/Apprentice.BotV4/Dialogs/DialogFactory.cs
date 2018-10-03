@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Globalization;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
@@ -13,26 +14,35 @@
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
 
+    using AzureSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
+    using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+    using DataSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
+    using NotifySettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
+    using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
+
     public class DialogFactory : IDialogFactory
     {
-        private readonly Features features;
+        private readonly FeedbackBotState state;
 
-        public DialogFactory(IOptions<Features> features)
+        private readonly BotSettings botSettings;
+
+        private readonly FeatureToggles features;
+
+        /// <inheritdoc />
+        public DialogFactory(FeedbackBotState state, IOptions<FeatureToggles> features, IOptions<BotSettings> botSettings)
         {
+            this.state = state ?? throw new ArgumentNullException(nameof(state));
+            this.botSettings = botSettings.Value ?? throw new ArgumentNullException(nameof(botSettings));
             this.features = features.Value ?? throw new ArgumentNullException(nameof(features));
         }
 
+        /// <inheritdoc />
         public T Create<T>(ISurveyStep step)
-            where T : ComponentDialog
-        {
-            return (T)this.Create(typeof(T), step);
-        }
+            where T : ComponentDialog => (T)this.Create(typeof(T), step);
 
+        /// <inheritdoc />
         public T Create<T>(ISurvey survey)
-            where T : ComponentDialog
-        {
-            return (T)this.Create(typeof(T), survey);
-        }
+            where T : ComponentDialog => (T)this.Create(typeof(T), survey);
 
         public ComponentDialog Create(Type type, ISurveyStep step)
         {
@@ -66,7 +76,7 @@
 
         private LinearSurveyDialog CreateLinearSurveyDialog(ISurvey survey)
         {
-            var dialogs = new List<IDialog>();
+            var dialogs = new List<Dialog>();
             foreach (var s in survey.Steps)
             {
                 switch (s)
@@ -93,50 +103,33 @@
                 .Build(this);
         }
 
-        private SurveyQuestionDialog CreateSurveyQuestionDialog(ISurveyStep step)
+        private ComponentDialog CreateSurveyQuestionDialog(ISurveyStep step)
         {
             switch (step)
             {
                 case QuestionStep questionStep:
-                    return new SurveyQuestionDialog(questionStep.Id)
+                    return new SurveyQuestionDialog(this.state, this.botSettings, this.features)
                         .WithPrompt(questionStep.Prompt)
                         .WithResponses(questionStep.Responses)
                         .WithScore(questionStep.Score)
-                        .Build();
+                        .Build(step.Id);
                 default:
                     throw new DialogFactoryException($"Could not create SurveyQuestionDialog : Unsupported type [{step.GetType().FullName}]");
             }
         }
 
-        private SingleStepDialog CreateSingleStepDialog(ISurveyStep step)
+        private ComponentDialog CreateSurveyStartDialog(ISurveyStep startStep)
         {
-            switch (step)
-            {
-                case StartStep startStep:
-                    return new SurveyStartDialog(startStep.Id)
-                        .WithResponses(startStep.Responses)
-                        .Build();
-                case EndStep endStep:
-                    return new SurveyEndDialog(endStep.Id)
-                        .WithResponses(endStep.Responses)
-                        .Build();
-                default:
-                    throw new DialogFactoryException($"Could not create SingleStepDialog : Unsupported type [{step.GetType().FullName}]");
-            }
-        }
-
-        private SingleStepDialog CreateSurveyStartDialog(ISurveyStep startStep)
-        {
-            return new SurveyStartDialog(startStep.Id)
+            return new SurveyStartDialog(this.state, this.botSettings, this.features)
                 .WithResponses(startStep.Responses)
-                .Build();
+                .Build(startStep.Id);
         }
 
-        private SingleStepDialog CreateSurveyEndDialog(ISurveyStep endStep)
+        private ComponentDialog CreateSurveyEndDialog(ISurveyStep endStep)
         {
-            return new SurveyEndDialog(endStep.Id)
+            return new SurveyEndDialog(this.state, this.botSettings, this.features)
                 .WithResponses(endStep.Responses)
-                .Build();
+                .Build(endStep.Id);
         }
     }
 }
