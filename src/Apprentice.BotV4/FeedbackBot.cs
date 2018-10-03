@@ -37,12 +37,8 @@
         private readonly IStatePropertyAccessor<DialogState> dialogStateAccessor;
         private readonly IStatePropertyAccessor<UserProfile> userProfileAccessor;
 
-        //private readonly UserState userState;
-        //private readonly ConversationState conversationState;
-
         private readonly FeedbackBotState state;
 
-        //public FeedbackBot(ILoggerFactory loggerFactory, IDialogFactory dialogFactory, IEnumerable<IBotDialogCommand> commands, IEnumerable<ISurvey> surveys, IOptions<Features> featureToggles)
         public FeedbackBot(FeedbackBotState state, ILoggerFactory loggerFactory, IEnumerable<IBotDialogCommand> commands)
         {
             if (loggerFactory == null)

@@ -35,6 +35,6 @@
         /// Channel is unsupported.
         /// </summary>
         [EnumMember(Value = "unsupported")]
-        Unsupported
+        Unsupported,
     }
 }
