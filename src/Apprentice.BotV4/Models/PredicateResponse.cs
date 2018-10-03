@@ -1,16 +1,19 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
 {
     using System;
 
-    public class PredicateResponse : ConditionalResponse<UserInfo>
-    {
-        public Func<UserInfo, bool> Predicate { get; set; }
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-        public override bool IsValid(UserInfo state)
+    using Microsoft.Bot.Builder;
+    using Microsoft.Bot.Builder.Dialogs;
+
+    public class PredicateResponse : ConditionalResponse
+    {
+        public Func<SurveyState, bool> Predicate { get; set; }
+
+        public override bool IsValid(SurveyState context)
         {
-            return this.Predicate.Invoke(state);
+            return this.Predicate.Invoke(context);
         }
     }
 }

@@ -1,12 +1,17 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
 {
-    public class PositiveResponse : ConditionalResponse<BinaryQuestionResponse>
+    using System.Linq;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+    public class PositiveResponse : ConditionalResponse
     {
-        public override bool IsValid(BinaryQuestionResponse userResponse)
+        public override bool IsValid(SurveyState state)
         {
-            return userResponse.IsPositive;
+            var lastResponse = state.Responses.LastOrDefault();
+
+            return lastResponse != null && lastResponse.IsPositive;
         }
     }
 }

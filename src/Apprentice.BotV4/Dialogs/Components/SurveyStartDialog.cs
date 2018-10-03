@@ -2,19 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;
 
     using AzureSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
@@ -81,11 +78,11 @@
 
             if (this.configuration.CollateResponses)
             {
-                await this.Responses.RespondAsSingleMessageAsync(stepContext, this.configuration, cancellationToken);
+                await this.Responses.RespondAsSingleMessageAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
             }
             else
             {
-                await this.Responses.RespondAsMultipleMessagesAsync(stepContext, this.configuration, cancellationToken);
+                await this.Responses.RespondAsMultipleMessagesAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
             }
 
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
@@ -96,64 +93,6 @@
             CancellationToken cancellationToken)
         {
             return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
-        }
-    }
-
-    static class ResponseCollectionExtensions
-    {
-        public static async Task RespondAsMultipleMessagesAsync(
-            this IEnumerable<IResponse> responses,
-            DialogContext dc,
-            DialogConfiguration configuration,
-            CancellationToken cancellationToken)
-        {
-            foreach (var r in responses)
-            {
-                if (r is ConditionalResponse conditionalResponse && !conditionalResponse.IsValid(dc))
-                {
-                    continue;
-                }
-
-                if (configuration != null && configuration.RealisticTypingDelay)
-                {
-                    await dc.Context.SendTypingActivityAsync(
-                        r.Prompt,
-                        configuration.CharactersPerMinute,
-                        configuration.ThinkingTimeDelayMs);
-                }
-
-                await dc.Context.SendActivityAsync(r.Prompt, InputHints.IgnoringInput, cancellationToken: cancellationToken);
-            }
-        }
-
-        public static async Task RespondAsSingleMessageAsync(
-            this IEnumerable<IResponse> responses,
-            DialogContext dc,
-            DialogConfiguration configuration,
-            CancellationToken cancellationToken)
-        {
-            var sb = new StringBuilder();
-            foreach (var r in responses)
-            {
-                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(dc))
-                {
-                    continue;
-                }
-
-                sb.AppendLine(r.Prompt);
-            }
-
-            var response = sb.ToString();
-
-            if (configuration != null && configuration.RealisticTypingDelay)
-            {
-                await dc.Context.SendTypingActivityAsync(
-                    response,
-                    configuration.CharactersPerMinute,
-                    configuration.ThinkingTimeDelayMs);
-            }
-
-            await dc.Context.SendActivityAsync(response, InputHints.IgnoringInput, cancellationToken: cancellationToken);
         }
     }
 }

@@ -122,11 +122,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
             if (this.configuration.CollateResponses)
             {
-                await this.Responses.RespondAsSingleMessageAsync(stepContext, this.configuration, cancellationToken);
+                await this.Responses.RespondAsSingleMessageAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
             }
             else
             {
-                await this.Responses.RespondAsMultipleMessagesAsync(stepContext, this.configuration, cancellationToken);
+                await this.Responses.RespondAsMultipleMessagesAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
             }
 
             // Ask next question

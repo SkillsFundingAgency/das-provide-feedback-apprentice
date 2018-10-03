@@ -1,16 +1,21 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models
 {
-    using System.Collections.Generic;
-    using System.Data;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using Microsoft.Bot.Builder.Dialogs;
 
-    public abstract class ConditionalResponse<T> : IResponse
+    public interface IConditionalResponse : IResponse
+    {
+        bool IsValid(SurveyState state);
+    }
+
+    public abstract class ConditionalResponse : IConditionalResponse
     {
         public string Id { get; set; }
 
         public string Prompt { get; set; }
 
-        public abstract bool IsValid(T userResponse);
+        public abstract bool IsValid(SurveyState state);
     }
+
 }
