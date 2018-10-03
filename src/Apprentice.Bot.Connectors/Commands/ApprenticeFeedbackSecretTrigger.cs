@@ -21,11 +21,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
             this.state = state;
         }
 
+        /// <inheritdoc />
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             var dialogId = "afb-v3";
 
-            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context);
+            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
             userInfo.SurveyState = new SurveyState
                                        {
                                            SurveyId = dialogId,
@@ -33,7 +34,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
                                            Progress = ProgressState.InProgress
                                        };
 
-            await dc.BeginDialogAsync(dialogId, cancellationToken: cancellationToken);
+            return await dc.BeginDialogAsync(dialogId, cancellationToken: cancellationToken);
         }
     }
 }

@@ -27,6 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
             this.notifyConfig = notifyConfig.Value;
         }
 
+        /// <inheritdoc />
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             string message = dc.Context.Activity.Text.ToLowerInvariant();
@@ -48,8 +49,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 
             await this.queue.SendAsync(JsonConvert.SerializeObject(payload), this.notifyConfig.IncomingMessageQueueName);
             await dc.Context.SendActivityAsync($"OK. Sending survey to {mobileNumber}", cancellationToken: cancellationToken);
+
+            return await dc.ContinueDialogAsync(cancellationToken);
         }
 
+        /// <inheritdoc />
         public override bool IsTriggered(DialogContext dc)
         {
             var utterance = dc.Context.Activity.Text.ToLowerInvariant();
