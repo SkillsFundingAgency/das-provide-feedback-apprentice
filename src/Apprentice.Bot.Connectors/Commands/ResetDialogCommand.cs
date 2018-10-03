@@ -9,9 +9,9 @@
 
     public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository state;
 
-        public ResetDialogCommand(FeedbackBotState state)
+        public ResetDialogCommand(FeedbackBotStateRepository state)
             : base("reset")
         {
             this.state = state;
@@ -19,8 +19,8 @@
 
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
-            userInfo.SurveyState = new SurveyState();
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
+            userProfile.SurveyState = new SurveyState();
 
             await this.state.ConversationState.ClearStateAsync(dc.Context, cancellationToken);
 

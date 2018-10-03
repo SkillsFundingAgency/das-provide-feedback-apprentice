@@ -15,9 +15,9 @@
 
     public sealed class StatusCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository state;
 
-        public StatusCommand(FeedbackBotState state)
+        public StatusCommand(FeedbackBotStateRepository state)
             : base("status")
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
@@ -25,8 +25,8 @@
 
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
-            await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(userInfo, Formatting.Indented )}", cancellationToken: cancellationToken);
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
+            await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(userProfile, Formatting.Indented )}", cancellationToken: cancellationToken);
 
             DialogState dialogState = await this.state.ConversationDialogState.GetAsync(dc.Context, () => new DialogState(), cancellationToken);
             await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(dialogState, Formatting.Indented)}", cancellationToken: cancellationToken);

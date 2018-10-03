@@ -13,15 +13,15 @@
     ///  - See the Startup.cs file for more details on creating the Singleton that gets
     ///    injected into the constructor.
     /// </summary>
-    public class FeedbackBotState
+    public class FeedbackBotStateRepository
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FeedbackBotState"/> class.
+        /// Initializes a new instance of the <see cref="FeedbackBotStateRepository"/> class.
         /// Contains the <see cref="ConversationState"/> and associated <see cref="IStatePropertyAccessor{T}"/>.
         /// </summary>
         /// <param name="conversationState">The state object that stores the dialog state.</param>
         /// <param name="userState">The state object that stores the user state.</param>
-        public FeedbackBotState(ConversationState conversationState, UserState userState)
+        public FeedbackBotStateRepository(ConversationState conversationState, UserState userState)
         {
             this.ConversationState = conversationState ?? throw new ArgumentNullException(nameof(conversationState));
             this.UserState = userState ?? throw new ArgumentNullException(nameof(userState));
@@ -41,7 +41,7 @@
         /// <value>
         /// The accessor stores user data.
         /// </value>
-        public IStatePropertyAccessor<UserInfo> UserInfo { get; set; }
+        public IStatePropertyAccessor<UserProfile> UserProfile { get; set; }
 
         /// <summary>
         /// Gets the <see cref="ConversationState"/> object for the conversation.

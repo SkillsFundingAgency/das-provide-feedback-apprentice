@@ -11,10 +11,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 
     public sealed class ExpireCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository state;
         private readonly BotConfiguration botConfiguration;
 
-        public ExpireCommand(FeedbackBotState state, BotConfiguration botConfiguration)
+        public ExpireCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
             : base("expire")
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
@@ -23,12 +23,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
 
-            if (userInfo.SurveyState.StartDate != default(DateTime))
+            if (userProfile.SurveyState.StartDate != default(DateTime))
             {
-                userInfo.SurveyState.StartDate =
-                    userInfo.SurveyState.StartDate.AddDays(this.botConfiguration.DefaultConversationExpiryDays * -1);
+                userProfile.SurveyState.StartDate =
+                    userProfile.SurveyState.StartDate.AddDays(this.botConfiguration.DefaultConversationExpiryDays * -1);
             }
 
             await dc.Context.SendActivityAsync($"OK. Setting the conversation progress to 'expired' ", cancellationToken: cancellationToken);

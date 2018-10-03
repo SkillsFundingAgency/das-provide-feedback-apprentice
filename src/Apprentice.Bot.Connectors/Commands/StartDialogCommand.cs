@@ -11,7 +11,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 {
     public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository state;
 
         //private readonly ILogger logger;
 
@@ -21,7 +21,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
         //    this.logger = logger;
         //}
 
-        public StartDialogCommand(FeedbackBotState state)
+        public StartDialogCommand(FeedbackBotStateRepository state)
             : base("start")
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
@@ -31,8 +31,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
         {
             try
             {
-                UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
-                userInfo.SurveyState = new SurveyState();
+                UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
+                userProfile.SurveyState = new SurveyState();
 
                 string message = dc.Context.Activity.Text.ToLowerInvariant();
 
@@ -42,9 +42,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
                 {
                     string dialogId = strings[1];
                     
-                    userInfo.SurveyState.SurveyId = dialogId;
-                    userInfo.SurveyState.StartDate = DateTime.Now;
-                    userInfo.SurveyState.Progress = ProgressState.InProgress;
+                    userProfile.SurveyState.SurveyId = dialogId;
+                    userProfile.SurveyState.StartDate = DateTime.Now;
+                    userProfile.SurveyState.Progress = ProgressState.InProgress;
 
                     // TODO: check dialog collection
                     return await dc.BeginDialogAsync(dialogId, null, cancellationToken);

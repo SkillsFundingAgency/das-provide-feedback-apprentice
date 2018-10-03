@@ -14,9 +14,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
 
     public sealed class ApprenticeFeedbackSecretTrigger : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository state;
 
-        public ApprenticeFeedbackSecretTrigger(FeedbackBotState state) : base("I like avocado")
+        public ApprenticeFeedbackSecretTrigger(FeedbackBotStateRepository state) : base("I like avocado")
         {
             this.state = state;
         }
@@ -26,8 +26,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
         {
             var dialogId = "afb-v3";
 
-            UserInfo userInfo = await this.state.UserInfo.GetAsync(dc.Context, () => new UserInfo(), cancellationToken);
-            userInfo.SurveyState = new SurveyState
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
+            userProfile.SurveyState = new SurveyState
                                        {
                                            SurveyId = dialogId,
                                            StartDate = DateTime.Now,
