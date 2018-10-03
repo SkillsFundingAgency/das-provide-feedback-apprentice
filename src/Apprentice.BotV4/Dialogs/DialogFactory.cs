@@ -1,7 +1,4 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-using Microsoft.Extensions.Options;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 {
     using System;
     using System.Collections.Generic;
@@ -9,33 +6,35 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
 
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Extensions.Options;
 
     public class DialogFactory : IDialogFactory
     {
-        private readonly Features _features;
+        private readonly Features features;
 
         public DialogFactory(IOptions<Features> features)
         {
-            _features = features.Value ?? throw new ArgumentNullException(nameof(features));
+            this.features = features.Value ?? throw new ArgumentNullException(nameof(features));
         }
 
         public T Create<T>(ISurveyStep step)
-            where T : DialogContainer
+            where T : ComponentDialog
         {
             return (T)this.Create(typeof(T), step);
         }
 
         public T Create<T>(ISurvey survey)
-            where T : DialogContainer
+            where T : ComponentDialog
         {
             return (T)this.Create(typeof(T), survey);
         }
 
-        public DialogContainer Create(Type type, ISurveyStep step)
+        public ComponentDialog Create(Type type, ISurveyStep step)
         {
             if (type == typeof(SurveyQuestionDialog))
             {
@@ -55,7 +54,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
             throw new DialogFactoryException($"Could not create DialogContainer : Unsupported type [{type.FullName}]");
         }
 
-        private DialogContainer Create(Type type, ISurvey survey)
+        private ComponentDialog Create(Type type, ISurvey survey)
         {
             if (type == typeof(LinearSurveyDialog))
             {

@@ -1,23 +1,24 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-using Microsoft.Bot.Builder;
-using Microsoft.Bot.Schema;
-using Microsoft.Extensions.Options;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.Queue;
-using Newtonsoft.Json;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System;
+    using System.Globalization;
     using System.Threading;
+    using System.Threading.Tasks;
 
-    using AzureConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
-    using ConnectionStrings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.ConnectionStrings;
-    using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
-    using NotifyConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+
+    using Microsoft.Bot.Builder;
+    using Microsoft.Bot.Schema;
+    using Microsoft.Extensions.Options;
+    using Microsoft.WindowsAzure.Storage;
+    using Microsoft.WindowsAzure.Storage.Queue;
+
+    using Newtonsoft.Json;
+
+    using AzureConfiguration = Core.Configuration.Azure;
+    using ConnectionStrings = Core.Configuration.ConnectionStrings;
+    using DataConfiguration = Core.Configuration.Data;
+    using NotifyConfiguration = Core.Configuration.Notify;
 
     public class AzureStorageSmsQueueClient : ISmsQueueProvider
     {

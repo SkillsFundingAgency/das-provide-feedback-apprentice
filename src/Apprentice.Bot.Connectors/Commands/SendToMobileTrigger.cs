@@ -3,6 +3,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
     using System;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
@@ -26,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
             this.notifyConfig = notifyConfig.Value;
         }
 
-        public override async Task ExecuteAsync(DialogContext dc)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
             string message = dc.Context.Activity.Text.ToLowerInvariant();
 
@@ -46,7 +47,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
             var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 
             await this.queue.SendAsync(JsonConvert.SerializeObject(payload), this.notifyConfig.IncomingMessageQueueName);
-            await dc.Context.SendActivity($"OK. Sending survey to {mobileNumber}");
+            await dc.Context.SendActivityAsync($"OK. Sending survey to {mobileNumber}", cancellationToken: cancellationToken);
         }
 
         public override bool IsTriggered(DialogContext dc)

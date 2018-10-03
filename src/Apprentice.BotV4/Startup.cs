@@ -107,10 +107,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             //services.AddTransient<ILogger>(provider => loggerFactory.CreateLogger<FeedbackBot>());
 
             // services.AddSingleton<IDialogFactory, DialogFactory>();
-            services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>();
+            //services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>();
+            services.AddSingleton<IMessageQueueMiddleware, AzureStorageQueueSmsRelay>();
+            services.AddSingleton<ISmsQueueProvider, AzureStorageSmsQueueClient>();
 
             services.RegisterAllTypes<IBotDialogCommand>(new[] { typeof(IBotDialogCommand).Assembly }, ServiceLifetime.Transient);
             services.RegisterAllTypes<ISurvey>(new[] { typeof(ISurvey).Assembly }, ServiceLifetime.Transient);
+
 
             string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
             string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;

@@ -1,69 +1,71 @@
-﻿//namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
-//{
-//    using System;
-//    using System.Collections.Generic;
-//    using System.Linq;
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
 
-//    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components;
-//    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
-//    using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Bot.Builder.Dialogs;
 
-//    public class LinearSurveyDialog : ComponentDialog
-//    {
-//        public LinearSurveyDialog(string id)
-//            : base(id)
-//        {
-//        }
+    public class LinearSurveyDialog : ComponentDialog
+    {
+        public LinearSurveyDialog(string id)
+            : base(id)
+        {
+        }
 
-//        public ICollection<ISurveyStep> Steps { get; protected set; }
+        public ICollection<ISurveyStep> Steps { get; protected set; }
 
-//        public LinearSurveyDialog Build(DialogFactory factory)
-//        {
-//            WaterfallStep[] waterfall = 
-//                this.Steps.Select(x => this.BuildDialog(x, factory)).ToArray();
+        public LinearSurveyDialog Build(DialogFactory factory)
+        {
+            WaterfallStep[] waterfall =
+                this.Steps.Select(x => this.BuildDialog(x, factory)).ToArray();
 
-//            this.AddDialog(this.DialogId, waterfall);
+            var dialog = new WaterfallDialog(this.Id, waterfall);
 
-//            return this;
-//        }
+            this.AddDialog(dialog);
 
-//        public LinearSurveyDialog WithSteps(ICollection<ISurveyStep> steps)
-//        {
-//            this.Steps = steps;
-//            return this;
-//        }
+            return this;
+        }
 
-//        private WaterfallStep BuildDialog(ISurveyStep step, IDialogFactory dialogFactory)
-//        {
-//            DialogContainer dialog;
+        public LinearSurveyDialog WithSteps(ICollection<ISurveyStep> steps)
+        {
+            this.Steps = steps;
+            return this;
+        }
 
-//            switch (step)
-//            {
-//                case StartStep startStep:
-//                    dialog = dialogFactory.Create<SurveyStartDialog>(startStep);
+        private WaterfallStep BuildDialog(ISurveyStep step, IDialogFactory dialogFactory)
+        {
+            ComponentDialog dialog;
 
-//                    break;
+            switch (step)
+            {
+                case StartStep startStep:
+                    dialog = dialogFactory.Create<SurveyStartDialog>(startStep);
 
-//                case EndStep endStep:
-//                    dialog = dialogFactory.Create<SurveyEndDialog>(endStep);
-//                    break;
+                    break;
 
-//                case QuestionStep questionStep:
-//                    dialog = dialogFactory.Create<SurveyQuestionDialog>(questionStep);
-//                    break;
+                case EndStep endStep:
+                    dialog = dialogFactory.Create<SurveyEndDialog>(endStep);
+                    break;
 
-//                default:
-//                    throw new ArgumentOutOfRangeException($"Unrecognized type [{step.GetType().FullName}]");
-//            }
+                case QuestionStep questionStep:
+                    dialog = dialogFactory.Create<SurveyQuestionDialog>(questionStep);
+                    break;
 
-//            this.RegisterDialog(step.Id, dialog);
-//            return async (dc, args, next) => { await dc.Begin(step.Id); };
-//        }
+                default:
+                    throw new ArgumentOutOfRangeException($"Unrecognized type [{step.GetType().FullName}]");
+            }
 
-//        private void RegisterDialog(string dialogId, IDialog dialog)
-//        {
-//            this.Dialogs.Add(dialogId, dialog);
-//        }
-//    }
-//}
+            this.RegisterDialog(step.Id, dialog);
+            return async (dc, args, next) => { await dc.Begin(step.Id); };
+        }
+
+        private void RegisterDialog(string dialogId, IDialog dialog)
+        {
+            this.Dialogs.Add(dialogId, dialog);
+        }
+    }
+}

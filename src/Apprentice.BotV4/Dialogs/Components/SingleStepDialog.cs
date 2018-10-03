@@ -1,68 +1,63 @@
-﻿using System.Linq;
-using System.Text;
-using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Schema;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
+    using System;
     using System.Collections.Generic;
+    using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Bot.Schema;
 
-    public class DialogConfiguration
+    public abstract class SingleStepDialog<TState, TDialog>
     {
-        public bool CollateResponses { get; set; } = true;
-        public bool RealisticTypingDelay { get; set; } = false;
-        public int CharactersPerMinute { get; set; } = 1500;
-        public int ThinkingTimeDelayMs { get; set; } = 0;
-    }
-
-    public abstract class SingleStepDialog : DialogContainer
-    {
-        private readonly DialogConfiguration _configuration;
-
-        protected SingleStepDialog(string id)
-            : base(id)
+        protected SingleStepDialog(TState state, TDialog dialog)
+            : base()
         {
-            _configuration = new DialogConfiguration();
+            this.State = Activator.CreateInstance<TState>();
+            this.Configuration = new DialogConfiguration(); // TODO: Inject from services (first pass)
         }
 
-        public DialogConfiguration Configuration => _configuration;
+        public DialogConfiguration Configuration { get; }
 
         public ICollection<IResponse> Responses { get; protected set; } = new List<IResponse>();
 
-        public SingleStepDialog AddResponse(IResponse response)
+        public TState State { get; }
+
+        public SingleStepDialog<TState, TDialog> AddResponse(IResponse response)
         {
             this.Responses.Add(response);
             return this;
         }
 
-        public SingleStepDialog Build()
+        public TDialog Build(string id)
         {
-            var steps = new WaterfallStep[]
-                            {
-                                async (dc, args, next) => { await this.Step(dc, args, next); },
-                                async (dc, args, next) => { await dc.End(); }
-                            };
+            ComponentDialog dialog = new ComponentDialog(id);
 
-            this.Dialogs.Add(this.DialogId, steps);
+            var steps = new WaterfallStep[] { this.StepAsync, this.WrapUpAsync };
 
-            return this;
+            var waterfall = new WaterfallDialog(dialog.Id, steps);
+
+            dialog.AddDialog(waterfall);
+
+            return dialog;
         }
 
-        public SingleStepDialog WithResponses(ICollection<IResponse> responses)
+        public SingleStepDialog<TState, TDialog> WithResponses(ICollection<IResponse> responses)
         {
             this.Responses = responses;
             return this;
         }
 
-        protected abstract Task Step(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next);
-
-        protected async Task RespondAsMultipleMessages(IEnumerable<IResponse> responses, DialogContext dc, UserInfo userInfo)
+        protected async Task RespondAsMultipleMessages(
+            IEnumerable<IResponse> responses,
+            DialogContext dc,
+            UserInfo userInfo)
         {
             foreach (IResponse r in responses)
             {
@@ -71,16 +66,22 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
                     continue;
                 }
 
-                if (Configuration.RealisticTypingDelay)
+                if (this.Configuration.RealisticTypingDelay)
                 {
-                    await dc.Context.SendTypingActivity(r.Prompt, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
+                    await dc.Context.SendTypingActivity(
+                        r.Prompt,
+                        this.Configuration.CharactersPerMinute,
+                        this.Configuration.ThinkingTimeDelayMs);
                 }
 
-                await dc.Context.SendActivity(r.Prompt, InputHints.IgnoringInput);
+                await dc.Context.SendActivityAsync(r.Prompt, InputHints.IgnoringInput);
             }
         }
 
-        protected async Task RespondAsSingleMessage(IEnumerable<IResponse> responses, DialogContext dc, UserInfo userInfo)
+        protected async Task RespondAsSingleMessage(
+            IEnumerable<IResponse> responses,
+            DialogContext dc,
+            UserInfo userInfo)
         {
             StringBuilder sb = new StringBuilder();
             foreach (IResponse r in responses)
@@ -92,15 +93,29 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 
                 sb.AppendLine(r.Prompt);
             }
-            
+
             var response = sb.ToString();
 
-            if (Configuration.RealisticTypingDelay)
+            if (this.Configuration.RealisticTypingDelay)
             {
-                await dc.Context.SendTypingActivity(response, Configuration.CharactersPerMinute, Configuration.ThinkingTimeDelayMs);
+                await dc.Context.SendTypingActivity(
+                    response,
+                    this.Configuration.CharactersPerMinute,
+                    this.Configuration.ThinkingTimeDelayMs);
             }
 
-            await dc.Context.SendActivity(response, InputHints.IgnoringInput);
+            await dc.Context.SendActivityAsync(response, InputHints.IgnoringInput);
+        }
+
+        protected abstract Task<DialogTurnResult> StepAsync(
+            WaterfallStepContext stepContext,
+            CancellationToken cancellationToken);
+
+        private Task<DialogTurnResult> WrapUpAsync(
+            WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
+        {
+            return stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
     }
 }

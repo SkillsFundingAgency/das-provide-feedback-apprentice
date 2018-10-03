@@ -6,39 +6,44 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Components
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
 
-    using Microsoft.Bot.Builder.Core.Extensions;
     using Microsoft.Bot.Builder.Dialogs;
 
-    public sealed class SurveyEndDialog : SingleStepDialog
+    public sealed class SurveyEndDialog : ComponentDialog
     {
-        public SurveyEndDialog(string id)
-            : base(id)
+        public SurveyEndDialog(FeedbackBotState state)
+            : base("end")
         {
         }
 
-        protected override async Task Step(DialogContext dc, IDictionary<string, object> args, SkipStepFunction next)
-        {
-            UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
 
-            if (Configuration.CollateResponses)
+        protected override async Task<DialogTurnResult> StepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
+            UserInfo userInfo = await this.State.UserInfo.GetAsync(
+                                    stepContext.Context,
+                                    cancellationToken: cancellationToken);
+
+            if (this.Configuration.CollateResponses)
             {
-                await RespondAsSingleMessage(this.Responses, dc, userInfo);
+                await this.RespondAsSingleMessage(this.Responses, stepContext, userInfo);
             }
 
             else
             {
-                await RespondAsMultipleMessages(this.Responses, dc, userInfo);
+                await this.RespondAsMultipleMessages(this.Responses, stepContext, userInfo);
             }
 
             userInfo.SurveyState.Progress = ProgressState.Complete;
             userInfo.SurveyState.EndDate = DateTime.Now;
 
-            await dc.End();
+            await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
+    }
     }
 }
