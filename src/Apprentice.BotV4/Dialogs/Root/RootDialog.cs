@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Root
 {
     using System.Collections.Generic;
     using System.Threading;
@@ -6,24 +6,25 @@
 
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Recognizers.Text;
-
-    using ChoicePrompt = Microsoft.Bot.Builder.Dialogs.ChoicePrompt;
-    using TextPrompt = Microsoft.Bot.Builder.Dialogs.TextPrompt;
 
     public class RootDialog : ComponentDialog
     {
-        public const string Id = "root-dialog";
+        public const string PromptName = "mainMenuPrompt";
 
         private RootDialog()
-            : base(Id)
+            : base(nameof(RootDialog))
         {
+            this.InitialDialogId = nameof(RootDialog);
+
             var steps = new WaterfallStep[]
                             {
                                 this.MenuAsync,
                                 this.StartAsync,
                                 this.EndAsync,
                             };
+
+            this.AddDialog(new WaterfallDialog(this.InitialDialogId, steps));
+            this.AddDialog(new ChoicePrompt(PromptName));
         }
 
         public static RootDialog Instance { get; } = new RootDialog();
@@ -31,9 +32,7 @@
         private async Task<DialogTurnResult> MenuAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
             var menu = new List<string> { "start", "stop", "reset", "expire", "status" };
-            await stepContext.Context.SendActivityAsync(MessageFactory.SuggestedActions(menu, "How can I help you?"), cancellationToken);
-
-            return await stepContext.NextAsync(cancellationToken: cancellationToken);
+            return await stepContext.PromptAsync(PromptName, new PromptOptions() { Prompt = MessageFactory.Text("How can I help you?") }, cancellationToken);
         }
 
         private async Task<DialogTurnResult> StartAsync(

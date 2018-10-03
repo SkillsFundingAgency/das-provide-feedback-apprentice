@@ -51,7 +51,7 @@
             var sb = new StringBuilder();
             foreach (var r in responses)
             {
-                if (r is PredicateResponse predicatedResponse && !predicatedResponse.IsValid(surveyState))
+                if (r is ConditionalResponse conditionalResponse && !conditionalResponse.IsValid(surveyState))
                 {
                     continue;
                 }

@@ -22,14 +22,14 @@
 
     public class DialogFactory : IDialogFactory
     {
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository state;
 
         private readonly BotSettings botSettings;
 
         private readonly FeatureToggles features;
 
         /// <inheritdoc />
-        public DialogFactory(FeedbackBotState state, IOptions<FeatureToggles> features, IOptions<BotSettings> botSettings)
+        public DialogFactory(FeedbackBotStateRepository state, IOptions<FeatureToggles> features, IOptions<BotSettings> botSettings)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
             this.botSettings = botSettings.Value ?? throw new ArgumentNullException(nameof(botSettings));
@@ -66,7 +66,7 @@
 
         private ComponentDialog Create(Type type, ISurvey survey)
         {
-            if (type == typeof(LinearSurveyDialog))
+            if (type == typeof(SurveyDialog))
             {
                 return this.CreateLinearSurveyDialog(survey);
             }
@@ -74,7 +74,7 @@
             throw new DialogFactoryException($"Could not create DialogContainer : Unsupported type [{type.FullName}]");
         }
 
-        private LinearSurveyDialog CreateLinearSurveyDialog(ISurvey survey)
+        private SurveyDialog CreateLinearSurveyDialog(ISurvey survey)
         {
             var dialogs = new List<Dialog>();
             foreach (var s in survey.Steps)
@@ -94,11 +94,11 @@
                         break;
 
                     default:
-                        throw new DialogFactoryException($"Could not create LinearSurveyDialog step : Unsupported type [{s.GetType().FullName}]");
+                        throw new DialogFactoryException($"Could not create SurveyDialog step : Unsupported type [{s.GetType().FullName}]");
                 }
             }
 
-            return new LinearSurveyDialog(survey.Id)
+            return new SurveyDialog(survey.Id)
                 .WithSteps(survey.Steps)
                 .Build(this);
         }
@@ -108,11 +108,11 @@
             switch (step)
             {
                 case QuestionStep questionStep:
-                    return new SurveyQuestionDialog(this.state, this.botSettings, this.features)
+                    return new SurveyQuestionDialog(step.Id, this.state, this.botSettings, this.features)
                         .WithPrompt(questionStep.Prompt)
                         .WithResponses(questionStep.Responses)
                         .WithScore(questionStep.Score)
-                        .Build(step.Id);
+                        .Build();
                 default:
                     throw new DialogFactoryException($"Could not create SurveyQuestionDialog : Unsupported type [{step.GetType().FullName}]");
             }
@@ -120,16 +120,16 @@
 
         private ComponentDialog CreateSurveyStartDialog(ISurveyStep startStep)
         {
-            return new SurveyStartDialog(this.state, this.botSettings, this.features)
+            return new SurveyStartDialog(startStep.Id, this.state, this.botSettings, this.features)
                 .WithResponses(startStep.Responses)
-                .Build(startStep.Id);
+                .Build();
         }
 
         private ComponentDialog CreateSurveyEndDialog(ISurveyStep endStep)
         {
-            return new SurveyEndDialog(this.state, this.botSettings, this.features)
+            return new SurveyEndDialog(endStep.Id, this.state, this.botSettings, this.features)
                 .WithResponses(endStep.Responses)
-                .Build(endStep.Id);
+                .Build();
         }
     }
 }

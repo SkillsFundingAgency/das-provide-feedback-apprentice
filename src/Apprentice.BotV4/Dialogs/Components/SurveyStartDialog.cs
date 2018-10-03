@@ -11,6 +11,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
+    using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
 
@@ -26,21 +27,27 @@
 
         private readonly FeatureToggles features;
 
-        private FeedbackBotState state;
+        private FeedbackBotStateRepository state;
 
         private DialogConfiguration configuration;
 
         /// <inheritdoc />
-        public SurveyStartDialog(FeedbackBotState state, BotSettings botSettings, FeatureToggles features)
-            : base("survey-start")
+        public SurveyStartDialog(
+            string dialogId,
+            FeedbackBotStateRepository state,
+            BotSettings botSettings,
+            FeatureToggles features)
+            : base(dialogId)
         {
+            this.InitialDialogId = dialogId;
+
             this.botSettings = botSettings;
             this.features = features;
             this.state = state;
             this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
 
-        public ICollection<IResponse> Responses { get; protected set; } = new List<IResponse>();
+        public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
 
         public SurveyStartDialog AddResponse(IResponse response)
         {
@@ -48,17 +55,18 @@
             return this;
         }
 
-        public SurveyStartDialog Build(string id)
+        public SurveyStartDialog Build()
         {
             var steps = new WaterfallStep[]
-                {
-                    this.StepAsync,
-                    this.WrapUpAsync,
-                };
+            {
+                this.StepAsync,
+                this.FinishDialogAsync,
+            };
 
-            var waterfall = new WaterfallDialog(id, steps);
+            var waterfall = new WaterfallDialog(this.Id, steps);
 
             this.AddDialog(waterfall);
+            this.AddDialog(new ConfirmPrompt("confirm"));
 
             return this;
         }
@@ -69,30 +77,38 @@
             return this;
         }
 
-        private async Task<DialogTurnResult> StepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
-        {
-            var userInfo = await this.state.UserInfo.GetAsync(
-                                    stepContext.Context,
-                                    () => new UserInfo(),
-                                    cancellationToken);
-
-            if (this.configuration.CollateResponses)
-            {
-                await this.Responses.RespondAsSingleMessageAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
-            }
-            else
-            {
-                await this.Responses.RespondAsMultipleMessagesAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
-            }
-
-            return await stepContext.NextAsync(cancellationToken: cancellationToken);
-        }
-
-        private async Task<DialogTurnResult> WrapUpAsync(
+        private async Task<DialogTurnResult> StepAsync(
             WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+            var userInfo = await this.state.UserProfile.GetAsync(
+                               stepContext.Context,
+                               () => new UserProfile(),
+                               cancellationToken);
+
+            if (this.configuration.CollateResponses)
+            {
+                await this.Responses.RespondAsSingleMessageAsync(
+                    stepContext.Context,
+                    userInfo.SurveyState,
+                    this.configuration,
+                    cancellationToken);
+            }
+            else
+            {
+                await this.Responses.RespondAsMultipleMessagesAsync(
+                    stepContext.Context,
+                    userInfo.SurveyState,
+                    this.configuration,
+                    cancellationToken);
+            }
+
+            return await stepContext.NextAsync(null, cancellationToken);
         }
+
+        public async Task<DialogTurnResult> FinishDialogAsync(
+            WaterfallStepContext stepContext,
+            CancellationToken cancellationToken) =>
+            await stepContext.EndDialogAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }

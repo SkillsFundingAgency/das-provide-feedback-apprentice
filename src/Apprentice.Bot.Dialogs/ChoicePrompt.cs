@@ -88,7 +88,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
     //    // < returns ></ returns >
     //    protected override async Task OnPromptAsync(DialogContext dc, PromptOptions options, bool isRetry)
     //    {
-    //        UserInfo userInfo = UserState<UserInfo>.Get(dc.Context);
+    //        UserProfile userInfo = UserState<UserProfile>.Get(dc.Context);
 
     //        if (isRetry)
     //        {

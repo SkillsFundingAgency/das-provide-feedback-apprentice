@@ -26,13 +26,13 @@
 
         private readonly FeatureToggles features;
 
-        private FeedbackBotState state;
+        private FeedbackBotStateRepository state;
 
         private DialogConfiguration configuration;
 
         /// <inheritdoc />
-        public SurveyEndDialog(FeedbackBotState state, BotSettings botSettings, FeatureToggles features)
-            : base("survey-end")
+        public SurveyEndDialog(string dialogId, FeedbackBotStateRepository state, BotSettings botSettings, FeatureToggles features)
+            : base(dialogId)
         {
             this.botSettings = botSettings;
             this.features = features;
@@ -54,7 +54,7 @@
             return this;
         }
 
-        public SurveyEndDialog Build(string id)
+        public SurveyEndDialog Build()
         {
             var steps = new WaterfallStep[]
             {
@@ -62,7 +62,7 @@
                 this.WrapUpAsync,
             };
 
-            var waterfall = new WaterfallDialog(id, steps);
+            var waterfall = new WaterfallDialog(this.Id, steps);
 
             this.AddDialog(waterfall);
 
@@ -72,21 +72,21 @@
 
         private async Task<DialogTurnResult> StepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            UserInfo userInfo = await this.state.UserInfo.GetAsync(stepContext.Context, () => new UserInfo(), cancellationToken);
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(stepContext.Context, () => new UserProfile(), cancellationToken);
 
             if (this.configuration.CollateResponses)
             {
-                await this.Responses.RespondAsSingleMessageAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
+                await this.Responses.RespondAsSingleMessageAsync(stepContext.Context, userProfile.SurveyState, this.configuration, cancellationToken);
             }
             else
             {
-                await this.Responses.RespondAsMultipleMessagesAsync(stepContext.Context, userInfo.SurveyState, this.configuration, cancellationToken);
+                await this.Responses.RespondAsMultipleMessagesAsync(stepContext.Context, userProfile.SurveyState, this.configuration, cancellationToken);
             }
 
-            userInfo.SurveyState.Progress = ProgressState.Complete;
-            userInfo.SurveyState.EndDate = DateTime.Now;
+            userProfile.SurveyState.Progress = ProgressState.Complete;
+            userProfile.SurveyState.EndDate = DateTime.Now;
 
-            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+            return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
         private async Task<DialogTurnResult> WrapUpAsync(
