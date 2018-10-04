@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+
     /// <summary>
     /// User state information.
     /// </summary>
-    [Serializable]
-    public class UserInfo
-    {
-        public SurveyState SurveyState { get; set; }
-    }
-
     [Serializable]
     public class UserProfile
     {

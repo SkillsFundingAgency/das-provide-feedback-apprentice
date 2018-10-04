@@ -11,9 +11,9 @@
     {
         public Func<SurveyState, bool> Predicate { get; set; }
 
-        public override bool IsValid(SurveyState context)
+        public override bool IsValid(SurveyState state)
         {
-            return this.Predicate.Invoke(context);
+            return this.Predicate.Invoke(state);
         }
     }
 }

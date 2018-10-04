@@ -9,71 +9,69 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Root;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    using Microsoft.Bot;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Schema;
-    using Microsoft.Extensions.Localization;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
     public class FeedbackBot : IBot
     {
-        private readonly ILogger<FeedbackBot> logger;
-
-        private readonly IDialogFactory dialogFactory;
-
         private readonly IEnumerable<IBotDialogCommand> commands;
 
         private readonly IEnumerable<ISurvey> surveys;
 
+        private readonly IDialogFactory dialogFactory;
+
         private readonly Features featureToggles;
 
-        private readonly IStatePropertyAccessor<DialogState> dialogStateAccessor;
-        private readonly IStatePropertyAccessor<UserProfile> userProfileAccessor;
+        private readonly ILogger<FeedbackBot> logger;
 
-        private readonly FeedbackBotState state;
+        private readonly FeedbackBotStateRepository stateRepository;
 
-        public FeedbackBot(FeedbackBotState state, ILoggerFactory loggerFactory, IEnumerable<IBotDialogCommand> commands)
+        public FeedbackBot(
+            FeedbackBotStateRepository stateRepository,
+            ILoggerFactory loggerFactory,
+            IEnumerable<IBotDialogCommand> commands,
+            IEnumerable<ISurvey> surveys,
+            IDialogFactory dialogFactory,
+            IOptions<Features> featureToggles)
         {
             if (loggerFactory == null)
             {
-                throw new System.ArgumentNullException(nameof(loggerFactory));
+                throw new ArgumentNullException(nameof(loggerFactory));
             }
 
             this.logger = loggerFactory.CreateLogger<FeedbackBot>();
 
-            this.dialogStateAccessor = state.ConversationState.CreateProperty<DialogState>(nameof(DialogState));
-            this.userProfileAccessor = state.ConversationState.CreateProperty<UserProfile>(nameof(UserProfile));
-
-            //this.dialogFactory = dialogFactory ?? throw new ArgumentNullException(nameof(dialogFactory));
-
-            this.state = state;
+            this.dialogFactory = dialogFactory ?? throw new ArgumentNullException(nameof(dialogFactory));
+            this.stateRepository = stateRepository ?? throw new ArgumentNullException(nameof(stateRepository));
             this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
-            //this.surveys = surveys ?? throw new ArgumentNullException(nameof(surveys));
-
-            // this.featureToggles = featureToggles.Value ?? throw new ArgumentNullException(nameof(featureToggles));
+            this.surveys = surveys ?? throw new ArgumentNullException(nameof(surveys));
+            this.featureToggles = featureToggles.Value ?? throw new ArgumentNullException(nameof(featureToggles));
 
             this.Dialogs = this.BuildDialogs();
         }
 
         private DialogSet Dialogs { get; }
 
-        public async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = new CancellationToken())
+        /// <inheritdoc />
+        public async Task OnTurnAsync(
+            ITurnContext turnContext,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            var activity = turnContext.Activity;
-
             // Create a dialog context
             var dc = await this.Dialogs.CreateContextAsync(turnContext, cancellationToken);
 
             try
             {
-                BotChannel channel = this.ConfigureChannel(turnContext);
+                var channel = this.ConfigureChannel(turnContext);
 
                 switch (turnContext.Activity.Type)
                 {
@@ -86,9 +84,13 @@
                         break;
 
                     default:
-                        this.logger.LogInformation($"Encountered an unknown activity type of {turnContext.Activity.Type}");
+                        this.logger.LogInformation(
+                            $"Encountered an unknown activity type of {turnContext.Activity.Type}");
                         break;
                 }
+
+                await this.stateRepository.ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+                await this.stateRepository.UserState.SaveChangesAsync(turnContext, false, cancellationToken);
             }
             catch (Exception e)
             {
@@ -96,25 +98,25 @@
             }
         }
 
-        // TODO: add dynamic user-created dialogs from database 
+        // TODO: add dynamic user-created dialogs from database
         private DialogSet BuildDialogs()
         {
-            DialogSet dialogs = new DialogSet(this.dialogStateAccessor);
+            DialogSet dialogs = new DialogSet(this.stateRepository.ConversationDialogState);
             dialogs.Add(RootDialog.Instance);
 
-            //foreach (ISurvey survey in this.surveys)
-            //{
-            //    LinearSurveyDialog dialog = this.dialogFactory.Create<LinearSurveyDialog>(survey);
-            //    dialogs.Add(survey.Id, dialog);
-            //}
+            foreach (var survey in this.surveys)
+            {
+                var dialog = this.dialogFactory.Create<SurveyDialog>(survey);
+                dialogs.Add(dialog);
+            }
 
             return dialogs;
-        } 
+        }
 
-        private BotChannel ConfigureChannel(ITurnContext context)
+        private BotChannel ConfigureChannel(ITurnContext turnContext)
         {
-            dynamic channelData = context.Activity.ChannelData;
-            bool isSupported = Enum.TryParse(context.Activity.ChannelId, true, out BotChannel channelId);
+            dynamic channelData = turnContext.Activity.ChannelData;
+            var isSupported = Enum.TryParse(turnContext.Activity.ChannelId, true, out BotChannel channelId);
             if (!isSupported)
             {
                 return BotChannel.Unsupported;
@@ -128,7 +130,7 @@
                         // only reply in threads
                         if (channelData.SlackMessage.@event.thread_ts == null)
                         {
-                            context.Activity.Conversation.Id += $":{channelData.SlackMessage.@event.ts}";
+                            turnContext.Activity.Conversation.Id += $":{channelData.SlackMessage.@event.ts}";
                         }
                     }
 
@@ -137,11 +139,23 @@
                 case BotChannel.DirectLine:
                     if (channelData.NotifyMessage != null)
                     {
-                        context.Activity.Conversation.ConversationType = "personal";
-                        context.Activity.Conversation.IsGroup = false;
+                        turnContext.Activity.Conversation.ConversationType = "personal";
+                        turnContext.Activity.Conversation.IsGroup = false;
                     }
 
                     break;
+                case BotChannel.Sms:
+                    // The notify SMS channel doesn't actually use this channel type - it hangs off the DirectLine API (above)
+                    break;
+
+                case BotChannel.Emulator:
+                    break;
+
+                case BotChannel.Unsupported:
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return channelId;
@@ -153,16 +167,16 @@
         /// <param name="context"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task HandleCommandsAsync(DialogContext dc, CancellationToken cancellationToken)
+        private async Task HandleCommandsAsync(DialogContext dialog, CancellationToken cancellationToken)
         {
-            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dc));
+            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog));
             if (command != null)
             {
-                await command.ExecuteAsync(dc, cancellationToken);
+                await command.ExecuteAsync(dialog, cancellationToken);
             }
             else
             {
-                var userProfile = await this.userProfileAccessor.GetAsync(dc.Context, cancellationToken: cancellationToken);
+                var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
 
                 if (userProfile.SurveyState.StartDate != default(DateTime))
                 {
@@ -172,58 +186,23 @@
                     }
                 }
 
-                switch (userProfile.SurveyState.Progress)
-                {
-                    case ProgressState.NotStarted:
-                        // Not sure how they got here, fix the session!
-                        await dc.ContinueDialogAsync(cancellationToken);
-                        break;
-
-                    case ProgressState.InProgress:
-                        // Continue as normal
-                        await dc.ContinueDialogAsync(cancellationToken);
-                        break;
-
-                    case ProgressState.Complete:
-                        // Survey already completed, so let them know
-                        await dc.Context.SendActivityAsync($"Thanks for your interest, but it looks like you've already given us some feedback!", cancellationToken: cancellationToken);
-
-                        await dc.CancelAllDialogsAsync(cancellationToken);
-                        break;
-
-                    case ProgressState.Expired:
-                        // User took too long to reply
-                        await dc.Context.SendActivityAsync($"Thanks for that - but I'm afraid you've missed the deadline this time.", cancellationToken: cancellationToken);
-                        await dc.Context.SendActivityAsync($"I'll get in touch when it's time to give feedback again. Thanks for your help so far", cancellationToken: cancellationToken);
-
-                        await dc.CancelAllDialogsAsync(cancellationToken);
-                        break;
-
-                    case ProgressState.OptedOut:
-                        await dc.CancelAllDialogsAsync(cancellationToken);
-                        break;
-
-                    case ProgressState.BlackListed:
-                        await dc.CancelAllDialogsAsync(cancellationToken);
-                        break;
-
-                    default:
-                        await dc.ContinueDialogAsync(cancellationToken);
-                        break;
-                }
+                await ContinueConversation(dialog, userProfile, cancellationToken).ConfigureAwait(false);
             }
         }
-        
-        private async Task HandleConversationUpdateAsync(ITurnContext context, BotChannel channel, CancellationToken cancellationToken)
+
+        private async Task HandleConversationUpdateAsync(
+            ITurnContext turnContext,
+            BotChannel channel,
+            CancellationToken cancellationToken)
         {
-            foreach (ChannelAccount newMember in context.Activity.MembersAdded)
+            foreach (ChannelAccount newMember in turnContext.Activity.MembersAdded)
             {
                 // Show welcome messages for those channels that support it
                 if (channel == BotChannel.Slack || channel == BotChannel.Emulator)
                 {
-                    if (newMember.Id != context.Activity.Recipient.Id)
+                    if (newMember.Id != turnContext.Activity.Recipient.Id)
                     {
-                        await context.SendActivityAsync(
+                        await turnContext.SendActivityAsync(
                             $"Hello! I'm Bertie the Apprentice Feedback Bot. Please reply with 'help' if you would like to see a list of my capabilities",
                             cancellationToken: cancellationToken);
                     }
@@ -231,15 +210,55 @@
             }
         }
 
-        private async Task HandleMessageAsync(DialogContext dc, CancellationToken cancellationToken)
+        private async Task HandleMessageAsync(DialogContext dialog, CancellationToken cancellationToken)
         {
-            await this.HandleCommandsAsync(dc, cancellationToken);
+            await this.HandleCommandsAsync(dialog, cancellationToken);
 
-            if (!dc.Context.Responded)
+            if (!dialog.Context.Responded)
             {
-                await dc.BeginDialogAsync(RootDialog.Id, cancellationToken: cancellationToken);
+                await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
             }
         }
 
+        private static async Task<DialogTurnResult> ContinueConversation(DialogContext dialog, UserProfile userProfile, CancellationToken cancellationToken)
+        {
+            var reply = dialog.Context.Activity.CreateReply();
+
+            switch (userProfile.SurveyState.Progress)
+            {
+                case ProgressState.NotStarted:
+                    // Not sure how they got here, fix the session!
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+
+                case ProgressState.InProgress:
+                    // Continue as normal
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+
+                case ProgressState.Complete:
+                    // Survey already completed, so let them know
+                    reply.Text = $"Thanks for your interest, but it looks like you've already given us some feedback!";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                case ProgressState.Expired:
+                    // Survey already completed, so let them know
+                    reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
+                                 + $"\n"
+                                 + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                case ProgressState.OptedOut:
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                case ProgressState.BlackListed:
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                default:
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+            }
+        }
     }
 }

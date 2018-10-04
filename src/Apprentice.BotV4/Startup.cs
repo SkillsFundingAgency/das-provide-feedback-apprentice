@@ -8,6 +8,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
@@ -103,15 +104,23 @@
             // add & register services
             // services.AddTransient<ILogger>(provider => loggerFactory.CreateLogger<FeedbackBot>());
 
-            // services.AddSingleton<IDialogFactory, DialogFactory>();
+            services.AddSingleton<IDialogFactory, DialogFactory>();
             // services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>();
             services.AddSingleton<IMessageQueueMiddleware, AzureStorageQueueSmsRelay>();
             services.AddSingleton<ISmsQueueProvider, AzureStorageSmsQueueClient>();
 
             services.RegisterAllTypes<IBotDialogCommand>(
-                new[] { typeof(IBotDialogCommand).Assembly },
-                ServiceLifetime.Transient);
-            services.RegisterAllTypes<ISurvey>(new[] { typeof(ISurvey).Assembly }, ServiceLifetime.Transient);
+                new[]
+                    {
+                        typeof(IBotDialogCommand).Assembly,
+                    },
+                ServiceLifetime.Scoped);
+            services.RegisterAllTypes<ISurvey>(
+                new[]
+                    {
+                        typeof(ISurvey).Assembly,
+                    },
+                ServiceLifetime.Singleton);
 
             string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
             string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;
@@ -134,17 +143,6 @@
                     $"The .bot file does not contain an endpoint with name '{environment}'.");
             }
 
-            // // Storage configuration name or ID from the .bot file.
-            // const string StorageConfigurationId = "<STORAGE-NAME-OR-ID-FROM-BOT-FILE>";
-            // var blobConfig = botConfig.FindServiceByNameOrId(StorageConfigurationId);
-            // if (!(blobConfig is BlobStorageService blobStorageConfig))
-            // {
-            // throw new InvalidOperationException($"The .bot file does not contain an blob storage with name '{StorageConfigurationId}'.");
-            // }
-            // // Default container name.
-            // const string DefaultBotContainer = "<DEFAULT-CONTAINER>";
-            // var storageContainer = string.IsNullOrWhiteSpace(blobStorageConfig.Container) ? DefaultBotContainer : blobStorageConfig.Container;
-            // IStorage dataStore = new Microsoft.Bot.Builder.Azure.AzureBlobStorage(blobStorageConfig.ConnectionString, storageContainer);
             IStorage dataStore = this.ConfigureStateDataStore(this.Configuration);
 
             // add & configure bot framework
@@ -161,7 +159,7 @@
                         options.OnTurnError = async (context, exception) =>
                             {
                                 logger.LogError($"Exception caught : {exception}");
-                                await context.SendActivityAsync("Sorry, it looks like something went wrong.");
+                                await context.SendActivityAsync($"Exception {exception}");
                             };
 
                         var conversationState = new ConversationState(dataStore);
@@ -171,12 +169,12 @@
                         options.State.Add(userState);
 
                         // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-                        // options.Middleware.Add(new UserState<UserInfo>(dataStore));
+                        // options.Middleware.Add(new UserState<UserProfile>(dataStore));
                         // options.Middleware.Add<AzureStorageQueueSmsRelay>(services);
                         // options.Middleware.Add<IMessageQueueMiddleware>(services);
                     });
 
-            services.AddSingleton<FeedbackBotState>(
+            services.AddSingleton<FeedbackBotStateRepository>(
                 sp =>
                     {
                         // We need to grab the conversationState we added on the options in the previous step
@@ -203,11 +201,10 @@
 
                         // Create the custom state accessor.
                         // State accessors enable other components to read and write individual properties of state.
-                        var feedbackBotState = new FeedbackBotState(conversationState, userState)
+                        var feedbackBotState = new FeedbackBotStateRepository(conversationState, userState)
                             {
-                                ConversationDialogState =
-                                    conversationState.CreateProperty<DialogState>("DialogState"),
-                                UserInfo = userState.CreateProperty<UserInfo>("UserInfo"),
+                                ConversationDialogState = conversationState.CreateProperty<DialogState>("DialogState"),
+                                UserProfile = userState.CreateProperty<UserProfile>("UserProfile"),
                             };
 
                         return feedbackBotState;
