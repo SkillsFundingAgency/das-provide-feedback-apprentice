@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="NotifySms.cs" company="Education & Skills Funding Agency">
+// <copyright file="OutgoingSms.cs" company="Education & Skills Funding Agency">
 //   Copyright © 2018 Education & Skills Funding Agency
 // </copyright>
 // <summary>
@@ -7,14 +7,16 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-using Newtonsoft.Json;
-
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
 {
+    using System.Collections.Generic;
+
+    using Newtonsoft.Json;
+
     /// <summary>
     /// Represents an SMS message to be sent using the Notify service.
     /// </summary>
-    internal class NotifySms
+    public class OutgoingSms
     {
         /// <summary>
         /// Gets or sets the channel specific data. In the case of Slack, this would include chat name, account name, etc.
