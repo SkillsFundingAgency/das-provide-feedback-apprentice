@@ -1,13 +1,14 @@
-﻿using System.Threading;
-using System;
-using System.Threading.Tasks;
-
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder.Dialogs;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog
 {
-    using BotConfiguration = Core.Configuration.Bot;
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+    using Microsoft.Bot.Builder.Dialogs;
+
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
 
     public sealed class ExpireCommand : AdminCommand, IBotDialogCommand
     {

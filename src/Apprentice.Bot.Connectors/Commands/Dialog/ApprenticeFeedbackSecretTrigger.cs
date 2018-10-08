@@ -1,4 +1,4 @@
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog
 {
     using System;
     using System.Threading;
@@ -7,10 +7,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    using Microsoft.Azure.ServiceBus;
     using Microsoft.Bot.Builder.Dialogs;
-
-    using Newtonsoft.Json.Serialization;
 
     public sealed class ApprenticeFeedbackSecretTrigger : AdminCommand, IBotDialogCommand
     {

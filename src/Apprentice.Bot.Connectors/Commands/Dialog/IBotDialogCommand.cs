@@ -1,11 +1,10 @@
-﻿using System.Threading;
-using Microsoft.Bot.Builder;
-
-using System.Threading.Tasks;
-using Microsoft.Bot.Builder.Dialogs;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog
 {
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using Microsoft.Bot.Builder.Dialogs;
+
     public interface IBotDialogCommand
     {
         string Trigger { get; }

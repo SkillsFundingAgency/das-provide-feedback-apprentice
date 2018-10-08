@@ -1,5 +1,5 @@
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog
 {
     using System;
 

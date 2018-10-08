@@ -1,15 +1,12 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog
 {
     using System;
-    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
-    using Microsoft.Bot.Schema;
 
     using Newtonsoft.Json;
 

@@ -1,14 +1,14 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Extensions.Logging;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+
+    using Microsoft.Bot.Builder.Dialogs;
+
     public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
         private readonly FeedbackBotStateRepository state;
