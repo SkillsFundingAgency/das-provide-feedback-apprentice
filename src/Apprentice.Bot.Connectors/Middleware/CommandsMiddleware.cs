@@ -1,11 +1,12 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog;
 
     using Microsoft.Bot.Builder;
 
@@ -32,7 +33,7 @@
             NextDelegate next,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            await next(cancellationToken);
+
         }
     }
 }

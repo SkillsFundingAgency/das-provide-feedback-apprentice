@@ -22,7 +22,7 @@
     using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
     using NotifyConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
 
-    public class AzureServiceBusQueueSmsRelay : IMessageQueueMiddleware
+    public class AzureServiceBusSmsQueue : IMessageQueueMiddleware
     {
         private readonly AzureConfiguration azureConfig;
 
@@ -34,7 +34,7 @@
 
         private static IQueueClient queueClient;
 
-        public AzureServiceBusQueueSmsRelay(
+        public AzureServiceBusSmsQueue(
             IOptions<AzureConfiguration> azureConfigOptions,
             IOptions<DataConfiguration> dataConfigOptions,
             IOptions<NotifyConfiguration> notifyConfigOptions,
@@ -48,7 +48,7 @@
             queueClient = new QueueClient(this.connectionStrings.ServiceBus, this.notifyConfig.OutgoingMessageQueueName);
         }
 
-        ~AzureServiceBusQueueSmsRelay()
+        ~AzureServiceBusSmsQueue()
         {
             queueClient.CloseAsync();
         }
@@ -92,7 +92,7 @@
 
         public async Task EnqueueMessageAsync(ITurnContext context, Activity activity)
         {
-            NotifySms sms = new NotifySms
+            OutgoingSms sms = new OutgoingSms
             {
                 From = context.Activity.From,
                 Recipient = context.Activity.Recipient,

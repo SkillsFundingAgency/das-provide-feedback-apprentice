@@ -6,6 +6,7 @@
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
 
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
@@ -15,76 +16,33 @@
 
     using Newtonsoft.Json;
 
-    using AzureConfiguration = Core.Configuration.Azure;
-    using ConnectionStrings = Core.Configuration.ConnectionStrings;
-    using DataConfiguration = Core.Configuration.Data;
-    using NotifyConfiguration = Core.Configuration.Notify;
-
-    public class AzureStorageSmsQueueClient : ISmsQueueProvider
-    {
-        private readonly CloudQueueClient queueClient;
-
-        private readonly NotifyConfiguration notifyConfig;
-
-        private readonly ConnectionStrings connectionStrings;
-
-        public AzureStorageSmsQueueClient(IOptions<NotifyConfiguration> notifyConfigOptions, IOptions<ConnectionStrings> connectionStringsOptions)
-        {
-            this.notifyConfig = notifyConfigOptions.Value;
-            this.connectionStrings = connectionStringsOptions.Value;
-
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse(this.connectionStrings.StorageAccount);
-            this.queueClient = storageAccount.CreateCloudQueueClient();
-        }
-
-        ~AzureStorageSmsQueueClient()
-        {
-            // dispose here
-        }
-
-
-        public void Send(string message, string queueName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task SendAsync(string message, string queueName)
-        {
-            CloudQueue messageQueue = this.queueClient.GetQueueReference(queueName);
-            await messageQueue.CreateIfNotExistsAsync();
-
-            CloudQueueMessage queueMessage = new CloudQueueMessage(message);
-            await messageQueue.AddMessageAsync(queueMessage);
-        }
-    }
-
     /// <inheritdoc />
     /// <summary>
     /// Adds middleware to write conversation responses to a Queue for the purposes of using Notify to relay the message.
     /// </summary>
-    public class AzureStorageQueueSmsRelay : IMessageQueueMiddleware
+    public class AzureStorageSmsQueue : IMessageQueueMiddleware
     {
-        private readonly AzureConfiguration azureConfig;
+        private readonly Azure azureConfig;
 
-        private readonly DataConfiguration dataConfig;
+        private readonly Data dataConfig;
 
-        private readonly NotifyConfiguration notifyConfig;
+        private readonly Notify notifyConfig;
 
         private readonly ConnectionStrings connectionStrings;
 
         private readonly CloudQueueClient queueClient;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureStorageQueueSmsRelay"/> class.
+        /// Initializes a new instance of the <see cref="AzureStorageSmsQueue"/> class.
         /// </summary>
         /// <param name="azureConfigOptions"> the azure configuration options </param>
         /// <param name="dataConfigOptions"> the database configuration options </param>
         /// <param name="notifyConfigOptions"> the Notify service configuration options </param>
         /// <param name="connectionStringsOptions"> the connections strings options </param>
-        public AzureStorageQueueSmsRelay(
-            IOptions<AzureConfiguration> azureConfigOptions,
-            IOptions<DataConfiguration> dataConfigOptions,
-            IOptions<NotifyConfiguration> notifyConfigOptions,
+        public AzureStorageSmsQueue(
+            IOptions<Azure> azureConfigOptions,
+            IOptions<Data> dataConfigOptions,
+            IOptions<Notify> notifyConfigOptions,
             IOptions<ConnectionStrings> connectionStringsOptions)
         {
             this.azureConfig = azureConfigOptions.Value;
@@ -98,9 +56,9 @@
         }
 
         /// <summary>
-        /// Finalizes an instance of the <see cref="AzureStorageQueueSmsRelay"/> class. 
+        /// Finalizes an instance of the <see cref="AzureStorageSmsQueue"/> class. 
         /// </summary>
-        ~AzureStorageQueueSmsRelay()
+        ~AzureStorageSmsQueue()
         {
             // Tidy up
         }
@@ -161,17 +119,17 @@
             CloudQueue messageQueue = this.queueClient.GetQueueReference(this.notifyConfig.OutgoingMessageQueueName);
             await messageQueue.CreateIfNotExistsAsync();
 
-            NotifySms sms = new NotifySms
-            {
-                From = context.Activity.From,
-                Recipient = context.Activity.Recipient,
-                Conversation = context.Activity.Conversation,
-                ChannelData = context.Activity.ChannelData,
-                ChannelId = context.Activity.ChannelId,
-                Time = DateTime.Now.ToString(
+            OutgoingSms sms = new OutgoingSms
+                                {
+                                    From = context.Activity.From,
+                                    Recipient = context.Activity.Recipient,
+                                    Conversation = context.Activity.Conversation,
+                                    ChannelData = context.Activity.ChannelData,
+                                    ChannelId = context.Activity.ChannelId,
+                                    Time = DateTime.Now.ToString(
                                         CultureInfo.InvariantCulture),
-                Message = activity.Text,
-            };
+                                    Message = activity.Text,
+                                };
 
             CloudQueueMessage message =
                 new CloudQueueMessage(JsonConvert.SerializeObject(sms));

@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Bot.Connector" Version="4.0.7" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Microsoft.Azure.ServiceBus" Version="3.1.0" />
     <PackageReference Include="Microsoft.Bot.Schema" Version="4.0.7" />
@@ -14,7 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Apprentice.Bot.Dialogs\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
+    <ProjectReference Include="..\Apprentice.Data\ESFA.DAS.ProvideFeedback.Apprentice.Data.csproj" />
     <ProjectReference Include="..\Apprentice.Infrastructure\ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.csproj" />
   </ItemGroup>
 
