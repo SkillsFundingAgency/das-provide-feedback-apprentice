@@ -19,6 +19,11 @@
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
     <ProjectReference Include="..\Apprentice.Data\ESFA.DAS.ProvideFeedback.Apprentice.Data.csproj" />
     <ProjectReference Include="..\Apprentice.Infrastructure\ESFA.DAS.ProvideFeedback.Apprentice.Infrastructure.csproj" />
+    <ProjectReference Include="..\Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\" />
   </ItemGroup>
 
 </Project>

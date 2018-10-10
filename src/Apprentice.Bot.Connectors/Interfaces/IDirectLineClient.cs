@@ -1,8 +1,10 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces
 {
     using System;
     using System.Net.Http;
     using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 
     public interface IDirectLineClient : IDisposable
     {

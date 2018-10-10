@@ -6,6 +6,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs;
 
     using Microsoft.Extensions.Options;

@@ -1,7 +1,7 @@
-﻿using System.Runtime.Serialization;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 {
+    using System.Runtime.Serialization;
+
     public enum ProgressState
     {
         /// <summary>

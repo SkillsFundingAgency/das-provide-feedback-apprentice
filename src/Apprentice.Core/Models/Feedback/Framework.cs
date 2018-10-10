@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback
 {
     public class Framework : Apprenticeship
     {

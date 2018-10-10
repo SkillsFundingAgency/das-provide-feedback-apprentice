@@ -41,4 +41,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
             public int ThinkingTimeDelay { get; set; }
         }
     }
+
+    public class DirectLine
+    {
+        public string BotClientBaseAddress { get; set; }
+
+        public string BotClientAuthToken { get; set; }
+    }
 }

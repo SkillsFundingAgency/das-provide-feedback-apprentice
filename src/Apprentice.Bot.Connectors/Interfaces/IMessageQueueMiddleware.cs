@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces
 {
     using System.Threading.Tasks;
 

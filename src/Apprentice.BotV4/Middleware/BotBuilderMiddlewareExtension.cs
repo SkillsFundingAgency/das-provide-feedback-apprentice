@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using Microsoft.Bot.Builder;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware
 {
+    using System.Collections.Generic;
+
+    using Microsoft.Bot.Builder;
+    using Microsoft.Extensions.DependencyInjection;
+
     public static class BotBuilderMiddlewareExtensions
     {
         /// <summary>

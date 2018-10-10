@@ -1,18 +1,23 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
     using System;
+    using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+    using System.Reflection;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -58,9 +63,9 @@
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logger)
         {
-            this.loggerFactory = loggerFactory;
+            this.loggerFactory = logger;
 
             if (env.IsDevelopment())
             {
@@ -73,54 +78,22 @@
         public void ConfigureServices(IServiceCollection services)
         {
             // configure JSON serializer
-            // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
-            JsonConvert.DefaultSettings = () =>
-                {
-                    JsonSerializerSettings settings = new JsonSerializerSettings();
-                    settings.Formatting = Formatting.Indented;
-                    settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
-                    return settings;
-                };
+            this.ConfigureJsonSerializer();
 
             // bind configuration settings
-            services.AddOptions().BindConfiguration<Azure>(this.Configuration)
-                .BindConfiguration<Bot>(this.Configuration)
-                .BindConfiguration<ConnectionStrings>(this.Configuration)
-                .BindConfiguration<Data>(this.Configuration)
-                .BindConfiguration<Notify>(this.Configuration)
-                .BindConfiguration<Features>(this.Configuration);
+            this.ConfigureOptions(services);
 
             // add & configure localization
-            services.AddLocalization(options => options.ResourcesPath = "Resources")
-                .Configure<RequestLocalizationOptions>(
-                    options =>
-                        {
-                            var supportedCultures = new[] { new CultureInfo("en-GB") };
-                            options.DefaultRequestCulture = new RequestCulture("en-GB");
-                            options.SupportedCultures = supportedCultures;
-                            options.SupportedUICultures = supportedCultures;
-                        });
+            this.ConfigureLocalization(services);
 
-            // add & register services
-            // services.AddTransient<ILogger>(provider => loggerFactory.CreateLogger<FeedbackBot>());
+            // register services
+            this.RegisterServices(services);
 
-            services.AddSingleton<IDialogFactory, DialogFactory>();
-            // services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusQueueSmsRelay>();
-            services.AddSingleton<IMessageQueueMiddleware, AzureStorageQueueSmsRelay>();
-            services.AddSingleton<ISmsQueueProvider, AzureStorageSmsQueueClient>();
+            // register commands. These are usually conversational interrupts
+            this.RegisterAllDialogCommands(services);
 
-            services.RegisterAllTypes<IBotDialogCommand>(
-                new[]
-                    {
-                        typeof(IBotDialogCommand).Assembly,
-                    },
-                ServiceLifetime.Scoped);
-            services.RegisterAllTypes<ISurvey>(
-                new[]
-                    {
-                        typeof(ISurvey).Assembly,
-                    },
-                ServiceLifetime.Singleton);
+            // register all surveys
+            this.RegisterAllSurveys(services);
 
             string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
             string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;
@@ -170,8 +143,9 @@
 
                         // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
                         // options.Middleware.Add(new UserState<UserProfile>(dataStore));
-                        // options.Middleware.Add<AzureStorageQueueSmsRelay>(services);
-                        // options.Middleware.Add<IMessageQueueMiddleware>(services);
+                        // options.Middleware.Add<AzureStorageSmsRelay>(services);
+                        options.Middleware.Add<ChannelConfigurationMiddleware>(services);
+                        options.Middleware.Add<IMessageQueueMiddleware>(services);
                     });
 
             services.AddSingleton<FeedbackBotStateRepository>(
@@ -182,7 +156,7 @@
                         if (options == null)
                         {
                             throw new InvalidOperationException(
-                                "BotFrameworkOptions must be configured prior to setting up the State Accessors");
+                                "BotFrameworkOptions must be configured prior to setting up the State accessors");
                         }
 
                         var conversationState = options.State.OfType<ConversationState>().FirstOrDefault();
@@ -209,6 +183,59 @@
 
                         return feedbackBotState;
                     });
+        }
+
+        private void ConfigureJsonSerializer()
+        {
+            // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
+            JsonConvert.DefaultSettings = () =>
+                {
+                    JsonSerializerSettings settings = new JsonSerializerSettings();
+                    settings.Formatting = Formatting.Indented;
+                    settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
+                    return settings;
+                };
+        }
+
+        private void ConfigureOptions(IServiceCollection services)
+        {
+            services.AddOptions()
+                .BindConfiguration<Azure>(this.Configuration)
+                .BindConfiguration<Bot>(this.Configuration)
+                .BindConfiguration<ConnectionStrings>(this.Configuration)
+                .BindConfiguration<Data>(this.Configuration)
+                .BindConfiguration<Notify>(this.Configuration)
+                .BindConfiguration<Features>(this.Configuration);
+        }
+
+        private void ConfigureLocalization(IServiceCollection services)
+        {
+            services.AddLocalization(options => options.ResourcesPath = "Resources").Configure<RequestLocalizationOptions>(
+                options =>
+                    {
+                        var supportedCultures = new[] { new CultureInfo("en-GB") };
+                        options.DefaultRequestCulture = new RequestCulture("en-GB");
+                        options.SupportedCultures = supportedCultures;
+                        options.SupportedUICultures = supportedCultures;
+                    });
+        }
+
+        private void RegisterServices(IServiceCollection services)
+        {
+            services.AddSingleton<IDialogFactory, DialogFactory>();
+            services.AddSingleton<ISmsQueueProvider, AzureStorageQueueClient>();
+            services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
+            services.AddTransient<ChannelConfigurationMiddleware>();
+        }
+
+        private void RegisterAllSurveys(IServiceCollection services)
+        {
+            services.RegisterAllTypes<ISurvey>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
+        }
+
+        private void RegisterAllDialogCommands(IServiceCollection services)
+        {
+            services.RegisterAllTypes<IBotDialogCommand>(new Assembly[] { typeof(FeedbackBot).Assembly });
         }
 
         private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)

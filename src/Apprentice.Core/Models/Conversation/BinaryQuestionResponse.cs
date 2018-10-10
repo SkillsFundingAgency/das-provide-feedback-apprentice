@@ -1,8 +1,9 @@
-﻿using System;
-using Newtonsoft.Json;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 {
+    using System;
+
+    using Newtonsoft.Json;
+
     [Serializable]
     public class BinaryQuestionResponse
     {

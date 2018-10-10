@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
 {
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+
     [Serializable]
     public class SurveyState
     {

@@ -5,6 +5,7 @@
     using System.Linq;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 
     /// <summary>
     /// User state information.

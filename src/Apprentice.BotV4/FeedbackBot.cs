@@ -7,12 +7,14 @@
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Dialogs.Root;
-    using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Root;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Survey;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder;
@@ -62,17 +64,21 @@
         private DialogSet Dialogs { get; }
 
         /// <inheritdoc />
+        /// <summary>
+        /// This is where the most of the magic happens. Every time the bot receives a message, this method is executed and the message processed accordingly.
+        /// </summary>
+        /// <param name="turnContext"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task OnTurnAsync(
             ITurnContext turnContext,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             // Create a dialog context
-            var dc = await this.Dialogs.CreateContextAsync(turnContext, cancellationToken);
+            DialogContext dc = await this.Dialogs.CreateContextAsync(turnContext, cancellationToken);
 
             try
             {
-                var channel = this.ConfigureChannel(turnContext);
-
                 switch (turnContext.Activity.Type)
                 {
                     case ActivityTypes.Message:
@@ -80,7 +86,7 @@
                         break;
 
                     case ActivityTypes.ConversationUpdate:
-                        await this.HandleConversationUpdateAsync(turnContext, channel, cancellationToken);
+                        await this.HandleConversationUpdateAsync(turnContext, cancellationToken);
                         break;
 
                     default:
@@ -112,55 +118,7 @@
 
             return dialogs;
         }
-
-        private BotChannel ConfigureChannel(ITurnContext turnContext)
-        {
-            dynamic channelData = turnContext.Activity.ChannelData;
-            var isSupported = Enum.TryParse(turnContext.Activity.ChannelId, true, out BotChannel channelId);
-            if (!isSupported)
-            {
-                return BotChannel.Unsupported;
-            }
-
-            switch (channelId)
-            {
-                case BotChannel.Slack:
-                    if (channelData?.SlackMessage != null)
-                    {
-                        // only reply in threads
-                        if (channelData.SlackMessage.@event.thread_ts == null)
-                        {
-                            turnContext.Activity.Conversation.Id += $":{channelData.SlackMessage.@event.ts}";
-                        }
-                    }
-
-                    break;
-
-                case BotChannel.DirectLine:
-                    if (channelData.NotifyMessage != null)
-                    {
-                        turnContext.Activity.Conversation.ConversationType = "personal";
-                        turnContext.Activity.Conversation.IsGroup = false;
-                    }
-
-                    break;
-                case BotChannel.Sms:
-                    // The notify SMS channel doesn't actually use this channel type - it hangs off the DirectLine API (above)
-                    break;
-
-                case BotChannel.Emulator:
-                    break;
-
-                case BotChannel.Unsupported:
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            return channelId;
-        }
-
+        
         /// <summary>
         /// TODO: Add to middleware intercepts
         /// </summary>
@@ -192,13 +150,14 @@
 
         private async Task HandleConversationUpdateAsync(
             ITurnContext turnContext,
-            BotChannel channel,
             CancellationToken cancellationToken)
         {
+            var supported = Enum.TryParse(turnContext.Activity.ChannelId, true, out BotChannel channelId);
+
             foreach (ChannelAccount newMember in turnContext.Activity.MembersAdded)
             {
                 // Show welcome messages for those channels that support it
-                if (channel == BotChannel.Slack || channel == BotChannel.Emulator)
+                if (channelId == BotChannel.Slack || channelId == BotChannel.Emulator)
                 {
                     if (newMember.Id != turnContext.Activity.Recipient.Id)
                     {

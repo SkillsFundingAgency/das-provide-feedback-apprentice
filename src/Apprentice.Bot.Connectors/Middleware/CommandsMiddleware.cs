@@ -5,8 +5,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Commands.Dialog;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
 
     using Microsoft.Bot.Builder;
 

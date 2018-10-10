@@ -1,10 +1,10 @@
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
 
     using ApprenticeFeedbackDto = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;
 

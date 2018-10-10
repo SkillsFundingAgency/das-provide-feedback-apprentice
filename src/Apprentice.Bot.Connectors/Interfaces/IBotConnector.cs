@@ -1,7 +1,9 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 
     using Microsoft.Bot.Schema;
 

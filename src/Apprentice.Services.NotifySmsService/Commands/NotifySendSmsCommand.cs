@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.Helpers;
 
     using Notify.Client;
 
@@ -13,7 +14,7 @@
 
         public string MobileNumber { get; set; }
 
-        public TemplatedSmsMessage Template { get; set; }
+        public SmsMessageTemplate Template { get; set; }
 
         public string ReferenceId { get; set; }
 
@@ -21,6 +22,7 @@
 
         public void Execute()
         {
+            AsyncHelper.RunSync(() => this.ExecuteAsync(new CancellationToken()));
         }
 
         public async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -36,13 +38,13 @@
                 cancellationToken);
         }
 
-        public NotifySendSmsCommand UsingClient(NotificationClient notifyClient)
+        public NotifySendSmsCommand UsingNotifyClient(NotificationClient notifyClient)
         {
             this.Client = notifyClient;
             return this;
         }
 
-        public NotifySendSmsCommand WithSenderId(string smsSenderId)
+        public NotifySendSmsCommand UsingNotifySender(string smsSenderId)
         {
             this.SmsSenderId = smsSenderId;
             return this;
@@ -54,9 +56,9 @@
             return this;
         }
 
-        public TemplatedSmsMessage UsingTemplate(string templateId)
+        public SmsMessageTemplate UsingNotifyTemplate(string templateId)
         {
-            this.Template = new TemplatedSmsMessage(this) { TemplateId = templateId };
+            this.Template = new SmsMessageTemplate(this) { TemplateId = templateId };
             return this.Template;
         }
 

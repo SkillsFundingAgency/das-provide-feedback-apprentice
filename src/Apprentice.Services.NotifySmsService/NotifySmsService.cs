@@ -1,6 +1,5 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService
 {
-    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
@@ -10,9 +9,9 @@
 
     using Microsoft.Extensions.Options;
 
-    using NotifyConfig = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
-
     using Notify.Client;
+
+    using NotifyConfig = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
 
     public class NotifySmsService : ISmsService
     {
@@ -40,15 +39,14 @@
 
         public async Task SendSmsAsync(string destinationNumber, string messageToSend, string reference = null)
         {
-
             NotifySendSmsCommand command = new NotifySendSmsCommand()
-                .UsingClient(this.notifyClient)
-                .WithSenderId(this.NotifyConfiguration.SmsSenderId)
                 .SendSmsTo(destinationNumber)
-                .UsingTemplate(this.NotifyConfiguration.TemplateId)
+                .UsingNotifySender(this.NotifyConfiguration.SmsSenderId)
+                .UsingNotifyTemplate(this.NotifyConfiguration.TemplateId)
                     .AddVariable("message", messageToSend)
                     .Build()
-                .WithReference(reference);
+                .WithReference(reference)
+                .UsingNotifyClient(this.notifyClient);
 
             await this.sendSmsCommandHandler.HandleAsync(command);
         }

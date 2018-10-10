@@ -1,15 +1,14 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Clients
 {
     using System;
-    using System.Configuration;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
-    using Microsoft.Bot.Connector;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
 
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
 
     /// <summary>
     /// TODO: Polly
