@@ -36,4 +36,10 @@
     <ProjectReference Include="..\Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="BotConfiguration.bot">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
