@@ -103,10 +103,6 @@
             services.AddSingleton(
                 sp => botConfig ?? throw new InvalidOperationException($"The .bot config file could not be loaded."));
 
-            // Add BotServices singleton.
-            // Create the connected services from .bot file.
-            // services.AddSingleton(sp => new BotServices(botConfig));
-
             // Retrieve current endpoint.
             var environment = this.isProduction ? "production" : "development";
             var service = botConfig.Services.FirstOrDefault(s => s.Type == "endpoint" && s.Name == environment);
@@ -123,8 +119,8 @@
                 options =>
                     {
                         options.CredentialProvider = new SimpleCredentialProvider(
-                            endpointService.AppId,
-                            endpointService.AppPassword);
+                            this.Configuration["MicrosoftAppId"],
+                            this.Configuration["MicrosoftAppPassword"]);
 
                         ILogger logger = this.loggerFactory.CreateLogger<FeedbackBot>();
 
@@ -200,12 +196,12 @@
         private void ConfigureOptions(IServiceCollection services)
         {
             services.AddOptions()
-                .BindConfiguration<Azure>(this.Configuration)
-                .BindConfiguration<Bot>(this.Configuration)
+                .BindConfiguration<AzureSettings>(this.Configuration)
+                .BindConfiguration<BotSettings>(this.Configuration)
                 .BindConfiguration<ConnectionStrings>(this.Configuration)
-                .BindConfiguration<Data>(this.Configuration)
-                .BindConfiguration<Notify>(this.Configuration)
-                .BindConfiguration<Features>(this.Configuration);
+                .BindConfiguration<DataSettings>(this.Configuration)
+                .BindConfiguration<NotifySettings>(this.Configuration)
+                .BindConfiguration<FeatureToggles>(this.Configuration);
         }
 
         private void ConfigureLocalization(IServiceCollection services)
