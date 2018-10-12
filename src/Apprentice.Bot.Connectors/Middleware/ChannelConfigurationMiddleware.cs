@@ -35,7 +35,7 @@
                     break;
 
                 case BotChannel.DirectLine:
-                    if (channelData.NotifyMessage != null)
+                    if (channelData?.NotifyMessage != null)
                     {
                         turnContext.Activity.Conversation.ConversationType = "personal";
                         turnContext.Activity.Conversation.IsGroup = false;
