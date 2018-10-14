@@ -28,7 +28,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
             [QueueTrigger("sms-outgoing-messages")]
-            dynamic outgoingSms, // cast to Bot.Core queue object
+            dynamic outgoingSms, // TODO: cast to Bot.Core queue object
             TraceWriter log,
             ExecutionContext context)
         {
@@ -44,12 +44,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string reference = outgoingSms?.conversation?.id;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                SmsNotificationResponse sendSmsTask = await Task.Run(() => SendSms(
+                SmsNotificationResponse sendSmsTask = SendSms(
                                                           mobileNumber, 
                                                           templateId, 
                                                           personalization, 
                                                           reference, 
-                                                          smsSenderId));
+                                                          smsSenderId);
 
                 log.Info($"SendSmsMessage response: {sendSmsTask}");
             }
