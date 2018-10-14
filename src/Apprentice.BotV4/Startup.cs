@@ -140,6 +140,7 @@
                         // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
                         // options.Middleware.Add(new UserState<UserProfile>(dataStore));
                         // options.Middleware.Add<AzureStorageSmsRelay>(services);
+                        options.Middleware.Add<ConversationLogMiddleware>(services);
                         options.Middleware.Add<ChannelConfigurationMiddleware>(services);
                         options.Middleware.Add<IMessageQueueMiddleware>(services);
                     });
@@ -222,6 +223,7 @@
             services.AddSingleton<ISmsQueueProvider, AzureStorageQueueClient>();
             services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
             services.AddTransient<ChannelConfigurationMiddleware>();
+            services.AddTransient<ConversationLogMiddleware>();
         }
 
         private void RegisterAllSurveys(IServiceCollection services)

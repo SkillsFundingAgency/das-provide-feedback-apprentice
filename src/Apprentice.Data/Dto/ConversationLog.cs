@@ -1,13 +1,13 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto
 {
     using System;
-    using System.Collections.Generic;
-    using System.Text;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data;
 
     using Newtonsoft.Json;
 
     [Serializable]
-    public class ConversationLog
+    public class ConversationLog : TypedDocument<ConversationLog>
     {
         /// <summary>
         /// Gets or sets the channel specific data. In the case of Slack, this would include chat name, account name, etc.
