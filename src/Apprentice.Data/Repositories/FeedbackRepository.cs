@@ -1,9 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
 {
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-
     using Microsoft.Extensions.Options;
 
     using ApprenticeFeedbackDto = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;

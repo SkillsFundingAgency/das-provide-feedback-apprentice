@@ -17,6 +17,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     using Microsoft.AspNetCore.Builder;
@@ -95,6 +96,9 @@
             // register all surveys
             this.RegisterAllSurveys(services);
 
+            services.AddSingleton<IFeedbackRepository, CosmosFeedbackRepository>();
+            services.AddSingleton<IConversationRepository, CosmosConversationRepository>();
+
             string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
             string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;
 
@@ -141,6 +145,7 @@
                         // options.Middleware.Add(new UserState<UserProfile>(dataStore));
                         // options.Middleware.Add<AzureStorageSmsRelay>(services);
                         options.Middleware.Add<ChannelConfigurationMiddleware>(services);
+                        options.Middleware.Add<ConversationLogMiddleware>(services);
                         options.Middleware.Add<IMessageQueueMiddleware>(services);
                     });
 
@@ -219,9 +224,10 @@
         private void RegisterServices(IServiceCollection services)
         {
             services.AddSingleton<IDialogFactory, DialogFactory>();
-            services.AddSingleton<ISmsQueueProvider, AzureStorageQueueClient>();
-            services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
+            services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
+            services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusSmsRelay>();
             services.AddTransient<ChannelConfigurationMiddleware>();
+            services.AddTransient<ConversationLogMiddleware>();
         }
 
         private void RegisterAllSurveys(IServiceCollection services)

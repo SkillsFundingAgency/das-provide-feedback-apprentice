@@ -84,11 +84,11 @@
                 turnContext.OnSendActivities(
                     async (activityContext, activityList, activityNext) =>
                         {
-                            // dynamic channelData = context.Activity.ChannelData;
-                            // if (channelData?.NotifyMessage == null)
-                            // {
-                            // return await activityNext();
-                            // }
+                            dynamic channelData = activityContext.Activity.ChannelData;
+                            if (channelData?.NotifyMessage == null)
+                            {
+                                return await activityNext();
+                            }
                             foreach (Activity activity in activityList)
                             {
                                 if (activity.Type != ActivityTypes.Message || !activity.HasContent())

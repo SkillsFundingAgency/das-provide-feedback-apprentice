@@ -14,7 +14,7 @@
 
     public class AzureServiceBusClient : ISmsQueueProvider
     {
-        private readonly List<IQueueClient> queueClients;
+        private readonly List<IQueueClient> queueClients = new List<IQueueClient>();
 
         private readonly Notify notifyConfig;
 
