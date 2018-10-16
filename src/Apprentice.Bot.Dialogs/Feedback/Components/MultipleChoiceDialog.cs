@@ -64,7 +64,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             this.AddDialog(waterfall);
 
-            this.AddDialog(new ChoicePrompt(ChoicePrompt));
+            this.AddDialog(new ChoicePrompt(ChoicePrompt) { Style = ListStyle.None });
 
             return this;
         }
