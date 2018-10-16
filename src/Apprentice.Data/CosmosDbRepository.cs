@@ -71,7 +71,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data
         /// <summary>
         /// The current instance.
         /// </summary>
-        public static CosmosDbRepository Instance => LazyInstance.Value;
+        public static CosmosDbRepository Instance => new CosmosDbRepository();
 
         /// <summary>
         /// The document collection uri.
