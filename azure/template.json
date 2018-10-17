@@ -201,6 +201,14 @@
                             {
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
+                            },
+                            {
+                                "name": "Notify:SmsOutgoingMessageQueueName",
+                                "value": "[variables('queues').OutgoingMessageQueueName]"
+                            },
+                            {
+                                "name": "Notify:SmsIncomingMessageQueueName",
+                                "value": "[variables('queues').IncomingMessageQueueName]"
                             }
                         ]
                     },
@@ -214,6 +222,11 @@
                             {
                                 "name": "StorageAccount",
                                 "connectionString": "[reference('StorageAccount').outputs.storageConnectionString.value]",
+                                "type": "Custom"
+                            },
+                            {
+                                "name": "ServiceBus",
+                                "connectionString": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]",
                                 "type": "Custom"
                             }
                         ]
@@ -352,6 +365,10 @@
                             {
                                 "name": "NotifyClientApiKey",
                                 "value": "[parameters('notifyCredentials').ClientApiKey]"
+                            },
+                            {
+                                "name": "ServiceBusConnection",
+                                "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
                             }
                         ]
                     }
@@ -371,6 +388,12 @@
                 "parameters": {
                     "serviceBusNamespaceName": {
                         "value": "[parameters('serviceBusNamespaceName')]"
+                    },
+                    "serviceBusQueues": {
+                        "value": [
+                            "[variables('queues').OutgoingMessageQueueName]",
+                            "[variables('queues').IncomingMessageQueueName]"
+                        ]
                     }
                 }
             }
