@@ -3,9 +3,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System;
     using System.IO;
     using System.Web.Http;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions;
-
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
@@ -17,7 +14,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     public static class ReceiveNotifyDeliveryReceipt
     {
         [FunctionName("ReceiveNotifyDeliveryReceipt")]
-        [return: Queue("sms-delivery-log")]
+        [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
         public static ActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,

@@ -26,7 +26,7 @@
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.7" />
     <PackageReference Include="Microsoft.Bot.Configuration" Version="4.0.7" />
 
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="2.1.2" />
   </ItemGroup>
 
   <ItemGroup>

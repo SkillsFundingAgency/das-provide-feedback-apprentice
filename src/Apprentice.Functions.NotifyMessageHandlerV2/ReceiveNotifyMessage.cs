@@ -15,7 +15,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     public static class ReceiveNotifyMessage
     {
         [FunctionName("ReceiveNotifyMessage")]
-        [return: Queue("sms-received-messages")]
+        [return: ServiceBus("sms-received-messages", Connection = "ServiceBusConnection")]
         public static ActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,

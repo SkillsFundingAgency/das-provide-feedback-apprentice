@@ -30,7 +30,7 @@
         "serviceBus": {
             "prefetchCount": 100,
             "messageHandlerOptions": {
-                "maxConcurrentCalls": 32,
+                "maxConcurrentCalls": 1,
                 "maxAutoRenewDuration": "00:55:00"
             }
         }

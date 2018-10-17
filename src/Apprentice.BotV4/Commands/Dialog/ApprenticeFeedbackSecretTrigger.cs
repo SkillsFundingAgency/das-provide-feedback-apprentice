@@ -23,7 +23,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
         /// <inheritdoc />
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            var dialogId = "afb-v3";
+            var dialogId = "afb-v5";
 
             UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
             userProfile.SurveyState = new SurveyState

@@ -20,6 +20,23 @@
     <ProjectReference Include="..\Apprentice.Data\ESFA.DAS.ProvideFeedback.Apprentice.Data.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Update="DeliverMessageToBot/function.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="local.settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ReceiveNotifyDeliveryReceipt/function.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="ReceiveNotifyMessage/function.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="SendSmsMessage/function.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
 </Project>

@@ -22,7 +22,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
 
         public DateTime StartDate { get; set; }
 
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
         public ProgressState Progress { get; set; }
 

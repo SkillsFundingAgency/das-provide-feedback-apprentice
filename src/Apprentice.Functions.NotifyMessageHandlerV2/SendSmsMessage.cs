@@ -8,7 +8,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Host;
-
+    using Newtonsoft.Json;
     using Notify.Client;
     using Notify.Models.Responses;
 
@@ -27,12 +27,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
-            [QueueTrigger("sms-outgoing-messages")]
-            dynamic outgoingSms, // cast to Bot.Core queue object
-            TraceWriter log,
-            ExecutionContext context)
+        [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
+        string queueMessage,
+        TraceWriter log,
+        ExecutionContext context)
         {
             currentContext = context;
+            dynamic outgoingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
             try
             {
@@ -44,12 +45,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string reference = outgoingSms?.conversation?.id;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                SmsNotificationResponse sendSmsTask = await Task.Run(() => SendSms(
-                                                          mobileNumber, 
-                                                          templateId, 
-                                                          personalization, 
-                                                          reference, 
-                                                          smsSenderId));
+                SmsNotificationResponse sendSmsTask = SendSms(
+                                                          mobileNumber,
+                                                          templateId,
+                                                          personalization,
+                                                          reference,
+                                                          smsSenderId);
 
                 log.Info($"SendSmsMessage response: {sendSmsTask}");
             }

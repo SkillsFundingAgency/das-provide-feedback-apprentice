@@ -2,17 +2,17 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using Microsoft.Bot.Builder.Dialogs;
-
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+    using DtoApprenticeFeedback = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
     /// <inheritdoc />
@@ -26,6 +26,8 @@
 
         private readonly DialogConfiguration configuration;
 
+        private readonly IFeedbackRepository feedbackRepository;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SurveyEndDialog"/> class.
         /// A dialog that appears at the end of a survey. Usually collects the responses and feeds back to the user in some way.
@@ -34,11 +36,12 @@
         /// <param name="state">the state repository/accessors.</param>
         /// <param name="botSettings">configuration for the bot.</param>
         /// <param name="features">feature configuration.</param>
-        public SurveyEndDialog(string dialogId, FeedbackBotStateRepository state, BotSettings botSettings, FeatureToggles features)
+        public SurveyEndDialog(string dialogId, FeedbackBotStateRepository state, BotSettings botSettings, FeatureToggles features, IFeedbackRepository feedbackRepository)
             : base(dialogId)
         {
             this.botSettings = botSettings;
             this.features = features;
+            this.feedbackRepository = feedbackRepository;
             this.state = state;
             this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
@@ -104,8 +107,36 @@
 
             userProfile.SurveyState.Progress = ProgressState.Complete;
             userProfile.SurveyState.EndDate = DateTime.Now;
+            DtoApprenticeFeedback feedback = CreateFeedbackDto(userProfile);
+            await this.feedbackRepository.SaveFeedback(feedback);
 
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
+        }
+
+        private static DtoApprenticeFeedback CreateFeedbackDto(UserProfile userProfile)
+        {
+            return new DtoApprenticeFeedback
+            {
+                Apprentice = new Apprentice
+                {
+                    UniqueLearnerNumber = userProfile.IlrNumber
+                },
+                StartTime = userProfile.SurveyState.StartDate,
+                FinishTime = userProfile.SurveyState.EndDate.GetValueOrDefault(),
+                Responses = userProfile.SurveyState.Responses.Select(ConvertToResponseData).ToList(),
+                PartitionKey = userProfile.TelephoneNumber
+            };
+        }
+
+        private static ApprenticeResponse ConvertToResponseData(BinaryQuestionResponse binaryQuestionResponse)
+        {
+            return new ApprenticeResponse
+            {
+                Question =  binaryQuestionResponse.Question,
+                Answer = binaryQuestionResponse.Answer,
+                Intent = binaryQuestionResponse.Intent,
+                Score = binaryQuestionResponse.Score
+            };
         }
 
         private async Task<DialogTurnResult> EndDialogAsync(

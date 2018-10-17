@@ -71,7 +71,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data
         /// <summary>
         /// The current instance.
         /// </summary>
-        public static CosmosDbRepository Instance => LazyInstance.Value;
+        public static CosmosDbRepository Instance => new CosmosDbRepository();
 
         /// <summary>
         /// The document collection uri.
@@ -287,6 +287,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data
         public CosmosDbRepository UsingCollection(string collectionName)
         {
             this.collection = collectionName;
+            this.CreateCollectionIfNotExistsAsync().Wait();
             return this;
         }
 
@@ -339,6 +340,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data
         public CosmosDbRepository UsingDatabase(string databaseName)
         {
             this.database = databaseName;
+            CreateDatabaseIfNotExistsAsync().Wait();
             return this;
         }
 
@@ -504,6 +506,47 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data
             if (!string.IsNullOrEmpty(this.partitionKey) && typedDocument != null)
             {
                 typedDocument.PartitionKey = typedDocument.PartitionKey ?? this.partitionKey;
+            }
+        }
+
+        private async Task CreateDatabaseIfNotExistsAsync()
+        {
+            try
+            {
+                await this.documentClient.ReadDatabaseAsync(UriFactory.CreateDatabaseUri(this.database));
+            }
+            catch (DocumentClientException e)
+            {
+                if (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    await this.documentClient.CreateDatabaseAsync(new Database { Id = this.database });
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        private async Task CreateCollectionIfNotExistsAsync()
+        {
+            try
+            {
+                await this.documentClient.ReadDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(this.database, this.collection));
+            }
+            catch (DocumentClientException e)
+            {
+                if (e.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    await this.documentClient.CreateDocumentCollectionAsync(
+                        UriFactory.CreateDatabaseUri(this.database),
+                        new DocumentCollection { Id = this.collection },
+                        new RequestOptions { OfferThroughput = 1000 });
+                }
+                else
+                {
+                    throw;
+                }
             }
         }
 
