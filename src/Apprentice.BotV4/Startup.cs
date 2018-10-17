@@ -201,11 +201,11 @@
         private void ConfigureOptions(IServiceCollection services)
         {
             services.AddOptions()
-                .BindConfiguration<AzureSettings>(this.Configuration)
-                .BindConfiguration<BotSettings>(this.Configuration)
+                .BindConfiguration<Azure>(this.Configuration)
+                .BindConfiguration<Bot>(this.Configuration)
                 .BindConfiguration<ConnectionStrings>(this.Configuration)
-                .BindConfiguration<DataSettings>(this.Configuration)
-                .BindConfiguration<NotifySettings>(this.Configuration)
+                .BindConfiguration<Data>(this.Configuration)
+                .BindConfiguration<Notify>(this.Configuration)
                 .BindConfiguration<FeatureToggles>(this.Configuration);
         }
 

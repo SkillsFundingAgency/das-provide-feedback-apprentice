@@ -10,7 +10,7 @@
     <VersionPrefix>2.4.1</VersionPrefix>
     <VersionSuffix>alpha</VersionSuffix>
     <NeutralLanguage>en-GB</NeutralLanguage>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>d38ad486-13e2-44a4-9cc0-dd1f37bee67a</UserSecretsId>
   </PropertyGroup>
 
@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Bot.Builder.TemplateManager" Version="4.0.7" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta008" PrivateAssets="all" />
 
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
     <PackageReference Include="Microsoft.Bot.Builder" Version="4.0.7" />
     <PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.0.7" />
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.0.7" />
