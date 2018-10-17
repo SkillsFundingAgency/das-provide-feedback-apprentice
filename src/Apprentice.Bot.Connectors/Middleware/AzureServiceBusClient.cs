@@ -20,13 +20,18 @@
 
         private readonly ConnectionStrings connectionStrings;
 
-        public AzureServiceBusClient(IOptions<Notify> notifyConfigOptions, IOptions<ConnectionStrings> connectionStrings)
+        public AzureServiceBusClient(IQueueClient queueClient)
         {
-            this.notifyConfig = notifyConfigOptions.Value;
-            this.connectionStrings = connectionStrings.Value;
-
-            this.queueClients.Add(new QueueClient(this.connectionStrings.ServiceBus, this.notifyConfig.OutgoingMessageQueueName));
+           this.queueClients.Add(queueClient);
         }
+
+        //public AzureServiceBusClient(IOptions<Notify> notifyConfigOptions, IOptions<ConnectionStrings> connectionStrings)
+        //{
+        //    this.notifyConfig = notifyConfigOptions.Value;
+        //    this.connectionStrings = connectionStrings.Value;
+
+        //    this.queueClients.Add(new QueueClient(this.connectionStrings.ServiceBus, this.notifyConfig.OutgoingMessageQueueName));
+        //}
 
         ~AzureServiceBusClient()
         {

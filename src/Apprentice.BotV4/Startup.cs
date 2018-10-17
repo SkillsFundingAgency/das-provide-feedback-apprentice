@@ -23,6 +23,7 @@
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Localization;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Azure;
     using Microsoft.Bot.Builder.Dialogs;
@@ -56,7 +57,8 @@
         {
             var builder = new ConfigurationBuilder().SetBasePath(env.ContentRootPath)
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true).AddEnvironmentVariables();
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddEnvironmentVariables();
 
             this.Configuration = builder.Build();
         }
@@ -228,6 +230,11 @@
             services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusSmsRelay>();
             services.AddTransient<ChannelConfigurationMiddleware>();
             services.AddTransient<ConversationLogMiddleware>();
+            services.AddTransient<IQueueClient>(sp =>
+            {
+                var notifyConfig = sp.GetRequiredService<IOptions<Notify>>().Value;
+                return new QueueClient(this.Configuration.GetConnectionString("ServiceBus"), notifyConfig.OutgoingMessageQueueName);
+            });
         }
 
         private void RegisterAllSurveys(IServiceCollection services)
