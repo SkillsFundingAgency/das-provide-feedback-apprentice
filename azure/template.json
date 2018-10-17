@@ -201,6 +201,14 @@
                             {
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
+                            },
+                            {
+                                "name": "Notify:SmsOutgoingMessageQueueName",
+                                "value": "[variables('queues').OutgoingMessageQueueName]"
+                            },
+                            {
+                                "name": "Notify:SmsIncomingMessageQueueName",
+                                "value": "[variables('queues').IncomingMessageQueueName]"
                             }
                         ]
                     },
