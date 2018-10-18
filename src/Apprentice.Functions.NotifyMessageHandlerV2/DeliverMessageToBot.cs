@@ -46,12 +46,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         /// <returns> the <see cref="Task"/> </returns>
         [FunctionName("DeliverMessageToBot")]
         public static async Task Run(
-            [QueueTrigger("sms-received-messages")]
-            dynamic incomingSms,
-            TraceWriter log,
-            ExecutionContext context)
+        [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
+        string queueMessage,
+        TraceWriter log,
+        ExecutionContext context)
         {
             currentContext = context;
+            dynamic incomingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
             try
             {
