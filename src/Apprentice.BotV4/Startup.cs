@@ -1,12 +1,10 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
     using System;
-    using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
@@ -38,12 +36,7 @@
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
-
-    using AzureSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
-    using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
-    using DataSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
-    using NotifySettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
 
     public class Startup
     {
@@ -123,81 +116,81 @@
             // add & configure bot framework
             services.AddBot<FeedbackBot>(
                 options =>
+                {
+                    options.CredentialProvider = new SimpleCredentialProvider(
+                        this.Configuration["MicrosoftAppId"],
+                        this.Configuration["MicrosoftAppPassword"]);
+
+                    ILogger logger = this.loggerFactory.CreateLogger<FeedbackBot>();
+
+                    // Catches any errors that occur during a conversation turn and logs them.
+                    options.OnTurnError = async (context, exception) =>
                     {
-                        options.CredentialProvider = new SimpleCredentialProvider(
-                            this.Configuration["MicrosoftAppId"],
-                            this.Configuration["MicrosoftAppPassword"]);
+                        logger.LogError($"Exception caught : {exception}");
+                        await context.SendActivityAsync($"Exception {exception}");
+                    };
 
-                        ILogger logger = this.loggerFactory.CreateLogger<FeedbackBot>();
+                    var conversationState = new ConversationState(dataStore);
+                    options.State.Add(conversationState);
 
-                        // Catches any errors that occur during a conversation turn and logs them.
-                        options.OnTurnError = async (context, exception) =>
-                            {
-                                logger.LogError($"Exception caught : {exception}");
-                                await context.SendActivityAsync($"Exception {exception}");
-                            };
+                    var userState = new UserState(dataStore);
+                    options.State.Add(userState);
 
-                        var conversationState = new ConversationState(dataStore);
-                        options.State.Add(conversationState);
-
-                        var userState = new UserState(dataStore);
-                        options.State.Add(userState);
-
-                        // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-                        // options.Middleware.Add(new UserState<UserProfile>(dataStore));
-                        // options.Middleware.Add<AzureStorageSmsRelay>(services);
-                        options.Middleware.Add<ChannelConfigurationMiddleware>(services);
-                        options.Middleware.Add<ConversationLogMiddleware>(services);
-                        options.Middleware.Add<IMessageQueueMiddleware>(services);
-                    });
+                    // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
+                    // options.Middleware.Add(new UserState<UserProfile>(dataStore));
+                    // options.Middleware.Add<AzureStorageSmsRelay>(services);
+                    options.Middleware.Add<ChannelConfigurationMiddleware>(services);
+                    options.Middleware.Add<ConversationLogMiddleware>(services);
+                    options.Middleware.Add<IMessageQueueMiddleware>(services);
+                });
 
             services.AddSingleton<FeedbackBotStateRepository>(
                 sp =>
+                {
+                    // We need to grab the conversationState we added on the options in the previous step
+                    var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
+                    if (options == null)
                     {
-                        // We need to grab the conversationState we added on the options in the previous step
-                        var options = sp.GetRequiredService<IOptions<BotFrameworkOptions>>().Value;
-                        if (options == null)
-                        {
-                            throw new InvalidOperationException(
-                                "BotFrameworkOptions must be configured prior to setting up the State accessors");
-                        }
+                        throw new InvalidOperationException(
+                            "BotFrameworkOptions must be configured prior to setting up the State accessors");
+                    }
 
-                        var conversationState = options.State.OfType<ConversationState>().FirstOrDefault();
-                        if (conversationState == null)
-                        {
-                            throw new InvalidOperationException(
-                                "ConversationState must be defined and added before adding conversation-scoped state accessors.");
-                        }
+                    var conversationState = options.State.OfType<ConversationState>().FirstOrDefault();
+                    if (conversationState == null)
+                    {
+                        throw new InvalidOperationException(
+                            "ConversationState must be defined and added before adding conversation-scoped state accessors.");
+                    }
 
-                        var userState = options.State.OfType<UserState>().FirstOrDefault();
-                        if (userState == null)
-                        {
-                            throw new InvalidOperationException(
-                                "UserState must be defined and added before adding user-scoped state accessors.");
-                        }
+                    var userState = options.State.OfType<UserState>().FirstOrDefault();
+                    if (userState == null)
+                    {
+                        throw new InvalidOperationException(
+                            "UserState must be defined and added before adding user-scoped state accessors.");
+                    }
 
-                        // Create the custom state accessor.
-                        // State accessors enable other components to read and write individual properties of state.
-                        var feedbackBotState = new FeedbackBotStateRepository(conversationState, userState)
-                            {
-                                ConversationDialogState = conversationState.CreateProperty<DialogState>("DialogState"),
-                                UserProfile = userState.CreateProperty<UserProfile>("UserProfile"),
-                            };
+                    // Create the custom state accessor.
+                    // State accessors enable other components to read and write individual properties of state.
+                    var feedbackBotState = new FeedbackBotStateRepository(conversationState, userState)
+                    {
+                        ConversationDialogState = conversationState.CreateProperty<DialogState>("DialogState"),
+                        UserProfile = userState.CreateProperty<UserProfile>("UserProfile"),
+                    };
 
-                        return feedbackBotState;
-                    });
+                    return feedbackBotState;
+                });
         }
 
         private void ConfigureJsonSerializer()
         {
             // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
             JsonConvert.DefaultSettings = () =>
-                {
-                    JsonSerializerSettings settings = new JsonSerializerSettings();
-                    settings.Formatting = Formatting.Indented;
-                    settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
-                    return settings;
-                };
+            {
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.Formatting = Formatting.Indented;
+                settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
+                return settings;
+            };
         }
 
         private void ConfigureOptions(IServiceCollection services)
@@ -215,12 +208,12 @@
         {
             services.AddLocalization(options => options.ResourcesPath = "Resources").Configure<RequestLocalizationOptions>(
                 options =>
-                    {
-                        var supportedCultures = new[] { new CultureInfo("en-GB") };
-                        options.DefaultRequestCulture = new RequestCulture("en-GB");
-                        options.SupportedCultures = supportedCultures;
-                        options.SupportedUICultures = supportedCultures;
-                    });
+                {
+                    var supportedCultures = new[] { new CultureInfo("en-GB") };
+                    options.DefaultRequestCulture = new RequestCulture("en-GB");
+                    options.SupportedCultures = supportedCultures;
+                    options.SupportedUICultures = supportedCultures;
+                });
         }
 
         private void RegisterServices(IServiceCollection services)
@@ -233,7 +226,9 @@
             services.AddTransient<IQueueClient>(sp =>
             {
                 var notifyConfig = sp.GetRequiredService<IOptions<Notify>>().Value;
-                return new QueueClient(this.Configuration.GetConnectionString("ServiceBus"), notifyConfig.OutgoingMessageQueueName);
+                var serviceBusConnection = this.Configuration.GetConnectionString("ServiceBus");
+                Trace.Write($"Service Bus: {serviceBusConnection}. Queue: {notifyConfig.OutgoingMessageQueueName}");
+                return new QueueClient(serviceBusConnection, notifyConfig.OutgoingMessageQueueName);
             });
         }
 
