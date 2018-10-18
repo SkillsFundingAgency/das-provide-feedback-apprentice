@@ -233,13 +233,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusSmsRelay>();
             services.AddTransient<ChannelConfigurationMiddleware>();
             services.AddTransient<ConversationLogMiddleware>();
-            services.AddTransient<IQueueClient>(sp =>
-            {
-                var notifyConfig = sp.GetRequiredService<IOptions<Notify>>().Value;
-                var serviceBusConnection = this.Configuration.GetConnectionString("ServiceBus");
-                this.logger.LogInformation($"Service Bus: {serviceBusConnection}. Queue: {notifyConfig.OutgoingMessageQueueName}");
-                return new QueueClient(serviceBusConnection, notifyConfig.OutgoingMessageQueueName);
-            });
         }
 
         private void RegisterAllSurveys(IServiceCollection services)
