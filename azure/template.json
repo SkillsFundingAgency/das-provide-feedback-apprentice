@@ -203,11 +203,11 @@
                                 "value": "[variables('data').SessionStateTable]"
                             },
                             {
-                                "name": "Notify:SmsOutgoingMessageQueueName",
+                                "name": "Notify:OutgoingMessageQueueName",
                                 "value": "[variables('queues').OutgoingMessageQueueName]"
                             },
                             {
-                                "name": "Notify:SmsIncomingMessageQueueName",
+                                "name": "Notify:IncomingMessageQueueName",
                                 "value": "[variables('queues').IncomingMessageQueueName]"
                             }
                         ]
@@ -339,11 +339,11 @@
                                 "value": "[variables('data').SessionStateTable]"
                             },
                             {
-                                "name": "SmsOutgoingMessageQueueName",
+                                "name": "OutgoingMessageQueueName",
                                 "value": "[variables('queues').OutgoingMessageQueueName]"
                             },
                             {
-                                "name": "SmsIncomingMessageQueueName",
+                                "name": "IncomingMessageQueueName",
                                 "value": "[variables('queues').IncomingMessageQueueName]"
                             },
                             {
