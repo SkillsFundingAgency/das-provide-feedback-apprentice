@@ -18,6 +18,8 @@
     <PackageReference Include="AsyncUsageAnalyzers" Version="1.0.0-alpha003" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="4.0.7" />
     <PackageReference Include="Microsoft.Bot.Builder.TemplateManager" Version="4.0.7" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.7.0" />
+    <PackageReference Include="SFA.DAS.NLog.Targets.Redis" Version="1.1.5" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta008" PrivateAssets="all" />
 
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.5" />
@@ -34,6 +36,12 @@
     <ProjectReference Include="..\Apprentice.Bot.Dialogs\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
     <ProjectReference Include="..\Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
