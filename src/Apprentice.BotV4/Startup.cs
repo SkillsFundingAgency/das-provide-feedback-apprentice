@@ -1,7 +1,7 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
+﻿#define TRACE
+namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 {
     using System;
-    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
@@ -36,12 +36,13 @@
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
+    using NLog.Extensions.Logging;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
     public class Startup
     {
         private bool isProduction = false;
-
+        private ILogger<Startup> logger;
         private ILoggerFactory loggerFactory;
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -59,9 +60,19 @@
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory logger)
+        public void Configure(
+            IApplicationBuilder app,
+            IHostingEnvironment env,
+            IApplicationLifetime applicationLifetime,
+            ILogger<Startup> logger,
+            ILogger<FeedbackBot> botLogger,
+            ILoggerFactory loggerFactory)
         {
-            this.loggerFactory = logger;
+            this.loggerFactory = this.ConfigureLoggerFactory(loggerFactory);
+            this.logger = loggerFactory.CreateLogger<Startup>();
+            applicationLifetime.ApplicationStarted.Register(() => logger.LogInformation("Host fully started"));
+            applicationLifetime.ApplicationStopping.Register(() => logger.LogInformation("Host shutting down...waiting to complete requests."));
+            applicationLifetime.ApplicationStopped.Register(() => logger.LogInformation("Host fully stopped. All requests processed."));
 
             if (env.IsDevelopment())
             {
@@ -121,12 +132,11 @@
                         this.Configuration["MicrosoftAppId"],
                         this.Configuration["MicrosoftAppPassword"]);
 
-                    ILogger logger = this.loggerFactory.CreateLogger<FeedbackBot>();
-
                     // Catches any errors that occur during a conversation turn and logs them.
                     options.OnTurnError = async (context, exception) =>
                     {
-                        logger.LogError($"Exception caught : {exception}");
+                        var botLogger = this.loggerFactory.CreateLogger<FeedbackBot>();
+                        botLogger.LogError($"Exception caught : {exception}");
                         await context.SendActivityAsync($"Exception {exception}");
                     };
 
@@ -227,7 +237,7 @@
             {
                 var notifyConfig = sp.GetRequiredService<IOptions<Notify>>().Value;
                 var serviceBusConnection = this.Configuration.GetConnectionString("ServiceBus");
-                Trace.Write($"Service Bus: {serviceBusConnection}. Queue: {notifyConfig.OutgoingMessageQueueName}");
+                this.logger.LogInformation($"Service Bus: {serviceBusConnection}. Queue: {notifyConfig.OutgoingMessageQueueName}");
                 return new QueueClient(serviceBusConnection, notifyConfig.OutgoingMessageQueueName);
             });
         }
@@ -249,5 +259,14 @@
                 configuration["Data:SessionStateTable"]);
             return azureBlobStorage;
         }
+
+        private ILoggerFactory ConfigureLoggerFactory(ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageProperties = true, CaptureMessageTemplates = true });
+            NLog.LogManager.LoadConfiguration("nlog.config");
+
+            return loggerFactory;
+        }
+
     }
 }
