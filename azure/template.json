@@ -66,7 +66,7 @@
         "azureCosmosEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]",
         "data": {
             "DatabaseName": "ApprenticeFeedback",
-            "FeedbackTable": "FeedbackResponses",
+            "FeedbackTable": "Feedback",
             "ConversationLogTable": "Conversations",
             "ConversationLogPartitionKey": "/conversation/id",
             "SessionStateTable": "feedback-bot-sessions",
