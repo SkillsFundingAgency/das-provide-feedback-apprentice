@@ -51,6 +51,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         TraceWriter log,
         ExecutionContext context)
         {
+            log.Info($"Queue message {queueMessage}");
             currentContext = context;
             dynamic incomingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
