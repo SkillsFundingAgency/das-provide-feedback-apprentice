@@ -212,6 +212,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
                             "false",
                             "nope",
                             "nah",
+                            "na",
                             "negative",
                             "n",
                         },
@@ -226,6 +227,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
                         {
                             "aye",
                             "true",
+                            "yeh",
+                            "yea",
+                            "yah",
+                            "yup",
                             "yep",
                             "yeah",
                             "ok",
