@@ -6,7 +6,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
@@ -64,7 +63,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             this.AddDialog(waterfall);
 
-            this.AddDialog(new ChoicePrompt(ChoicePrompt) { Style = ListStyle.None });
+            this.AddDialog(new ChoicePrompt(ChoicePrompt, state) { Style = ListStyle.None });
 
             return this;
         }
