@@ -115,7 +115,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static HttpClient InitializeHttpClient()
         {
-            var client = new HttpClient { BaseAddress = new Uri(Configuration.Get("BotClientBaseAddress")) };
+            var client = new HttpClient { BaseAddress = new Uri(Configuration.Get("DirectLineAddress")) };
 
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", Configuration.Get("BotClientAuthToken"));
