@@ -27,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static readonly Lazy<HttpClient> LazyDirectLineClient = new Lazy<HttpClient>(InitializeHttpClient);
 
-        private static readonly Lazy<CosmosDbRepository> LazyDocClient = new Lazy<CosmosDbRepository>(InitializeDocumentClient);
+        //private static readonly Lazy<CosmosDbRepository> LazyDocClient = new Lazy<CosmosDbRepository>(InitializeDocumentClient);
 
         private static ExecutionContext currentContext;
 
@@ -35,7 +35,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static HttpClient DirectLineClient => LazyDirectLineClient.Value;
 
-        private static CosmosDbRepository DocumentClient => LazyDocClient.Value;
+        private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
 
         /// <summary>
         /// Queue based trigger. Delivers incoming SMS messages from a queue to our bot using the DirectLine connector
