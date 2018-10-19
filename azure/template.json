@@ -47,7 +47,8 @@
             "type": "secureObject",
             "defaultValue": {
                 "BaseAddress": "",
-                "AuthToken": ""
+                "AuthToken": "",
+                "DirectLineAddress": ""
             }
         },
         "notifyCredentials": {
@@ -353,6 +354,10 @@
                             {
                                 "name": "BotClientBaseAddress",
                                 "value": "[parameters('botClientCredentials').BaseAddress]"
+                            },
+                            {
+                                "name": "DirectLineAddress",
+                                "value": "[parameters('botClientCredentials').DirectLineAddress]"
                             },
                             {
                                 "name": "NotifyTemplateId",
