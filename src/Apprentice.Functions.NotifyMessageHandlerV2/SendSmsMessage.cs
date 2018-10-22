@@ -67,7 +67,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static void WaitForPreviousSmsSendOrTimeout(string notificationReference)
         {
-            var timeoutTime = DateTime.Now.AddSeconds(10);
+            var timeoutTime = DateTime.Now.AddSeconds(15);
 
             while (SmsNotSent(notificationReference))
             {
@@ -91,7 +91,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 .OrderByDescending(n => n.createdAt)
                 .First();
 
-            return lastNotification.sentAt == null;
+            return lastNotification.status != "delivered";
         }
 
         private static SmsNotificationResponse SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
