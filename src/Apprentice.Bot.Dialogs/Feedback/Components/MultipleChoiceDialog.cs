@@ -6,7 +6,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
@@ -64,7 +63,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             this.AddDialog(waterfall);
 
-            this.AddDialog(new ChoicePrompt(ChoicePrompt) { Style = ListStyle.None });
+            this.AddDialog(new ChoicePrompt(ChoicePrompt, state) { Style = ListStyle.None });
 
             return this;
         }
@@ -119,12 +118,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             bool positive = intent == "yes"; // Was it positive?
 
             BinaryQuestionResponse feedbackResponse = new BinaryQuestionResponse
-                {
-                    Question = this.PromptText,
-                    Answer = utterance,
-                    Intent = intent,
-                    Score = positive ? this.PointsAvailable : -this.PointsAvailable,
-                };
+            {
+                Question = this.PromptText,
+                Answer = utterance,
+                Intent = intent,
+                Score = positive ? this.PointsAvailable : -this.PointsAvailable,
+            };
 
             return feedbackResponse;
         }
@@ -185,17 +184,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
                 get
                 {
                     var options = new PromptOptions()
-                        {
-                            Attempts = 3,
-                            TooManyAttemptsString =
+                    {
+                        Attempts = 3,
+                        TooManyAttemptsString =
                                 "Sorry, I couldn't understand you this time. You'll get another chance to leave feedback in about 3 months. Thanks and goodbye! ",
-                            Choices = Choices,
-                            RetryPrompt = new Activity(type: "message", text: RetryPromptString),
-                            RetryPromptsCollection = new Dictionary<long, string>
+                        Choices = Choices,
+                        RetryPrompt = new Activity(type: "message", text: RetryPromptString),
+                        RetryPromptsCollection = new Dictionary<long, string>
                                 {
                                     { 1, RetryPromptString }, { 2, "Please could you answer 'Yes' or 'No'" },
                                 },
-                        };
+                    };
 
                     return options;
                 }
@@ -206,33 +205,38 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             // TODO: add these strings to CommonStrings.en-GB.resx
             private static Choice NegativeChoice =>
                 new Choice
-                    {
-                        Value = "no",
-                        Synonyms = new List<string>()
+                {
+                    Value = "no",
+                    Synonyms = new List<string>()
                         {
                             "false",
                             "nope",
                             "nah",
+                            "na",
                             "negative",
                             "n",
                         },
-                    };
+                };
 
             // TODO: add these strings to CommonStrings.en-GB.resx
             private static Choice PositiveChoice =>
                 new Choice
-                    {
-                        Value = "yes",
-                        Synonyms = new List<string>()
+                {
+                    Value = "yes",
+                    Synonyms = new List<string>()
                         {
                             "aye",
                             "true",
+                            "yeh",
+                            "yea",
+                            "yah",
+                            "yup",
                             "yep",
                             "yeah",
                             "ok",
                             "y",
                         },
-                    };
+                };
 
             private static Activity RetryPromptActivity =>
                 MessageFactory.Text(RetryPromptString, inputHint: InputHints.ExpectingInput);
