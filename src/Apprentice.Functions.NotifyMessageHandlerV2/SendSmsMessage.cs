@@ -2,6 +2,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
@@ -46,6 +47,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string reference = outgoingSms?.conversation?.id;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
+                var sendTime = DateTime.Now;
+                WaitForPreviousSmsSendOrTimeout(reference);
                 SmsNotificationResponse sendSmsTask = SendSms(
                                                           mobileNumber,
                                                           templateId,
@@ -60,6 +63,35 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        private static void WaitForPreviousSmsSendOrTimeout(string notificationReference)
+        {
+            var timeoutTime = DateTime.Now.AddSeconds(10);
+
+            while (SmsNotSent(notificationReference))
+            {
+                if (DateTime.Now > timeoutTime)
+                {
+                    break;
+                }
+                else
+                {
+                    Task.Delay(200).Wait();
+                    continue;
+                }
+            }
+        }
+
+        private static bool SmsNotSent(string notificationReference)
+        {
+            var lastNotification = NotifyClient
+                .GetNotifications("sms", "", notificationReference)
+                .notifications
+                .OrderByDescending(n => n.createdAt)
+                .First();
+
+            return lastNotification.sentAt == null;
         }
 
         private static SmsNotificationResponse SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
