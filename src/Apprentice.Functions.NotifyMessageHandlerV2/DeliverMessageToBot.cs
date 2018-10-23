@@ -1,6 +1,7 @@
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
+    using System.Dynamic;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
@@ -9,7 +10,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Helpers;
     using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Host;
@@ -85,11 +85,70 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             return conversation;
         }
 
+        private static SettingsProvider Configure()
+        {
+            if (currentContext == null)
+            {
+                throw new BotConnectorException("Could not initialize the settings provider, ExecutionContext is null");
+            }
+
+            return new SettingsProvider(currentContext);
+        }
+
+        private static CosmosDbRepository InitializeDocumentClient()
+        {
+            string endpoint = Configuration.Get("AzureCosmosEndpoint");
+            string authKey = Configuration.Get("AzureCosmosKey");
+            string database = Configuration.Get("DatabaseName");
+            string collection = Configuration.Get("SessionLogTable");
+
+            CosmosDbRepository repo = CosmosDbRepository.Instance
+                .ConnectTo(endpoint)
+                .WithAuthKeyOrResourceToken(authKey)
+                .UsingDatabase(database)
+                .UsingCollection(collection);
+
+            return repo;
+        }
+
+        private static HttpClient InitializeHttpClient()
+        {
+            var client = new HttpClient { BaseAddress = new Uri(Configuration.Get("DirectLineAddress")) };
+
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", Configuration.Get("BotClientAuthToken"));
+
+            return client;
+        }
+
         private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, ILogger log)
         {
             log.LogInformation($"Received response from {incomingSms?.Value?.source_number}");
 
-            var messageContent = BotMessageTransformer.TransformToBotMessage(incomingSms);
+            dynamic from = new ExpandoObject();
+            from.id = incomingSms?.Value?.source_number;
+            from.name = incomingSms?.Value?.source_number;
+            from.role = null;
+
+            dynamic channelData = new ExpandoObject();
+            channelData.NotifyMessage = new NotifyMessage()
+                                             {
+                                                 Id = incomingSms?.Value?.id,
+                                                 DateReceived = incomingSms?.Value?.date_received,
+                                                 DestinationNumber =
+                                                     incomingSms?.Value?.destination_number,
+                                                 SourceNumber = incomingSms?.Value?.source_number,
+                                                 Message = incomingSms?.Value?.message,
+                                                 Type = "callback",
+                                             };
+
+            var messageContent = new BotConversationMessage()
+                                     {
+                                         Type = "message",
+                                         From = from,
+                                         Text = incomingSms?.Value?.message,
+                                         ChannelData = channelData
+                                     };
 
             var json = JsonConvert.SerializeObject(messageContent);
             HttpContent content = new StringContent(json);
@@ -145,42 +204,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogInformation($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
                 log.LogInformation($"{JsonConvert.SerializeObject(startConversationTask)}");
             }
-        }
-
-        private static SettingsProvider Configure()
-        {
-            if (currentContext == null)
-            {
-                throw new BotConnectorException("Could not initialize the settings provider, ExecutionContext is null");
-            }
-
-            return new SettingsProvider(currentContext);
-        }
-
-        private static CosmosDbRepository InitializeDocumentClient()
-        {
-            string endpoint = Configuration.Get("AzureCosmosEndpoint");
-            string authKey = Configuration.Get("AzureCosmosKey");
-            string database = Configuration.Get("DatabaseName");
-            string collection = Configuration.Get("SessionLogTable");
-
-            CosmosDbRepository repo = CosmosDbRepository.Instance
-                .ConnectTo(endpoint)
-                .WithAuthKeyOrResourceToken(authKey)
-                .UsingDatabase(database)
-                .UsingCollection(collection);
-
-            return repo;
-        }
-
-        private static HttpClient InitializeHttpClient()
-        {
-            var client = new HttpClient { BaseAddress = new Uri(Configuration.Get("DirectLineAddress")) };
-
-            client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", Configuration.Get("BotClientAuthToken"));
-
-            return client;
         }
     }
 }

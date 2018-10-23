@@ -1,5 +1,5 @@
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 {
     using System;
 

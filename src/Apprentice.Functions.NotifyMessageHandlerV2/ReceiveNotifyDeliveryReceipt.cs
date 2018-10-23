@@ -7,8 +7,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     public static class ReceiveNotifyDeliveryReceipt
@@ -18,19 +17,19 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static ActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
-            TraceWriter log,
+            ILogger log,
             ExecutionContext context)
         {
             var config = new SettingsProvider(context);
 
-            log.Info("ReceiveNotifyDeliveryReceipt trigger function processed a request.");
+            log.LogInformation("ReceiveNotifyDeliveryReceipt trigger function processed a request.");
 
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
 
-                log.Info($"result: {data}");
+                log.LogInformation($"result: {data}");
 
                 return data != null
                            ? (ActionResult)new OkObjectResult(data)
@@ -39,7 +38,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.Info($"Exception: {e.Message}");
+                log.LogInformation($"Exception: {e.Message}");
                 return new ExceptionResult(e, true);
             }
         }

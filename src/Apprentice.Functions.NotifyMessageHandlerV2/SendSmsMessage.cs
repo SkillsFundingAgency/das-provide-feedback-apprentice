@@ -8,7 +8,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Host;
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
     using Notify.Client;
     using Notify.Models.Responses;
@@ -30,16 +30,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task Run(
         [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
-        TraceWriter log,
+        ILogger log,
         ExecutionContext context)
         {
-            log.Info($"Queue message {queueMessage}");
+            log.LogInformation($"Queue message {queueMessage}");
             currentContext = context;
             dynamic outgoingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
             try
             {
-                log.Info($"Received response from {outgoingSms?.recipient?.id}");
+                log.LogInformation($"Received response from {outgoingSms?.recipient?.id}");
 
                 string mobileNumber = outgoingSms?.from?.id;
                 string templateId = Configuration.Get("NotifyTemplateId");
@@ -56,7 +56,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                                                           reference,
                                                           smsSenderId);
 
-                log.Info($"SendSmsMessage response: {sendSmsTask}");
+                log.LogInformation($"SendSmsMessage response: {sendSmsTask}");
             }
             catch (Exception e)
             {
