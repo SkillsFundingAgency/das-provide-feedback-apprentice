@@ -19,7 +19,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         [FunctionName("DailySurveyTrigger")]
         public static void Run(
-            [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
+            [TimerTrigger("0 0 11 * * MON-FRI")]TimerInfo myTimer,
             ILogger log,
             [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] out string msg,
             ExecutionContext executionContext)
