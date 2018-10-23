@@ -217,7 +217,7 @@
 
                 case ProgressState.BlackListed:
                     // Survey user blacklisted. Let them know
-                    reply.Text = $"You'll get abother chance to levae feedback in about 3 months. Thanks and goodbye!";
+                    reply.Text = $"You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!";
 
                     await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     return await dialog.CancelAllDialogsAsync(cancellationToken);

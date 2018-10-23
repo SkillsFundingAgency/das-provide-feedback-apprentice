@@ -100,7 +100,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             string endpoint = Configuration.Get("AzureCosmosEndpoint");
             string authKey = Configuration.Get("AzureCosmosKey");
             string database = Configuration.Get("DatabaseName");
-            string collection = Configuration.Get("SessionLogTable");
+            string collection = Configuration.Get("ConversationLogTable");
 
             CosmosDbRepository repo = CosmosDbRepository.Instance
                 .ConnectTo(endpoint)
