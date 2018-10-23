@@ -1,7 +1,6 @@
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
-    using System.Dynamic;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
@@ -10,12 +9,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
-
-    using Microsoft.Azure.Documents;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Helpers;
     using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Host;
-
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -48,10 +46,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
-        TraceWriter log,
+        ILogger log,
         ExecutionContext context)
         {
-            log.Info($"Queue message {queueMessage}");
+            log.LogInformation($"Queue message {queueMessage}");
             currentContext = context;
             dynamic incomingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
@@ -71,7 +69,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.Info($"Bot Connector Exception: {e.Message}");
+                log.LogInformation($"Bot Connector Exception: {e.Message}");
                 DirectLineClient.CancelPendingRequests();
                 throw new BotConnectorException(
                     "Something went wrong when relaying the message to the bot framework",
@@ -85,6 +83,68 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             await DocumentClient.GetDocumentCollectionAsync();
             BotConversation conversation = await DocumentClient.GetItemAsync<BotConversation>(c => c.MobileNumber == mobileNumber);
             return conversation;
+        }
+
+        private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, ILogger log)
+        {
+            log.LogInformation($"Received response from {incomingSms?.Value?.source_number}");
+
+            var messageContent = BotMessageTransformer.TransformToBotMessage(incomingSms);
+
+            var json = JsonConvert.SerializeObject(messageContent);
+            HttpContent content = new StringContent(json);
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage postMessageTask = await DirectLineClient.PostAsync($"/v3/directline/conversations/{conversation.ConversationId}/activities", content);
+
+            if (postMessageTask.IsSuccessStatusCode)
+            {
+                string response = await postMessageTask.Content.ReadAsStringAsync();
+                dynamic jsonResponse = JsonConvert.DeserializeObject(response);
+                log.LogInformation($"Received response from Bot Client: {jsonResponse.id}");
+            }
+            else
+            {
+                log.LogInformation($"Could not post conversation. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}");
+                log.LogInformation($"{JsonConvert.SerializeObject(postMessageTask)}");
+            }
+        }
+
+        private static async Task StartNewConversation(dynamic incomingSms, ILogger log)
+        {
+            log.LogInformation($"Starting new conversation with {incomingSms?.Value?.source_number}");
+
+            var content = new StringContent(string.Empty);
+
+            var startConversationTask = await DirectLineClient.PostAsync("/v3/directline/conversations", content);
+
+            var conversation = new BotConversation();
+            if (startConversationTask.IsSuccessStatusCode)
+            {
+                string response = await startConversationTask.Content.ReadAsStringAsync();
+                dynamic jsonResponse = JsonConvert.DeserializeObject(response);
+                log.LogInformation($"Started new conversation with id {jsonResponse.conversationId}");
+
+                // TODO: write the conversation ID to a session log with the mobile phone number
+                conversation.MobileNumber = incomingSms?.Value.source_number;
+                conversation.ConversationId = jsonResponse.conversationId;
+
+                BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
+                if (newSession.IsNull())
+                {
+                    throw new BotConnectorException($"Could not create session object for conversation id {conversation.ConversationId}");
+                }
+
+                if (incomingSms != null)
+                {
+                    await PostToConversation(incomingSms, conversation, log);
+                }
+            }
+            else
+            {
+                log.LogInformation($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
+                log.LogInformation($"{JsonConvert.SerializeObject(startConversationTask)}");
+            }
         }
 
         private static SettingsProvider Configure()
@@ -121,91 +181,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 new AuthenticationHeaderValue("Bearer", Configuration.Get("BotClientAuthToken"));
 
             return client;
-        }
-
-        private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, TraceWriter log)
-        {
-            log.Info($"Received response from {incomingSms?.Value?.source_number}");
-
-            dynamic from = new ExpandoObject();
-            from.id = incomingSms?.Value?.source_number;
-            from.name = incomingSms?.Value?.source_number;
-            from.role = null;
-
-            dynamic channelData = new ExpandoObject();
-            channelData.NotifyMessage = new NotifyMessage()
-                                             {
-                                                 Id = incomingSms?.Value?.id,
-                                                 DateReceived = incomingSms?.Value?.date_received,
-                                                 DestinationNumber =
-                                                     incomingSms?.Value?.destination_number,
-                                                 SourceNumber = incomingSms?.Value?.source_number,
-                                                 Message = incomingSms?.Value?.message,
-                                                 Type = "callback",
-                                             };
-
-            var messageContent = new BotConversationMessage()
-                                     {
-                                         Type = "message",
-                                         From = from,
-                                         Text = incomingSms?.Value?.message,
-                                         ChannelData = channelData
-                                     };
-
-            var json = JsonConvert.SerializeObject(messageContent);
-            HttpContent content = new StringContent(json);
-            content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            HttpResponseMessage postMessageTask = await DirectLineClient.PostAsync($"/v3/directline/conversations/{conversation.ConversationId}/activities", content);
-
-            if (postMessageTask.IsSuccessStatusCode)
-            {
-                string response = await postMessageTask.Content.ReadAsStringAsync();
-                dynamic jsonResponse = JsonConvert.DeserializeObject(response);
-                log.Info($"Received response from Bot Client: {jsonResponse.id}");
-            }
-            else
-            {
-                log.Info($"Could not post conversation. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}");
-                log.Info($"{JsonConvert.SerializeObject(postMessageTask)}");
-            }
-        }
-
-        private static async Task StartNewConversation(dynamic incomingSms, TraceWriter log)
-        {
-            log.Info($"Starting new conversation with {incomingSms?.Value?.source_number}");
-
-            var content = new StringContent(string.Empty);
-
-            var startConversationTask = await DirectLineClient.PostAsync("/v3/directline/conversations", content);
-
-            var conversation = new BotConversation();
-            if (startConversationTask.IsSuccessStatusCode)
-            {
-                string response = await startConversationTask.Content.ReadAsStringAsync();
-                dynamic jsonResponse = JsonConvert.DeserializeObject(response);
-                log.Info($"Started new conversation with id {jsonResponse.conversationId}");
-
-                // TODO: write the conversation ID to a session log with the mobile phone number
-                conversation.MobileNumber = incomingSms?.Value.source_number;
-                conversation.ConversationId = jsonResponse.conversationId;
-
-                BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
-                if (newSession.IsNull())
-                {
-                    throw new BotConnectorException($"Could not create session object for conversation id {conversation.ConversationId}");
-                }
-
-                if (incomingSms != null)
-                {
-                    await PostToConversation(incomingSms, conversation, log);
-                }
-            }
-            else
-            {
-                log.Info($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
-                log.Info($"{JsonConvert.SerializeObject(startConversationTask)}");
-            }
         }
     }
 }
