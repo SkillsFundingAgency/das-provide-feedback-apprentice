@@ -89,9 +89,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 .GetNotifications("sms", "", notificationReference)
                 .notifications
                 .OrderByDescending(n => n.createdAt)
-                .First();
+                .FirstOrDefault();
 
-            return lastNotification.status != "delivered";
+            return lastNotification != null && lastNotification.status != "delivered";
         }
 
         private static SmsNotificationResponse SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
