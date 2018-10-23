@@ -211,6 +211,8 @@
 
                 case ProgressState.OptedOut:
                     reply.Text = "You have opted out of surveys.";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 case ProgressState.BlackListed:
