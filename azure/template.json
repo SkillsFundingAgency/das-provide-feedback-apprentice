@@ -321,8 +321,8 @@
                                 "value": "[variables('data').FeedbackTable]"
                             },
                             {
-                                "name": "ApprenticeSurveyDetailLogTable",
-                                "value": "[variables('data').ApprenticeSurveyDetailLogTable]"
+                                "name": "ApprenticeSurveyDetailTable",
+                                "value": "[variables('data').ApprenticeSurveyDetailTable]"
                             },
                             {
                                 "name": "ConversationLogTable",
