@@ -21,11 +21,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static void Run(
             [TimerTrigger("0 0 11 * * MON-FRI")]TimerInfo myTimer,
             ILogger log,
-            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] out string msg,
+            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] ICollector<string> outputSbQueue,
             ExecutionContext executionContext)
         {
             currentContext = executionContext;
-            msg = string.Empty;
             log.LogInformation($"Daily survey trigger started");
 
             var batchSize = 100;
@@ -44,7 +43,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
                 var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 
-                msg = JsonConvert.SerializeObject(payload);
+                outputSbQueue.Add(JsonConvert.SerializeObject(payload));
             }
         }
 
@@ -61,7 +60,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             string endpoint = Configuration.Get("AzureCosmosEndpoint");
             string authKey = Configuration.Get("AzureCosmosKey");
             string database = Configuration.Get("DatabaseName");
-            string collection = Configuration.Get("ApprenticeSurveyDetailCollection");
+            string collection = Configuration.Get("ApprenticeSurveyDetailTable");
 
             CosmosDbRepository repo = CosmosDbRepository.Instance
                 .ConnectTo(endpoint)
