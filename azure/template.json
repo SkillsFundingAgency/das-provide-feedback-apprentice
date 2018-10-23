@@ -68,6 +68,7 @@
         "data": {
             "DatabaseName": "ApprenticeFeedback",
             "FeedbackTable": "Feedback",
+            "ApprenticeSurveyDetailTable": "Apprentice-Survey-Details",
             "ConversationLogTable": "Conversations",
             "ConversationLogPartitionKey": "/conversation/id",
             "SessionStateTable": "feedback-bot-sessions",
@@ -318,6 +319,10 @@
                             {
                                 "name": "FeedbackTable",
                                 "value": "[variables('data').FeedbackTable]"
+                            },
+                            {
+                                "name": "ApprenticeSurveyDetailLogTable",
+                                "value": "[variables('data').ApprenticeSurveyDetailLogTable]"
                             },
                             {
                                 "name": "ConversationLogTable",
