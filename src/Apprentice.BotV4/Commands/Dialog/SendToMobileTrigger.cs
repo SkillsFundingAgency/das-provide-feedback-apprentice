@@ -8,6 +8,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     using Microsoft.Bot.Builder.Dialogs;
@@ -38,13 +39,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
             var mobileNumber = strings[1];
 
             var trigger = new SmsConversationTrigger()
-                              {
-                                  Id = Guid.NewGuid().ToString(),
-                                  SourceNumber = mobileNumber,
-                                  DestinationNumber = null,
-                                  Message = "start afb-v5",
-                                  TimeStamp = DateTime.UtcNow
-                              };
+            {
+                Id = Guid.NewGuid().ToString(),
+                SourceNumber = mobileNumber,
+                DestinationNumber = null,
+                Message = "start afb-v5",
+                TimeStamp = DateTime.UtcNow
+            };
 
             var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 

@@ -10,12 +10,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
-
-    using Microsoft.Azure.Documents;
     using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Host;
-
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -48,10 +46,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
-        TraceWriter log,
+        ILogger log,
         ExecutionContext context)
         {
-            log.Info($"Queue message {queueMessage}");
+            log.LogInformation($"Queue message {queueMessage}");
             currentContext = context;
             dynamic incomingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
@@ -71,7 +69,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.Info($"Bot Connector Exception: {e.Message}");
+                log.LogInformation($"Bot Connector Exception: {e.Message}");
                 DirectLineClient.CancelPendingRequests();
                 throw new BotConnectorException(
                     "Something went wrong when relaying the message to the bot framework",
@@ -102,7 +100,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             string endpoint = Configuration.Get("AzureCosmosEndpoint");
             string authKey = Configuration.Get("AzureCosmosKey");
             string database = Configuration.Get("DatabaseName");
-            string collection = Configuration.Get("SessionLogTable");
+            string collection = Configuration.Get("ConversationLogTable");
 
             CosmosDbRepository repo = CosmosDbRepository.Instance
                 .ConnectTo(endpoint)
@@ -123,9 +121,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             return client;
         }
 
-        private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, TraceWriter log)
+        private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, ILogger log)
         {
-            log.Info($"Received response from {incomingSms?.Value?.source_number}");
+            log.LogInformation($"Received response from {incomingSms?.Value?.source_number}");
 
             dynamic from = new ExpandoObject();
             from.id = incomingSms?.Value?.source_number;
@@ -162,18 +160,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             {
                 string response = await postMessageTask.Content.ReadAsStringAsync();
                 dynamic jsonResponse = JsonConvert.DeserializeObject(response);
-                log.Info($"Received response from Bot Client: {jsonResponse.id}");
+                log.LogInformation($"Received response from Bot Client: {jsonResponse.id}");
             }
             else
             {
-                log.Info($"Could not post conversation. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}");
-                log.Info($"{JsonConvert.SerializeObject(postMessageTask)}");
+                log.LogInformation($"Could not post conversation. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}");
+                log.LogInformation($"{JsonConvert.SerializeObject(postMessageTask)}");
             }
         }
 
-        private static async Task StartNewConversation(dynamic incomingSms, TraceWriter log)
+        private static async Task StartNewConversation(dynamic incomingSms, ILogger log)
         {
-            log.Info($"Starting new conversation with {incomingSms?.Value?.source_number}");
+            log.LogInformation($"Starting new conversation with {incomingSms?.Value?.source_number}");
 
             var content = new StringContent(string.Empty);
 
@@ -184,7 +182,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             {
                 string response = await startConversationTask.Content.ReadAsStringAsync();
                 dynamic jsonResponse = JsonConvert.DeserializeObject(response);
-                log.Info($"Started new conversation with id {jsonResponse.conversationId}");
+                log.LogInformation($"Started new conversation with id {jsonResponse.conversationId}");
 
                 // TODO: write the conversation ID to a session log with the mobile phone number
                 conversation.MobileNumber = incomingSms?.Value.source_number;
@@ -203,8 +201,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             else
             {
-                log.Info($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
-                log.Info($"{JsonConvert.SerializeObject(startConversationTask)}");
+                log.LogInformation($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
+                log.LogInformation($"{JsonConvert.SerializeObject(startConversationTask)}");
             }
         }
     }

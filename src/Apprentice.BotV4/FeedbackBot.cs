@@ -210,9 +210,16 @@
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 case ProgressState.OptedOut:
+                    reply.Text = "You have opted out of surveys.";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 case ProgressState.BlackListed:
+                    // Survey user blacklisted. Let them know
+                    reply.Text = $"You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 default:
