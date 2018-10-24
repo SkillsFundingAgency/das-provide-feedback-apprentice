@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
@@ -18,7 +19,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
 
         [FunctionName("DailySurveyTrigger")]
-        public static async void Run(
+        public static async Task Run(
             [TimerTrigger("0 0 11 * * MON-FRI")]TimerInfo myTimer,
             ILogger log,
             [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] ICollector<string> outputSbQueue,
@@ -28,7 +29,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             log.LogInformation($"Daily survey trigger started");
 
             var batchSize = 100;
-            var apprenticeDetails = await DocumentClient.GetAllItemsAsync<ApprenticeDetail>(new FeedOptions { MaxItemCount = batchSize });
+            var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
 
             foreach (var apprenticeDetail in apprenticeDetails)
             {
@@ -49,6 +50,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 apprenticeDetail.SentDate = now;
                 await DocumentClient.UpsertItemAsync(apprenticeDetail);
             }
+        }
+
+        private static Task<IEnumerable<ApprenticeDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
+        {
+            return DocumentClient.GetItemsAsync<ApprenticeDetail>(ad => ad.SentDate == null, new FeedOptions { MaxItemCount = batchSize });
         }
 
         private static CosmosDbRepository InitializeDocumentClient()
