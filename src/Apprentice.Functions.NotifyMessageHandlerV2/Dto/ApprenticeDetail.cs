@@ -7,6 +7,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
     [Serializable]
     public class ApprenticeDetail : TypedDocument<ApprenticeDetail>
     {
+        private DateTime? sentDate;
+
         [JsonProperty("unique_learner_number")]
         public string UniqueLearnerNumber { get; set; }
 
@@ -17,7 +19,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
         public string SurveyCode { get; set; }
 
         [JsonProperty("sent_date")]
-        public DateTime? SentDate { get; set; }
+        public DateTime? SentDate
+        {
+            get
+            {
+                return this.sentDate;
+            }
+            set
+            {
+                this.SetPropertyValue("sent_date", value);
+                this.sentDate = value;
+            }
+        }
     }
 
 }
