@@ -44,7 +44,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
                 SourceNumber = mobileNumber,
                 DestinationNumber = null,
                 Message = "start afb-v5",
-                TimeStamp = DateTime.UtcNow
+                TimeStamp = DateTime.UtcNow,
+                UniqueLearnerNumber = "uln_here",
             };
 
             var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);

@@ -15,14 +15,6 @@
     {
         private readonly FeedbackBotStateRepository state;
 
-        //private readonly ILogger logger;
-
-        //public StartDialogCommand(ILogger logger)
-        //    : base("start")
-        //{
-        //    this.logger = logger;
-        //}
-
         public StartDialogCommand(FeedbackBotStateRepository state)
             : base("start")
         {
@@ -43,7 +35,9 @@
                 if (strings.Length > 1)
                 {
                     string dialogId = strings[1];
-                    
+
+                    dynamic channelData = dc.Context.Activity.ChannelData;
+                    userProfile.IlrNumber = channelData?.UniqueLearnerNumber;
                     userProfile.SurveyState.SurveyId = dialogId;
                     userProfile.SurveyState.StartDate = DateTime.Now;
                     userProfile.SurveyState.Progress = ProgressState.InProgress;

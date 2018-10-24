@@ -18,7 +18,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
 
         [FunctionName("DailySurveyTrigger")]
-        public static void Run(
+        public static async void Run(
             [TimerTrigger("0 0 11 * * MON-FRI")]TimerInfo myTimer,
             ILogger log,
             [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] ICollector<string> outputSbQueue,
@@ -28,31 +28,27 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             log.LogInformation($"Daily survey trigger started");
 
             var batchSize = 100;
-            var apprenticeDetails = GetApprenticeDetailsToSendSurvey(batchSize);
+            var apprenticeDetails = await DocumentClient.GetAllItemsAsync<ApprenticeDetail>(new FeedOptions { MaxItemCount = batchSize });
 
             foreach (var apprenticeDetail in apprenticeDetails)
             {
+                var now = DateTime.Now;
                 var trigger = new SmsConversationTrigger()
                 {
                     Id = Guid.NewGuid().ToString(),
                     SourceNumber = apprenticeDetail.MobileNumber,
                     DestinationNumber = null,
                     Message = $"start {apprenticeDetail.SurveyCode}",
-                    TimeStamp = DateTime.UtcNow
+                    TimeStamp = now
                 };
 
                 var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 
                 outputSbQueue.Add(JsonConvert.SerializeObject(payload));
-            }
-        }
 
-        private static IEnumerable<ApprenticeDetail> GetApprenticeDetailsToSendSurvey(int batchSize)
-        {
-            var feedOptions = new FeedOptions { MaxItemCount = batchSize };
-            // DocumentClient.GetDocumentCollectionAsync().Wait();
-            var apprenticeDetails = DocumentClient.GetAllItemsAsync<ApprenticeDetail>().Result;
-            return apprenticeDetails;
+                apprenticeDetail.SentDate = now;
+                await DocumentClient.UpsertItemAsync(apprenticeDetail);
+            }
         }
 
         private static CosmosDbRepository InitializeDocumentClient()
