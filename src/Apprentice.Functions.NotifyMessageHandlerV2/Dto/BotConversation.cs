@@ -17,5 +17,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
 
         [JsonProperty("turn_id")]
         public int TurnId { get; set; }
+
+        [JsonProperty("unique_learner_number")]
+        public string UniqueLearnerNumber { get; set; }
     }
 }

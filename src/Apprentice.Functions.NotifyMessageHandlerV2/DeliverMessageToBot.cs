@@ -131,6 +131,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             from.role = null;
 
             dynamic channelData = new ExpandoObject();
+            channelData.UniqueLearnerNumber = conversation.UniqueLearnerNumber ?? incomingSms?.Uln;
             channelData.NotifyMessage = new NotifyMessage()
                                              {
                                                  Id = incomingSms?.Value?.id,
@@ -187,6 +188,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 // TODO: write the conversation ID to a session log with the mobile phone number
                 conversation.MobileNumber = incomingSms?.Value.source_number;
                 conversation.ConversationId = jsonResponse.conversationId;
+                conversation.UniqueLearnerNumber = incomingSms?.Value.Uln;
 
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
                 if (newSession.IsNull())

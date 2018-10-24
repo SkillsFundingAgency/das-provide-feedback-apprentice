@@ -21,5 +21,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 
         [JsonProperty("date_received")]
         public DateTime TimeStamp { get; set; }
+
+        [JsonProperty("unique_learner_number")]
+        public string UniqueLearnerNumber { get; set; }
     }
 }

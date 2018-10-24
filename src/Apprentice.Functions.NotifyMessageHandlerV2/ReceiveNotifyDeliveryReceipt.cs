@@ -13,7 +13,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     public static class ReceiveNotifyDeliveryReceipt
     {
         [FunctionName("ReceiveNotifyDeliveryReceipt")]
-        [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
+        // [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
         public static ActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
