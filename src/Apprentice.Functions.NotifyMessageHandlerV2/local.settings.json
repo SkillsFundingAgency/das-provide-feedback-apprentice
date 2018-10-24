@@ -9,6 +9,7 @@
     "AzureCosmos": 1000,
     "DatabaseName": "ApprenticeFeedback",
     "FeedbackTable": "FeedbackResponses",
+    "ApprenticeSurveyDetailTable": "Apprentice-Survey-Details",
     "ConversationLogTable": "Conversations",
     "ConversationLogPartitionKey": "/conversation/id",
     "SessionLogTable": "Sessions",
