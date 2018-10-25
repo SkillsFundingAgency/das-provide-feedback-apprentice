@@ -82,7 +82,7 @@
                 switch (turnContext.Activity.Type)
                 {
                     case ActivityTypes.Message:
-                        await this.HandleMessageAsync(dc, cancellationToken);
+                        await this.HandleCommandsAsync(dc, cancellationToken);
                         break;
 
                     case ActivityTypes.ConversationUpdate:
@@ -166,16 +166,6 @@
                             cancellationToken: cancellationToken);
                     }
                 }
-            }
-        }
-
-        private async Task HandleMessageAsync(DialogContext dialog, CancellationToken cancellationToken)
-        {
-            await this.HandleCommandsAsync(dialog, cancellationToken);
-
-            if (!dialog.Context.Responded)
-            {
-                await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
             }
         }
 

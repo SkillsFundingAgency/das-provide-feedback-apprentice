@@ -6,12 +6,14 @@
 
     public class InMemoryIfaDemoSurveyV1 : ISurvey
     {
-        private const string Intro = "Hello! This is a proof of concept IFA survey [WORK IN PROGRESS]";
+        private const string Intro = "Here's a new survey from the Institute for Apprenticeships - they make sure apprenticeships teach people the right skills for their job." +
+            "It's just 3 questions and it'll really help to improve Data Analyst apprenticeships. " +
+            "This isn't a test - there are no right or wrong answers :)";
 
         private const string IntroOptOut =
-            "Normal SMS charges apply. To stop receiving these messages, please type ‘Stop’";
+            "Normal SMS charges apply.To stop receiving these messages, please type ‘Stop’";
 
-        private const string Question1 = "Have you seen the apprenticeship standard before?";
+        private const string Question1 = "Is your apprenticeship helping you to do your job?";
 
         private const string Question2 = "Does your experience of your apprenticeship match the standard?";
 
