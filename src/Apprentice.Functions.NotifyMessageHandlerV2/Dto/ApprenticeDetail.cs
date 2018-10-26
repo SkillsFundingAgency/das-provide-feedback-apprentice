@@ -7,6 +7,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
     [Serializable]
     public class ApprenticeDetail : TypedDocument<ApprenticeDetail>
     {
+        private DateTime? sentDate;
+
         [JsonProperty("uniqueLearnerNumber")]
         public string UniqueLearnerNumber { get; set; }
 
