@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;

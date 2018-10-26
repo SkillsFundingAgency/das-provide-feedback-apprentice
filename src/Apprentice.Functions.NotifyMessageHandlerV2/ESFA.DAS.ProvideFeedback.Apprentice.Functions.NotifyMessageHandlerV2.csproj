@@ -4,6 +4,8 @@
     <AzureFunctionsVersion>v2</AzureFunctionsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.ServiceBus" Version="3.0.1" />
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="1.0.23" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
     <PackageReference Include="Notify" Version="2.1.0" />
@@ -15,7 +17,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Apprentice.Functions\ESFA.DAS.ProvideFeedback.Apprentice.Functions.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
     <ProjectReference Include="..\Apprentice.Data\ESFA.DAS.ProvideFeedback.Apprentice.Data.csproj" />
   </ItemGroup>

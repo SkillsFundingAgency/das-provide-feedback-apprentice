@@ -10,6 +10,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Host;
