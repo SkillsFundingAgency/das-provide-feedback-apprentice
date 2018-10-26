@@ -134,7 +134,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     options.OnTurnError = async (context, exception) =>
                     {
                         var botLogger = this.loggerFactory.CreateLogger<FeedbackBot>();
-                        botLogger.LogError($"Exception caught : {exception}");
+                        botLogger.LogError($"Exception caught: {context.Activity.Text} {Environment.NewLine} {exception}");
                         await context.SendActivityAsync($"Exception {exception}");
                     };
 
