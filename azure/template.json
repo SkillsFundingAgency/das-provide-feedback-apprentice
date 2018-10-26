@@ -61,6 +61,9 @@
         },
         "loggingRedisConnectionString": {
             "type": "securestring"
+        },
+        "environmentName": {
+            "type": "string"
         }
     },
     "variables": {
@@ -163,6 +166,10 @@
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                                 "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
+                            },
+                            {
+                                "name": "ASPNETCORE_ENVIRONMENT",
+                                "value": "[parameters('environmentName')]"
                             },
                             {
                                 "name": "MicrosoftAppId",
@@ -295,6 +302,10 @@
                             {
                                 "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                                 "value": "[reference('FunctionAppApplicationInsights').outputs.InstrumentationKey.value]"
+                            },
+                            {
+                                "name": "ASPNETCORE_ENVIRONMENT",
+                                "value": "[parameters('environmentName')]"
                             },
                             {
                                 "name": "FUNCTIONS_EXTENSION_VERSION",
