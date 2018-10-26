@@ -82,7 +82,7 @@
                 switch (turnContext.Activity.Type)
                 {
                     case ActivityTypes.Message:
-                        await this.HandleCommandsAsync(dc, cancellationToken);
+                        await this.HandleMessageAsync(dc, cancellationToken);
                         break;
 
                     case ActivityTypes.ConversationUpdate:
@@ -118,7 +118,7 @@
 
             return dialogs;
         }
-        
+
         /// <summary>
         /// TODO: Add to middleware intercepts
         /// </summary>
@@ -166,6 +166,16 @@
                             cancellationToken: cancellationToken);
                     }
                 }
+            }
+        }
+
+        private async Task HandleMessageAsync(DialogContext dialog, CancellationToken cancellationToken)
+        {
+            await this.HandleCommandsAsync(dialog, cancellationToken);
+
+            if (!dialog.Context.Responded)
+            {
+                await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
             }
         }
 

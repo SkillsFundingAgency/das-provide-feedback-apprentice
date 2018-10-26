@@ -26,10 +26,10 @@
             try
             {
                 UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
+                userProfile.SurveyState = new SurveyState();
+
                 if (userProfile.SurveyState.Progress == ProgressState.NotStarted)
                 {
-                    userProfile.SurveyState = new SurveyState();
-
                     string message = dc.Context.Activity.Text.ToLowerInvariant();
 
                     var strings = message.Split(new[] { " ", "|" }, StringSplitOptions.RemoveEmptyEntries);
