@@ -17,7 +17,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
         public string SurveyCode { get; set; }
 
         [JsonProperty("sentDate")]
-        public DateTime? SentDate { get; set; }
+        public DateTime? SentDate
+        {
+            get
+            {
+                return this.sentDate;
+            }
+            set
+            {
+                this.SetPropertyValue("sent_date", value);
+                this.sentDate = value;
+            }
+        }
     }
 
 }
