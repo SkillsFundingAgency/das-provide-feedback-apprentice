@@ -9,16 +9,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
     [Serializable]
     public class BotConversation : TypedDocument<BotConversation>
     {
-        [JsonProperty("conversation_id")]
+        [JsonProperty("conversationId")]
         public string ConversationId { get; set; }
 
-        [JsonProperty("mobile_number")]
+        [JsonProperty("mobileNumber")]
         public string MobileNumber { get; set; }
 
-        [JsonProperty("turn_id")]
+        [JsonProperty("turnId")]
         public int TurnId { get; set; }
 
-        [JsonProperty("unique_learner_number")]
+        [JsonProperty("uniqueLearnerNumber")]
         public string UniqueLearnerNumber { get; set; }
     }
 }

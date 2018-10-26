@@ -40,7 +40,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                     SourceNumber = apprenticeDetail.MobileNumber,
                     DestinationNumber = null,
                     Message = $"start {apprenticeDetail.SurveyCode}",
-                    TimeStamp = now
+                    DateReceived = now
                 };
 
                 var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);

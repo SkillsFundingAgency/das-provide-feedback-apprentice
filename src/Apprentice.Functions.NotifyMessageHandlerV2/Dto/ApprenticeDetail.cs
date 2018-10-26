@@ -9,16 +9,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
     {
         private DateTime? sentDate;
 
-        [JsonProperty("unique_learner_number")]
+        [JsonProperty("uniqueLearnerNumber")]
         public string UniqueLearnerNumber { get; set; }
 
-        [JsonProperty("mobile_number")]
+        [JsonProperty("mobileNumber")]
         public string MobileNumber { get; set; }
 
-        [JsonProperty("survey_code")]
+        [JsonProperty("surveyCode")]
         public string SurveyCode { get; set; }
 
-        [JsonProperty("sent_date")]
+        [JsonProperty("sentDate")]
         public DateTime? SentDate
         {
             get

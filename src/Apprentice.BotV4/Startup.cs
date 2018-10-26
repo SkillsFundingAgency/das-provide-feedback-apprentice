@@ -21,7 +21,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Localization;
-    using Microsoft.Azure.ServiceBus;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Azure;
     using Microsoft.Bot.Builder.Dialogs;
@@ -42,7 +41,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     public class Startup
     {
         private bool isProduction = false;
-        private ILogger<Startup> logger;
         private ILoggerFactory loggerFactory;
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -64,12 +62,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             IApplicationBuilder app,
             IHostingEnvironment env,
             IApplicationLifetime applicationLifetime,
-            ILogger<Startup> logger,
-            ILogger<FeedbackBot> botLogger,
             ILoggerFactory loggerFactory)
         {
             this.loggerFactory = this.ConfigureLoggerFactory(loggerFactory);
-            this.logger = loggerFactory.CreateLogger<Startup>();
+            var logger = loggerFactory.CreateLogger<Startup>();
             applicationLifetime.ApplicationStarted.Register(() => logger.LogInformation("Host fully started"));
             applicationLifetime.ApplicationStopping.Register(() => logger.LogInformation("Host shutting down...waiting to complete requests."));
             applicationLifetime.ApplicationStopped.Register(() => logger.LogInformation("Host fully stopped. All requests processed."));
@@ -79,7 +75,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseDefaultFiles().UseStaticFiles().UseBotFramework();
+            app.UseDefaultFiles()
+                .UseStaticFiles()
+                .UseBotFramework();
         }
 
         public void ConfigureServices(IServiceCollection services)
