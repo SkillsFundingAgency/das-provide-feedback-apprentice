@@ -7,10 +7,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
     [Serializable]
     public class NotifyMessage
     {
-        [JsonProperty("date_received")]
+        [JsonProperty("dateReceived")]
         public string DateReceived { get; set; }
 
-        [JsonProperty("destination_number")]
+        [JsonProperty("destinationNumber")]
         public string DestinationNumber { get; set; }
 
         [JsonProperty("id")]
@@ -19,7 +19,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
         [JsonProperty("message")]
         public string Message { get; set; }
 
-        [JsonProperty("source_number")]
+        [JsonProperty("sourceNumber")]
         public string SourceNumber { get; set; }
 
         [JsonProperty("type")]

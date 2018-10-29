@@ -27,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
             }
             set
             {
-                this.SetPropertyValue("sent_date", value);
+                this.SetPropertyValue("sentDate", value);
                 this.sentDate = value;
             }
         }
