@@ -7,13 +7,13 @@
     [Serializable]
     public class BotConversation
     {
-        [JsonProperty("conversation_id")]
+        [JsonProperty("conversationId")]
         public string ConversationId { get; set; }
 
-        [JsonProperty("mobile_number")]
+        [JsonProperty("mobileNumber")]
         public string MobileNumber { get; set; }
 
-        [JsonProperty("turn_id")]
+        [JsonProperty("turnId")]
         public int TurnId { get; set; }
     }
 }
