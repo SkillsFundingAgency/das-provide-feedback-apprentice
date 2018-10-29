@@ -127,15 +127,14 @@
         /// <returns></returns>
         private async Task HandleCommandsAsync(DialogContext dialog, CancellationToken cancellationToken)
         {
-            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog));
+            var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
+            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog, userProfile.SurveyState.Progress));
             if (command != null)
             {
                 await command.ExecuteAsync(dialog, cancellationToken);
             }
             else
             {
-                var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
-
                 if (userProfile.SurveyState.StartDate != default(DateTime))
                 {
                     if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
