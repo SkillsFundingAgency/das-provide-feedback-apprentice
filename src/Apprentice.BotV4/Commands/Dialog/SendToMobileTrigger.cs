@@ -57,7 +57,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
         }
 
         /// <inheritdoc />
-        public override bool IsTriggered(DialogContext dc)
+        public override bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
         {
             var utterance = dc.Context.Activity.Text.ToLowerInvariant();
             return Regex.IsMatch(utterance, this.Trigger);

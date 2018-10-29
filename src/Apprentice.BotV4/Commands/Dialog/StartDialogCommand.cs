@@ -67,5 +67,10 @@
                 return await dc.CancelAllDialogsAsync(cancellationToken);
             }
         }
+
+        public override bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
+        {
+            return conversationProgress != ProgressState.OptedOut ? base.IsTriggered(dc, conversationProgress) : false;
+        }
     }
 }
