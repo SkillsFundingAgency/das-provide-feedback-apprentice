@@ -10,19 +10,19 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
         [JsonProperty("id")]
         public string Id { get; set; }
 
-        [JsonProperty("sourceNumber")]
+        [JsonProperty("source_number")]
         public string SourceNumber { get; set; }
 
-        [JsonProperty("destinationNumber")]
+        [JsonProperty("destination_number")]
         public string DestinationNumber { get; set; }
 
         [JsonProperty("message")]
         public string Message { get; set; }
 
-        [JsonProperty("dateReceived")]
+        [JsonProperty("date_received")]
         public DateTime DateReceived { get; set; }
 
-        [JsonProperty("uniqueLearnerNumber")]
+        [JsonProperty("unique_learner_number")]
         public string UniqueLearnerNumber { get; set; }
     }
 }
