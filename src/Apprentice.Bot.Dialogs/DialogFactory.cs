@@ -7,7 +7,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Survey;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
 
@@ -22,10 +22,13 @@
 
         private readonly FeatureToggles features;
 
+        private readonly IFeedbackRepository feedbackRepository;
+
         /// <inheritdoc />
-        public DialogFactory(FeedbackBotStateRepository state, IOptions<FeatureToggles> features, IOptions<BotSettings> botSettings)
+        public DialogFactory(FeedbackBotStateRepository state, IOptions<FeatureToggles> features, IOptions<BotSettings> botSettings, IFeedbackRepository feedbackRepository)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
+            this.feedbackRepository = feedbackRepository;
             this.botSettings = botSettings.Value ?? throw new ArgumentNullException(nameof(botSettings));
             this.features = features.Value ?? throw new ArgumentNullException(nameof(features));
         }
@@ -137,7 +140,7 @@
 
         private ComponentDialog CreateSurveyEndDialog(ISurveyStep endStep)
         {
-            return new SurveyEndDialog(endStep.Id, this.state, this.botSettings, this.features)
+            return new SurveyEndDialog(endStep.Id, this.state, this.botSettings, this.features, this.feedbackRepository)
                 .WithResponses(endStep.Responses)
                 .Build();
         }

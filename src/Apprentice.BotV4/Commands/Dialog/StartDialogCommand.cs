@@ -15,14 +15,6 @@
     {
         private readonly FeedbackBotStateRepository state;
 
-        //private readonly ILogger logger;
-
-        //public StartDialogCommand(ILogger logger)
-        //    : base("start")
-        //{
-        //    this.logger = logger;
-        //}
-
         public StartDialogCommand(FeedbackBotStateRepository state)
             : base("start")
         {
@@ -36,25 +28,34 @@
                 UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
                 userProfile.SurveyState = new SurveyState();
 
-                string message = dc.Context.Activity.Text.ToLowerInvariant();
-
-                var strings = message.Split(new[] { " ", "|" }, StringSplitOptions.RemoveEmptyEntries);
-
-                if (strings.Length > 1)
+                if (userProfile.SurveyState.Progress == ProgressState.NotStarted)
                 {
-                    string dialogId = strings[1];
-                    
-                    userProfile.SurveyState.SurveyId = dialogId;
-                    userProfile.SurveyState.StartDate = DateTime.Now;
-                    userProfile.SurveyState.Progress = ProgressState.InProgress;
+                    string message = dc.Context.Activity.Text.ToLowerInvariant();
 
-                    // TODO: check dialog collection
-                    return await dc.BeginDialogAsync(dialogId, null, cancellationToken);
+                    var strings = message.Split(new[] { " ", "|" }, StringSplitOptions.RemoveEmptyEntries);
+
+                    if (strings.Length > 1)
+                    {
+                        string dialogId = strings[1];
+
+                        dynamic channelData = dc.Context.Activity.ChannelData;
+                        userProfile.IlrNumber = channelData?.UniqueLearnerNumber;
+                        userProfile.SurveyState.SurveyId = dialogId;
+                        userProfile.SurveyState.StartDate = DateTime.Now;
+                        userProfile.SurveyState.Progress = ProgressState.InProgress;
+
+                        // TODO: check dialog collection
+                        return await dc.BeginDialogAsync(dialogId, null, cancellationToken);
+                    }
+                    else
+                    {
+                        // this.logger.LogError($"could not find dialogId in command \"{ message }\"");
+                        return await dc.CancelAllDialogsAsync(cancellationToken);
+                    }
                 }
                 else
                 {
-                    // this.logger.LogError($"could not find dialogId in command \"{ message }\"");
-                    return await dc.CancelAllDialogsAsync(cancellationToken);
+                    return await dc.CancelAllDialogsAsync();
                 }
             }
             catch (Exception e)
@@ -65,6 +66,11 @@
 #endif
                 return await dc.CancelAllDialogsAsync(cancellationToken);
             }
+        }
+
+        public override bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
+        {
+            return conversationProgress != ProgressState.OptedOut ? base.IsTriggered(dc, conversationProgress) : false;
         }
     }
 }

@@ -3,35 +3,34 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System;
     using System.IO;
     using System.Web.Http;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
-    using Microsoft.Azure.WebJobs.Host;
-
+    using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
     public static class ReceiveNotifyMessage
     {
         [FunctionName("ReceiveNotifyMessage")]
-        [return: Queue("sms-received-messages")]
+        [return: ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection")]
         public static ActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
-            TraceWriter log,
+            ILogger log,
             ExecutionContext context)
         {
             var config = new SettingsProvider(context);
 
-            log.Info("ReceiveNotifyMessage trigger function processed a request.");
+            log.LogInformation("ReceiveNotifyMessage trigger function processed a request.");
 
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
 
-                log.Info($"result: {data}");
+                log.LogInformation($"result: {data}");
 
                 return data != null
                            ? (ActionResult)new OkObjectResult(data)
@@ -40,7 +39,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.Info($"Exception: {e.Message}");
+                log.LogInformation($"Exception: {e.Message}");
                 return new ExceptionResult(e, true);
             }
         }

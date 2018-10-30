@@ -26,7 +26,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
 
         private const string IntroWelcome = "Here’s your apprenticeship survey from the Department for Education.";
 
-        private const string QuestionsGettingSupport = "Next question, are you gettting the support you need?";
+        private const string QuestionsGettingSupport = "Next question, are you getting the support you need?";
 
         private const string QuestionsHelpingWithJob = "Is your apprenticeship helping you with your job?";
 

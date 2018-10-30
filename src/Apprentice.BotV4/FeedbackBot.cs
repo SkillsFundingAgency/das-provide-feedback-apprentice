@@ -118,7 +118,7 @@
 
             return dialogs;
         }
-        
+
         /// <summary>
         /// TODO: Add to middleware intercepts
         /// </summary>
@@ -127,15 +127,14 @@
         /// <returns></returns>
         private async Task HandleCommandsAsync(DialogContext dialog, CancellationToken cancellationToken)
         {
-            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog));
+            var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
+            IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog, userProfile.SurveyState.Progress));
             if (command != null)
             {
                 await command.ExecuteAsync(dialog, cancellationToken);
             }
             else
             {
-                var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
-
                 if (userProfile.SurveyState.StartDate != default(DateTime))
                 {
                     if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
@@ -210,9 +209,16 @@
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 case ProgressState.OptedOut:
+                    reply.Text = "You have opted out of surveys.";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 case ProgressState.BlackListed:
+                    // Survey user blacklisted. Let them know
+                    reply.Text = $"You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 default:

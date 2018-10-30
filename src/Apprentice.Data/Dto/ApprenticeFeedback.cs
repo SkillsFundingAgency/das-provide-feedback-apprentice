@@ -2,9 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
 
     using Newtonsoft.Json;

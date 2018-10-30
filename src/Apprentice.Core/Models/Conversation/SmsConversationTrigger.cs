@@ -1,5 +1,5 @@
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 {
     using System;
 
@@ -20,6 +20,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
         public string Message { get; set; }
 
         [JsonProperty("date_received")]
-        public DateTime TimeStamp { get; set; }
+        public DateTime DateReceived { get; set; }
+
+        [JsonProperty("unique_learner_number")]
+        public string UniqueLearnerNumber { get; set; }
     }
 }

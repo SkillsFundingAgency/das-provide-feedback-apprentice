@@ -47,7 +47,8 @@
             "type": "secureObject",
             "defaultValue": {
                 "BaseAddress": "",
-                "AuthToken": ""
+                "AuthToken": "",
+                "DirectLineAddress": ""
             }
         },
         "notifyCredentials": {
@@ -60,13 +61,17 @@
         },
         "loggingRedisConnectionString": {
             "type": "securestring"
+        },
+        "environmentName": {
+            "type": "string"
         }
     },
     "variables": {
         "azureCosmosEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]",
         "data": {
             "DatabaseName": "ApprenticeFeedback",
-            "FeedbackTable": "FeedbackResponses",
+            "FeedbackTable": "Feedback",
+            "ApprenticeSurveyDetailTable": "Apprentice-Survey-Details",
             "ConversationLogTable": "Conversations",
             "ConversationLogPartitionKey": "/conversation/id",
             "SessionStateTable": "feedback-bot-sessions",
@@ -163,6 +168,10 @@
                                 "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
                             },
                             {
+                                "name": "ASPNETCORE_ENVIRONMENT",
+                                "value": "[parameters('environmentName')]"
+                            },
+                            {
                                 "name": "MicrosoftAppId",
                                 "value": "[parameters('microsoftAppCredentials').Id]"
                             },
@@ -201,6 +210,14 @@
                             {
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
+                            },
+                            {
+                                "name": "Notify:OutgoingMessageQueueName",
+                                "value": "[variables('queues').OutgoingMessageQueueName]"
+                            },
+                            {
+                                "name": "Notify:IncomingMessageQueueName",
+                                "value": "[variables('queues').IncomingMessageQueueName]"
                             }
                         ]
                     },
@@ -214,6 +231,11 @@
                             {
                                 "name": "StorageAccount",
                                 "connectionString": "[reference('StorageAccount').outputs.storageConnectionString.value]",
+                                "type": "Custom"
+                            },
+                            {
+                                "name": "ServiceBus",
+                                "connectionString": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]",
                                 "type": "Custom"
                             }
                         ]
@@ -282,6 +304,10 @@
                                 "value": "[reference('FunctionAppApplicationInsights').outputs.InstrumentationKey.value]"
                             },
                             {
+                                "name": "ASPNETCORE_ENVIRONMENT",
+                                "value": "[parameters('environmentName')]"
+                            },
+                            {
                                 "name": "FUNCTIONS_EXTENSION_VERSION",
                                 "value": "~2"
                             },
@@ -306,6 +332,10 @@
                                 "value": "[variables('data').FeedbackTable]"
                             },
                             {
+                                "name": "ApprenticeSurveyDetailTable",
+                                "value": "[variables('data').ApprenticeSurveyDetailTable]"
+                            },
+                            {
                                 "name": "ConversationLogTable",
                                 "value": "[variables('data').ConversationLogTable]"
                             },
@@ -326,11 +356,11 @@
                                 "value": "[variables('data').SessionStateTable]"
                             },
                             {
-                                "name": "SmsOutgoingMessageQueueName",
+                                "name": "OutgoingMessageQueueName",
                                 "value": "[variables('queues').OutgoingMessageQueueName]"
                             },
                             {
-                                "name": "SmsIncomingMessageQueueName",
+                                "name": "IncomingMessageQueueName",
                                 "value": "[variables('queues').IncomingMessageQueueName]"
                             },
                             {
@@ -340,6 +370,10 @@
                             {
                                 "name": "BotClientBaseAddress",
                                 "value": "[parameters('botClientCredentials').BaseAddress]"
+                            },
+                            {
+                                "name": "DirectLineAddress",
+                                "value": "[parameters('botClientCredentials').DirectLineAddress]"
                             },
                             {
                                 "name": "NotifyTemplateId",
@@ -352,6 +386,10 @@
                             {
                                 "name": "NotifyClientApiKey",
                                 "value": "[parameters('notifyCredentials').ClientApiKey]"
+                            },
+                            {
+                                "name": "ServiceBusConnection",
+                                "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
                             }
                         ]
                     }
@@ -371,6 +409,12 @@
                 "parameters": {
                     "serviceBusNamespaceName": {
                         "value": "[parameters('serviceBusNamespaceName')]"
+                    },
+                    "serviceBusQueues": {
+                        "value": [
+                            "[variables('queues').OutgoingMessageQueueName]",
+                            "[variables('queues').IncomingMessageQueueName]"
+                        ]
                     }
                 }
             }

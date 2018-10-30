@@ -10,8 +10,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Core", "Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj", "{300DC3C7-F3D0-4119-8423-2035EECB2C72}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Functions", "Apprentice.Functions\ESFA.DAS.ProvideFeedback.Apprentice.Functions.csproj", "{0A00B002-F39D-463F-9F2C-112493BAADB9}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1. Solution Files", "1. Solution Files", "{CC808070-0036-4462-B9C3-760C742BA3A1}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -22,7 +20,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.BotV4", "Apprentice.BotV4\ESFA.DAS.ProvideFeedback.Apprentice.BotV4.csproj", "{92EB2383-2336-4807-9FCE-3FB149596CDE}"
 	ProjectSection(ProjectDependencies) = postProject
-		{0A00B002-F39D-463F-9F2C-112493BAADB9} = {0A00B002-F39D-463F-9F2C-112493BAADB9}
 		{68341D2F-56D8-45B5-BE1C-B8F0B7D1D021} = {68341D2F-56D8-45B5-BE1C-B8F0B7D1D021}
 		{014E3D2F-4B23-457E-BB49-FED93FA31FE4} = {014E3D2F-4B23-457E-BB49-FED93FA31FE4}
 		{4EF9EF47-6941-44A4-ACF0-3594A0E75D8F} = {4EF9EF47-6941-44A4-ACF0-3594A0E75D8F}
@@ -48,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests", "Bot.Connectors.UnitTests\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.csproj", "{7994592D-84BA-4FD6-9C42-295D8F02F4D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests", "Apprentice.Services.UnitTests\ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.csproj", "{E0B3894A-D6D2-4505-A01F-6C584B658980}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests", "Apprentice.Services.UnitTests\ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.csproj", "{E0B3894A-D6D2-4505-A01F-6C584B658980}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,10 +61,6 @@ Global
 		{300DC3C7-F3D0-4119-8423-2035EECB2C72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{300DC3C7-F3D0-4119-8423-2035EECB2C72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{300DC3C7-F3D0-4119-8423-2035EECB2C72}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A00B002-F39D-463F-9F2C-112493BAADB9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DA8458F9-2FB7-4851-967E-F09EAF9DCAAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
