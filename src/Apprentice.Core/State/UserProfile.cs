@@ -13,7 +13,7 @@
     [Serializable]
     public class UserProfile
     {
-        public SurveyState SurveyState { get; set; }
+        public SurveyState SurveyState { get; set; } = new SurveyState();
 
         public string TelephoneNumber { get; set; }
 
