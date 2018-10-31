@@ -1,81 +1,45 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
 {
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components;
+    using System;
+
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
 
     using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Extensions.Options;
 
-    public interface IComponentBuilder<out TDialog, in TStep>
-        where TDialog : ComponentDialog
-        where TStep : ISurveyStep
+    using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+    using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
+
+    public interface IComponentBuilder<out TDialog>
     {
-        bool IsFor(ISurveyStep step);
+        bool Matches(ISurveyStepDefinition stepDefinition);
 
-        TDialog Build(TStep step, FeedbackBotStateRepository state, Bot botSettings, Features features);
+        TDialog Create(ISurveyStepDefinition stepDefinition);
     }
 
-    public class MultipleChoiceDialogComponentBuilder : IComponentBuilder<MultipleChoiceDialog, BinaryQuestion>
+    public abstract class ComponentBuilder<TDefinition> : IComponentBuilder<ComponentDialog>
     {
-        public bool IsFor(ISurveyStep step)
-        {
-            return step is BinaryQuestion;
-        }
+        protected readonly BotSettings BotSettings;
 
-        public MultipleChoiceDialog Build(
-            BinaryQuestion step,
+        protected readonly FeatureToggles Features;
+
+        protected readonly FeedbackBotStateRepository State;
+
+        protected ComponentBuilder(
             FeedbackBotStateRepository state,
-            Bot botSettings,
-            Features features)
+            IOptions<FeatureToggles> features,
+            IOptions<BotSettings> botSettings)
         {
-            return new MultipleChoiceDialog(step.Id, state, botSettings, features)
-                .WithPrompt(step.Prompt)
-                .WithResponses(step.Responses)
-                .WithScore(step.Score)
-                .Build();
-        }
-    }
-
-    public class FreeTextDialogComponentBuilder : IComponentBuilder<FreeTextDialog, FreeTextQuestion>
-    {
-        public bool IsFor(ISurveyStep step)
-        {
-            return step is FreeTextQuestion;
+            this.BotSettings = botSettings.Value ?? throw new ArgumentNullException(nameof(botSettings));
+            this.Features = features.Value ?? throw new ArgumentNullException(nameof(features));
+            this.State = state ?? throw new ArgumentNullException(nameof(state));
         }
 
-        public FreeTextDialog Build(FreeTextQuestion step, FeedbackBotStateRepository state, Bot botSettings, Features features)
+        public bool Matches(ISurveyStepDefinition stepDefinition)
         {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class SurveyStartDialogComponentBuilder : IComponentBuilder<SurveyStartDialog, StartStep>
-    {
-        public bool IsFor(ISurveyStep step)
-        {
-            return step is StartStep;
+            return stepDefinition is TDefinition;
         }
 
-        public SurveyStartDialog Build(StartStep step, FeedbackBotStateRepository state, Bot botSettings, Features features)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class SurveyEndDialogComponentBuilder : IComponentBuilder<SurveyEndDialog, EndStep>
-    {
-        public bool IsFor(ISurveyStep step)
-        {
-            return step is EndStep;
-        }
-
-        public SurveyEndDialog Build(EndStep step, FeedbackBotStateRepository state, Bot botSettings, Features features)
-        {
-            throw new NotImplementedException();
-        }
+        public abstract ComponentDialog Create(ISurveyStepDefinition stepDefinition);
     }
 }
