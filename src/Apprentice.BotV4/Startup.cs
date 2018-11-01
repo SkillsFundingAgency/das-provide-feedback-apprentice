@@ -147,7 +147,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
                     // options.Middleware.Add(new UserState<UserProfile>(dataStore));
                     // options.Middleware.Add<AzureStorageSmsRelay>(services);
-                        options.Middleware.Add<ConversationLogMiddleware>(services);
+                    options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
@@ -170,7 +170,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                         throw new InvalidOperationException(
                             "ConversationState must be defined and added before adding conversation-scoped state accessors.");
                     }
-
+                        
                     var userState = options.State.OfType<UserState>().FirstOrDefault();
                     if (userState == null)
                     {
@@ -195,8 +195,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
             JsonConvert.DefaultSettings = () =>
             {
-                JsonSerializerSettings settings = new JsonSerializerSettings();
-                settings.Formatting = Formatting.Indented;
+                JsonSerializerSettings settings = new JsonSerializerSettings { Formatting = Formatting.Indented };
                 settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
                 return settings;
             };
@@ -227,11 +226,43 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
         private void RegisterServices(IServiceCollection services)
         {
-            services.AddSingleton<IDialogFactory, DialogFactory>();
+            services.AddSingleton<IDialogFactory, DialogFactory>();          
             services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
-            services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusSmsRelay>();
+            services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
             services.AddTransient<ChannelConfigurationMiddleware>();
             services.AddTransient<ConversationLogMiddleware>();
+
+            services.AddSingleton<IConversationRepository>(
+                (svc) =>
+                {
+                    string endpoint = this.Configuration["Azure:CosmosEndpoint"];
+                    string authKey = this.Configuration["Azure:CosmosKey"];
+                    string database = this.Configuration["Data:DatabaseName"];
+                    string collection = this.Configuration["Data:ConversationLogTable"];
+
+                    return CosmosConversationRepository
+                        .Instance
+                        .ConnectTo(endpoint)
+                        .WithAuthKeyOrResourceToken(authKey)
+                        .UsingDatabase(database)
+                        .UsingCollection(collection);
+                });
+
+            services.AddSingleton<IFeedbackRepository>(
+                (svc) =>
+                {
+                    string endpoint = this.Configuration["Azure:CosmosEndpoint"];
+                    string authKey = this.Configuration["Azure:CosmosKey"];
+                    string database = this.Configuration["Data:DatabaseName"];
+                    string collection = this.Configuration["Data:FeedbackTable"];
+
+                    return CosmosFeedbackRepository
+                        .Instance
+                        .ConnectTo(endpoint)
+                        .WithAuthKeyOrResourceToken(authKey)
+                        .UsingDatabase(database)
+                        .UsingCollection(collection);
+                });
         }
 
         private void RegisterAllSurveys(IServiceCollection services)

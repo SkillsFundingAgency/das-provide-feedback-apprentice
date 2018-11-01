@@ -1,29 +1,36 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
-using Microsoft.Azure.Documents.Client;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
+
+    using Microsoft.Azure.Documents.Client;
+    using Microsoft.Azure.WebJobs;
+    using Microsoft.Extensions.Logging;
+
+    using Newtonsoft.Json;
+
     public static class DailySurveyTrigger
     {
         private static readonly Lazy<SettingsProvider> LazyConfigProvider = new Lazy<SettingsProvider>(Configure);
+
         private static ExecutionContext currentContext;
+
         public static SettingsProvider Configuration => LazyConfigProvider.Value;
+
         private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
 
         [FunctionName("DailySurveyTrigger")]
         public static async Task Run(
-            [TimerTrigger("0 0 11 * * MON-FRI")]TimerInfo myTimer,
+            [TimerTrigger("0 0 11 * * MON-FRI")] TimerInfo myTimer,
             ILogger log,
-            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] ICollector<string> outputSbQueue,
+            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            ICollector<string> outputSbQueue,
             ExecutionContext executionContext)
         {
             currentContext = executionContext;
@@ -53,6 +60,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
         }
 
+        private static SettingsProvider Configure()
+        {
+            if (currentContext == null)
+            {
+                throw new Exception("Could not initialize the settings provider, ExecutionContext is null");
+            }
+
+            return new SettingsProvider(currentContext);
+        }
+
         private static Task<IEnumerable<ApprenticeDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
         {
             return DocumentClient.GetItemsAsync<ApprenticeDetail>(ad => ad.SentDate == null, new FeedOptions { MaxItemCount = batchSize });
@@ -72,16 +89,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 .UsingCollection(collection);
 
             return repo;
-        }
-
-        private static SettingsProvider Configure()
-        {
-            if (currentContext == null)
-            {
-                throw new Exception("Could not initialize the settings provider, ExecutionContext is null");
-            }
-
-            return new SettingsProvider(currentContext);
         }
     }
 }

@@ -143,7 +143,7 @@
                     }
                 }
 
-                await ContinueConversation(dialog, userProfile, cancellationToken).ConfigureAwait(false);
+                await ContinueConversationAsync(dialog, userProfile, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -178,7 +178,7 @@
             }
         }
 
-        private static async Task<DialogTurnResult> ContinueConversation(DialogContext dialog, UserProfile userProfile, CancellationToken cancellationToken)
+        private static async Task<DialogTurnResult> ContinueConversationAsync(DialogContext dialog, UserProfile userProfile, CancellationToken cancellationToken)
         {
             var reply = dialog.Context.Activity.CreateReply();
 
