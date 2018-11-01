@@ -13,8 +13,10 @@
         /// <param name="ctx"> The <see cref="ExecutionContext"/>. </param>
         public SettingsProvider(ExecutionContext ctx)
         {
-            this.config = new ConfigurationBuilder().SetBasePath(ctx.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables()
+            this.config = new ConfigurationBuilder()
+                .SetBasePath(ctx.FunctionAppDirectory)
+                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
+                .AddEnvironmentVariables()
                 .Build();
         }
 

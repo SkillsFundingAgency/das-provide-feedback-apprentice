@@ -4,11 +4,11 @@
     "FUNCTIONS_WORKER_RUNTIME": "dotnet",
     "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "AzureWebJobsDashboard": "UseDevelopmentStorage=true",
-    "AzureCosmosEndpoint": "https://esfa-pf-apprentice-db.documents.azure.com:443/",
-    "AzureCosmosKey": "iqcknMKnELb7roOMRlnIwUMmTnBVnzYIizAVwIyI9nbpSrncLZz34QnzxZJoKEthasjFq8HzNLuAG1kMwrgZnw==",
+    "AzureCosmosEndpoint": "https://localhost:8081/",
+    "AzureCosmosKey": "",
     "AzureCosmos": 1000,
     "DatabaseName": "ApprenticeFeedback",
-    "FeedbackTable": "FeedbackResponses",
+    "FeedbackTable": "Feedback",
     "ApprenticeSurveyDetailTable": "Apprentice-Survey-Details",
     "ConversationLogTable": "Conversations",
     "ConversationLogPartitionKey": "/conversation/id",
@@ -17,12 +17,13 @@
     "SessionStateTable": "feedback-bot-sessions",
     "OutgoingMessageQueueName": "sms-outgoing-messages",
     "IncomingMessageQueueName": "sms-incoming-messages",
-    "BotClientAuthToken": "wGLe0TPp6OU.cwA.J1s.UVyBzsIg_Rx0L9e6n8Eyp8az9b7vG8BoUHyuKBubytk",
+    "BotClientAuthToken": "",
     "BotClientBaseAddress": "",
     "DirectLineAddress": "",
-    "NotifyTemplateId": "9fdc18fa-a826-4560-9f03-ede9d706dfb2",
-    "NotifySmsSenderId": "f7edb3b1-62dd-4b41-b79b-6f19b9d1f793",
-    "NotifyClientApiKey": "pfdev-c58e124f-81bb-4eed-b8e0-4a86a9fe4fcf-8d48a0c5-0079-4ddc-8fc8-481cdbd61d66",
-    "ServiceBusConnection": ""
+    "NotifyTemplateId": "",
+    "NotifySmsSenderId": "",
+    "NotifyClientApiKey": "",
+    "ServiceBusConnection": "",
+    "SqlConnectionStrig": "Data Source=(localdb)\\ProjectsV13;Initial Catalog=ESFA.DAS.EmployerFeedbackEmail.Database;MultipleActiveResultSets=True;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
   }
 }

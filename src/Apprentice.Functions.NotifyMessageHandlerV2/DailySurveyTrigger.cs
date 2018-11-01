@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
-using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -14,10 +15,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     public static class DailySurveyTrigger
     {
+        private static readonly Lazy<IStoreApprenticeSurveyDetails> LazyDataStoreProvider = new Lazy<IStoreApprenticeSurveyDetails>(ConfigureDataStore);
+
         private static readonly Lazy<SettingsProvider> LazyConfigProvider = new Lazy<SettingsProvider>(Configure);
         private static ExecutionContext currentContext;
         public static SettingsProvider Configuration => LazyConfigProvider.Value;
-        private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
+        private static IStoreApprenticeSurveyDetails _surveyDetailsRepo => LazyDataStoreProvider.Value;
 
         [FunctionName("DailySurveyTrigger")]
         public static async Task Run(
@@ -38,7 +41,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 var trigger = new SmsConversationTrigger()
                 {
                     Id = Guid.NewGuid().ToString(),
-                    SourceNumber = apprenticeDetail.MobileNumber,
+                    SourceNumber = apprenticeDetail.MobileNumber.ToString(),
                     DestinationNumber = null,
                     Message = $"start {apprenticeDetail.SurveyCode}",
                     DateReceived = now
@@ -48,14 +51,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
                 outputSbQueue.Add(JsonConvert.SerializeObject(payload));
 
-                apprenticeDetail.SentDate = now;
-                await DocumentClient.UpsertItemAsync(apprenticeDetail);
+                await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.MobileNumber, apprenticeDetail.SurveyCode);
             }
         }
 
-        private static Task<IEnumerable<ApprenticeDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
+        private static Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
         {
-            return DocumentClient.GetItemsAsync<ApprenticeDetail>(ad => ad.SentDate == null, new FeedOptions { MaxItemCount = batchSize });
+            return _surveyDetailsRepo.GetApprenticeSurveyDetailsAsync(batchSize);
         }
 
         private static CosmosDbRepository InitializeDocumentClient()
@@ -82,6 +84,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
 
             return new SettingsProvider(currentContext);
+        }
+
+        private static IStoreApprenticeSurveyDetails ConfigureDataStore()
+        {
+            return new ApprenticeSurveyDetailsRepository(new SqlConnection(Configuration.Get("SqlConnectionString"));
         }
     }
 }
