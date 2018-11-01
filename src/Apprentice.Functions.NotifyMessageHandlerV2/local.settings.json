@@ -23,7 +23,9 @@
     "NotifyTemplateId": "",
     "NotifySmsSenderId": "",
     "NotifyClientApiKey": "",
-    "ServiceBusConnection": "",
-    "SqlConnectionStrig": "Data Source=(localdb)\\ProjectsV13;Initial Catalog=ESFA.DAS.EmployerFeedbackEmail.Database;MultipleActiveResultSets=True;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
+    "ServiceBusConnection": ""
+  },
+  "connectionStrings": {
+    "SqlConnectionString": "Data Source=(localdb)\\ProjectsV13;Initial Catalog=ESFA.DAS.ProvideFeedback.Apprentice.Database;MultipleActiveResultSets=True;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
   }
 }
