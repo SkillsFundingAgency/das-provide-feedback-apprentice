@@ -4,7 +4,7 @@
 
     using Newtonsoft.Json;
 
-    public abstract class SurveyStepBase : ISurveyStep
+    public abstract class SurveyStepDefinitionBase : ISurveyStepDefinition
     {
         [JsonProperty("id")]
         public string Id { get; set; }

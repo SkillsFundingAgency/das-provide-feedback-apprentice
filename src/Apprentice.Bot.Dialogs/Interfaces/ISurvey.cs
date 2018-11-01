@@ -6,6 +6,6 @@
     {
         string Id { get; set; }
 
-        ICollection<ISurveyStep> Steps { get; set; }
+        ICollection<ISurveyStepDefinition> Steps { get; set; }
     }
 }

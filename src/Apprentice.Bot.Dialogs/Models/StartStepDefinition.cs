@@ -3,7 +3,7 @@
     using System;
 
     [Serializable]
-    public sealed class StartStep : SurveyStepBase
+    public sealed class StartStepDefinition : SurveyStepDefinitionBase
     {
     }
 }

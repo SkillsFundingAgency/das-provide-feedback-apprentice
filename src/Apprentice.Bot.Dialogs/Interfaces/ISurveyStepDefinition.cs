@@ -2,7 +2,7 @@
 {
     using System.Collections.Generic;
 
-    public interface ISurveyStep
+    public interface ISurveyStepDefinition
     {
         string Id { get; set; }
 
