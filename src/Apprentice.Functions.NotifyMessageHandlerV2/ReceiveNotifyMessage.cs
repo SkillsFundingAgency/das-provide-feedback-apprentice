@@ -21,8 +21,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             ILogger log,
             ExecutionContext context)
         {
-            var config = new SettingsProvider(context);
-
             log.LogInformation("ReceiveNotifyMessage trigger function processed a request.");
 
             try
