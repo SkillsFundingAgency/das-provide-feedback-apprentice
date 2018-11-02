@@ -20,11 +20,9 @@
         public async Task SaveFeedbackAsync(ApprenticeFeedback feedback)
         {
             SaveFeedbackCommand command = new SaveFeedbackCommand()
-                .StartedOn(feedback.StartTime)
-                .CompletedOn(feedback.FinishTime)
-                .SubmittedBy(feedback.Apprentice)
-                .WithResponses(feedback.Responses)
-                .ForApprenticeship(feedback.Apprenticeship);
+            {
+                Feedback = feedback
+            };
 
             await this.saveFeedbackCommandHandler.HandleAsync(command);
         }
