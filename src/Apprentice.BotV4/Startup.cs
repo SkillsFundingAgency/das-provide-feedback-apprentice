@@ -5,6 +5,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
@@ -14,9 +15,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -35,12 +40,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
+
     using NLog.Extensions.Logging;
+
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
     public class Startup
     {
         private bool isProduction = false;
+
         private ILoggerFactory loggerFactory;
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -100,8 +108,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             // register all surveys
             this.RegisterAllSurveys(services);
 
-            services.AddSingleton<IFeedbackRepository, CosmosFeedbackRepository>();
-            services.AddSingleton<IConversationRepository, CosmosConversationRepository>();
+            // register all component builders
+            this.RegisterAllComponentBuilders(services);
 
             string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
             string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;
@@ -170,7 +178,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                         throw new InvalidOperationException(
                             "ConversationState must be defined and added before adding conversation-scoped state accessors.");
                     }
-                        
+
                     var userState = options.State.OfType<UserState>().FirstOrDefault();
                     if (userState == null)
                     {
@@ -195,21 +203,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
             JsonConvert.DefaultSettings = () =>
             {
-                JsonSerializerSettings settings = new JsonSerializerSettings { Formatting = Formatting.Indented };
+                JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None };
                 settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
                 return settings;
             };
-        }
-
-        private void ConfigureOptions(IServiceCollection services)
-        {
-            services.AddOptions()
-                .BindConfiguration<Azure>(this.Configuration)
-                .BindConfiguration<Bot>(this.Configuration)
-                .BindConfiguration<ConnectionStrings>(this.Configuration)
-                .BindConfiguration<Data>(this.Configuration)
-                .BindConfiguration<Notify>(this.Configuration)
-                .BindConfiguration<FeatureToggles>(this.Configuration);
         }
 
         private void ConfigureLocalization(IServiceCollection services)
@@ -224,11 +221,59 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                 });
         }
 
+        private ILoggerFactory ConfigureLoggerFactory(ILoggerFactory loggerFactory)
+        {
+            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageProperties = true, CaptureMessageTemplates = true });
+            NLog.LogManager.LoadConfiguration("nlog.config");
+
+            return loggerFactory;
+        }
+
+        private void ConfigureOptions(IServiceCollection services)
+        {
+            services.AddOptions()
+                .BindConfiguration<Azure>(this.Configuration)
+                .BindConfiguration<Bot>(this.Configuration)
+                .BindConfiguration<ConnectionStrings>(this.Configuration)
+                .BindConfiguration<Data>(this.Configuration)
+                .BindConfiguration<Notify>(this.Configuration)
+                .BindConfiguration<FeatureToggles>(this.Configuration);
+        }
+
+        private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
+        {
+            AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
+                configuration["ConnectionStrings:StorageAccount"],
+                configuration["Data:SessionStateTable"]);
+
+            return azureBlobStorage;
+        }
+
+        private void RegisterAllComponentBuilders(IServiceCollection services)
+        {
+            services.RegisterAllTypes<IComponentBuilder<ComponentDialog>>(new Assembly[] { typeof(DialogFactory).Assembly }, ServiceLifetime.Singleton);
+        }
+
+        private void RegisterAllDialogCommands(IServiceCollection services)
+        {
+            services.RegisterAllTypes<IBotDialogCommand>(new Assembly[] { typeof(FeedbackBot).Assembly });
+        }
+
+        private void RegisterAllSurveys(IServiceCollection services)
+        {
+            services.RegisterAllTypes<ISurvey>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
+        }
+
         private void RegisterServices(IServiceCollection services)
         {
-            services.AddSingleton<IDialogFactory, DialogFactory>();          
+            services.AddSingleton<IDialogFactory, DialogFactory>();
             services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
             services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
+
+            services.AddSingleton<IFeedbackService, FeedbackService>();
+            services.AddSingleton<ICommandHandlerAsync<SaveFeedbackCommand>, SaveFeedbackCommandHandler>();
+            services.AddSingleton<ICommandHandlerAsync<SendBasicSmsCommand>, NotifySendSmsCommandHandler>();
+
             services.AddTransient<ChannelConfigurationMiddleware>();
             services.AddTransient<ConversationLogMiddleware>();
 
@@ -264,32 +309,5 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                         .UsingCollection(collection);
                 });
         }
-
-        private void RegisterAllSurveys(IServiceCollection services)
-        {
-            services.RegisterAllTypes<ISurvey>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
-        }
-
-        private void RegisterAllDialogCommands(IServiceCollection services)
-        {
-            services.RegisterAllTypes<IBotDialogCommand>(new Assembly[] { typeof(FeedbackBot).Assembly });
-        }
-
-        private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
-        {
-            AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
-                configuration["ConnectionStrings:StorageAccount"],
-                configuration["Data:SessionStateTable"]);
-            return azureBlobStorage;
-        }
-
-        private ILoggerFactory ConfigureLoggerFactory(ILoggerFactory loggerFactory)
-        {
-            loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageProperties = true, CaptureMessageTemplates = true });
-            NLog.LogManager.LoadConfiguration("nlog.config");
-
-            return loggerFactory;
-        }
-
     }
 }
