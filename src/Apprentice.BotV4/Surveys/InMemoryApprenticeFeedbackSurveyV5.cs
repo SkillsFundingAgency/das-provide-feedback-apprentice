@@ -50,7 +50,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public InMemoryApprenticeFeedbackSurveyV5()
         {
             this.Id = "afb-v5";
-            this.Steps = new List<ISurveyStep>()
+            this.Steps = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestion1(),
@@ -63,7 +63,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public InMemoryApprenticeFeedbackSurveyV5(string id)
         {
             this.Id = id;
-            this.Steps = new List<ISurveyStep>()
+            this.Steps = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestion1(),
@@ -75,9 +75,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
 
         public string Id { get; set; }
 
-        public ICollection<ISurveyStep> Steps { get; set; }
+        public ICollection<ISurveyStepDefinition> Steps { get; set; }
 
-        public EndStep CreateEndStep()
+        public EndStepDefinition CreateEndStep()
         {
             var id = "feedback-end";
             var responses = new List<IResponse>
@@ -101,10 +101,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
                             Prompt = FinishSpeakToYourEmployer,
                         },
                 };
-            return new EndStep() { Id = id, Responses = responses };
+            return new EndStepDefinition() { Id = id, Responses = responses };
         }
 
-        public QuestionStep CreateQuestion1()
+        public QuestionStepDefinition CreateQuestion1()
         {
             var id = "feedback-q1";
             var responses = new List<IResponse>
@@ -118,7 +118,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestion2()
+        public QuestionStepDefinition CreateQuestion2()
         {
             var id = "feedback-q2";
             var responses = new List<IResponse>
@@ -132,7 +132,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestion3()
+        public QuestionStepDefinition CreateQuestion3()
         {
             var id = "feedback-q3";
             var responses = new List<IResponse>
@@ -146,7 +146,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public StartStep CreateStartStep()
+        public StartStepDefinition CreateStartStep()
         {
             var id = "feedback-start";
             var responses = new List<IResponse>
@@ -158,7 +158,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
                         },
                     new StaticResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, },
                 };
-            return new StartStep() { Id = id, Responses = responses };
+            return new StartStepDefinition() { Id = id, Responses = responses };
         }
     }
 }

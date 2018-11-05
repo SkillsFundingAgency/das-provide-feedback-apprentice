@@ -29,35 +29,25 @@
 
         private const string ResponsesPositive01 = ":)";
 
-        public InMemoryIfaDemoSurveyV1()
-        {
-            this.Id = "ifa-v1";
-            this.Steps = new List<ISurveyStep>()
-                {
-                    this.CreateStartStep(),
-                    this.CreateQuestion1(),
-                    this.CreateQuestion2(),
-                    this.CreateQuestion3(),
-                    this.CreateQuestion3b(),
-                };
-        }
+        private const string End = "That's the end, thanks!";
 
-        public InMemoryIfaDemoSurveyV1(string id)
+        public InMemoryIfaDemoSurveyV1(string id = "ifa-v1")
         {
             this.Id = id;
-            this.Steps = new List<ISurveyStep>()
+            this.Steps = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestion1(),
                     this.CreateQuestion2(),
                     this.CreateQuestion3(),
                     this.CreateQuestion3b(),
+                    this.CreateEndStep(),
                 };
         }
 
         public string Id { get; set; }
 
-        public ICollection<ISurveyStep> Steps { get; set; }
+        public ICollection<ISurveyStepDefinition> Steps { get; set; }
 
         //public EndStep CreateEndStep()
         //{
@@ -86,7 +76,7 @@
         //    return new EndStep() { Id = id, Responses = responses };
         //}
 
-        public QuestionStep CreateQuestion1()
+        public QuestionStepDefinition CreateQuestion1()
         {
             var id = "feedback-q1";
             var responses = new List<IResponse>
@@ -100,7 +90,7 @@
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestion2()
+        public QuestionStepDefinition CreateQuestion2()
         {
             var id = "feedback-q2";
             var responses = new List<IResponse>
@@ -114,7 +104,7 @@
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestion3()
+        public QuestionStepDefinition CreateQuestion3()
         {
             var id = "feedback-q3";
             var responses = new List<IResponse>
@@ -128,7 +118,7 @@
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestion3b()
+        public QuestionStepDefinition CreateQuestion3b()
         {
             var id = "feedback-q3b";
             var responses = new List<IResponse>
@@ -141,7 +131,7 @@
             return new FreeTextQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public StartStep CreateStartStep()
+        public StartStepDefinition CreateStartStep()
         {
             var id = "feedback-start";
             var responses = new List<IResponse>
@@ -149,7 +139,17 @@
                     new StaticResponse() { Id = nameof(Intro), Prompt = Intro, },
                     new StaticResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, }
                 };
-            return new StartStep() { Id = id, Responses = responses };
+            return new StartStepDefinition() { Id = id, Responses = responses };
+        }
+
+        public EndStepDefinition CreateEndStep()
+        {
+            var id = "feedback-end";
+            var responses = new List<IResponse>
+            {
+                new StaticResponse() { Id = nameof(End), Prompt = End, },
+            };
+            return new EndStepDefinition() { Id = id, Responses = responses };
         }
     }
 }
