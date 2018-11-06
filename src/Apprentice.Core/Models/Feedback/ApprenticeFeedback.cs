@@ -8,6 +8,10 @@
     [Serializable]
     public class ApprenticeFeedback
     {
+
+        [JsonProperty("surveyId")]
+        public string SurveyId { get; set; }
+
         [JsonProperty("startTime")]
         public DateTime StartTime { get; set; }
 
