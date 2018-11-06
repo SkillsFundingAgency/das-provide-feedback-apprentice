@@ -21,12 +21,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="ConversationLogMiddleware"/> class. 
         /// </summary>
-        /// <param name="azureConfig">
-        /// the azure configuration options
-        /// </param>
-        /// <param name="dataConfig">
-        /// the database configuration options
-        /// </param>
+        /// <param name="conversationRepository">Conversation storage</param>
         public ConversationLogMiddleware(IConversationRepository conversationRepository)
         {
             this.conversationRepository = conversationRepository;
@@ -55,7 +50,7 @@
                 context.OnSendActivities(
                     async (activityContext, activityList, activityNext) =>
                     {
-                        botReply = string.Join("\n\n", activityList.SelectMany(a => a.Text));
+                        botReply = string.Join("\n\n", activityList.Select(a => a.Text.ToString()).ToArray());
                         return await activityNext();
                     });
             }
