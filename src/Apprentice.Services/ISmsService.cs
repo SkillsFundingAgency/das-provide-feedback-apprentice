@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 
     public interface ISmsService
     {
@@ -18,8 +19,6 @@
 
     public interface IBotService
     {
-        
-
         Task CreateNewSession(BotSession session);
     }
 }

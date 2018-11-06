@@ -13,7 +13,6 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Survey;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
@@ -23,11 +22,11 @@
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
 
+    using Newtonsoft.Json;
+
     public class FeedbackBot : IBot
     {
         private readonly IEnumerable<IBotDialogCommand> commands;
-
-        private readonly IEnumerable<ISurvey> surveys;
 
         private readonly IDialogFactory dialogFactory;
 
@@ -36,6 +35,8 @@
         private readonly ILogger<FeedbackBot> logger;
 
         private readonly FeedbackBotStateRepository stateRepository;
+
+        private readonly IEnumerable<ISurvey> surveys;
 
         public FeedbackBot(
             FeedbackBotStateRepository stateRepository,
@@ -98,9 +99,71 @@
                 await this.stateRepository.ConversationState.SaveChangesAsync(turnContext, false, cancellationToken);
                 await this.stateRepository.UserState.SaveChangesAsync(turnContext, false, cancellationToken);
             }
+            catch (JsonSerializationException e)
+            {
+                this.logger.LogCritical("Encountered a bad session state object, could not rebuild from JSON.", new { Exception = e });
+
+                await this.stateRepository.ConversationState.ClearStateAsync(dc.Context, cancellationToken);
+                await this.stateRepository.ConversationState.LoadAsync(dc.Context, true, cancellationToken);
+
+                await this.stateRepository.UserState.ClearStateAsync(dc.Context, cancellationToken);
+                await this.stateRepository.UserState.LoadAsync(dc.Context, true, cancellationToken);
+            }
             catch (Exception e)
             {
                 throw new Exception($"Error while handling conversation response: {e.Message}", e);
+            }
+        }
+
+        private static async Task<DialogTurnResult> ContinueConversationAsync(
+            DialogContext dialog, 
+            UserProfile userProfile, 
+            CancellationToken cancellationToken)
+        {
+            var reply = dialog.Context.Activity.CreateReply();
+
+            switch (userProfile.SurveyState.Progress)
+            {
+                case ProgressState.NotStarted:
+                    // Not sure how they got here, fix the session!
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+
+                case ProgressState.InProgress:
+                    // Continue as normal
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+
+                case ProgressState.Complete:
+                    // Survey already completed, so let them know
+                    reply.Text = $"Thanks for your interest, but it looks like you've already given us some feedback!";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                case ProgressState.Expired:
+                    // Survey window has expired, so let them know
+                    reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
+                        + $"\n"
+                        + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                case ProgressState.OptedOut:
+                    // User opted out. Respond accordingly!
+                    reply.Text = "You have opted out of surveys.";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                case ProgressState.BlackListed:
+                    // Survey user blacklisted. Let them know
+                    reply.Text = $"You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                default:
+                    return await dialog.ContinueDialogAsync(cancellationToken);
             }
         }
 
@@ -122,10 +185,18 @@
         /// <summary>
         /// TODO: Add to middleware intercepts
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        private async Task HandleCommandsAsync(DialogContext dialog, CancellationToken cancellationToken)
+        /// <param name="dialog">
+        /// the currently active dialog context
+        /// </param>
+        /// <param name="cancellationToken">
+        /// the cancellation token
+        /// </param>
+        /// <returns>
+        /// The <see cref="Task"/>.
+        /// </returns>
+        private async Task HandleCommandsAsync(
+            DialogContext dialog, 
+            CancellationToken cancellationToken)
         {
             var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
             IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog, userProfile.SurveyState.Progress));
@@ -143,7 +214,7 @@
                     }
                 }
 
-                await ContinueConversation(dialog, userProfile, cancellationToken).ConfigureAwait(false);
+                await ContinueConversationAsync(dialog, userProfile, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -175,54 +246,6 @@
             if (!dialog.Context.Responded)
             {
                 await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
-            }
-        }
-
-        private static async Task<DialogTurnResult> ContinueConversation(DialogContext dialog, UserProfile userProfile, CancellationToken cancellationToken)
-        {
-            var reply = dialog.Context.Activity.CreateReply();
-
-            switch (userProfile.SurveyState.Progress)
-            {
-                case ProgressState.NotStarted:
-                    // Not sure how they got here, fix the session!
-                    return await dialog.ContinueDialogAsync(cancellationToken);
-
-                case ProgressState.InProgress:
-                    // Continue as normal
-                    return await dialog.ContinueDialogAsync(cancellationToken);
-
-                case ProgressState.Complete:
-                    // Survey already completed, so let them know
-                    reply.Text = $"Thanks for your interest, but it looks like you've already given us some feedback!";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
-                case ProgressState.Expired:
-                    // Survey already completed, so let them know
-                    reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
-                                 + $"\n"
-                                 + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
-                case ProgressState.OptedOut:
-                    reply.Text = "You have opted out of surveys.";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
-                case ProgressState.BlackListed:
-                    // Survey user blacklisted. Let them know
-                    reply.Text = $"You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
-                default:
-                    return await dialog.ContinueDialogAsync(cancellationToken);
             }
         }
     }

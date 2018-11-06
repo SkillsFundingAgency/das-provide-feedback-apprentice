@@ -39,8 +39,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         /// <summary>
         /// Queue based trigger. Delivers incoming SMS messages from a queue to our bot using the DirectLine connector
         /// </summary>
-        /// <param name="incomingSms">The incoming SMS payload.</param>
-        /// <param name="log">the host <see cref="TraceWriter"/></param>
+        /// <param name="queueMessage">The incoming SMS payload.</param>
+        /// <param name="log">the <see cref="ILogger"/></param>
         /// <param name="context">the function <see cref="ExecutionContext"/></param>
         /// <returns> the <see cref="Task"/> </returns>
         [FunctionName("DeliverMessageToBot")]

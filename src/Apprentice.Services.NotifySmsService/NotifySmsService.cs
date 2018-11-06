@@ -15,22 +15,13 @@
 
     public class NotifySmsService : ISmsService
     {
-        private readonly NotificationClient notifyClient;
-
-        private readonly IOptions<NotifyConfig> notifyConfiguration;
-
-        private readonly ICommandHandlerAsync<NotifySendSmsCommand> sendSmsCommandHandler;
+        private readonly ICommandHandlerAsync<SendBasicSmsCommand> sendSmsCommandHandler;
 
         public NotifySmsService(
-            IOptions<NotifyConfig> notifyConfiguration,
-            ICommandHandlerAsync<NotifySendSmsCommand> sendSmsCommandHandler)
+            ICommandHandlerAsync<SendBasicSmsCommand> sendSmsCommandHandler)
         {
-            this.notifyConfiguration = notifyConfiguration;
             this.sendSmsCommandHandler = sendSmsCommandHandler;
-            this.notifyClient = this.InitializeNotifyClient();
         }
-
-        public Notify NotifyConfiguration => this.notifyConfiguration.Value;
 
         public void SendSms(string destinationNumber, string messageToSend, string reference = null)
         {
@@ -39,22 +30,12 @@
 
         public async Task SendSmsAsync(string destinationNumber, string messageToSend, string reference = null)
         {
-            NotifySendSmsCommand command = new NotifySendSmsCommand()
-                .SendSmsTo(destinationNumber)
-                .UsingNotifySender(this.NotifyConfiguration.SmsSenderId)
-                .UsingNotifyTemplate(this.NotifyConfiguration.TemplateId)
-                    .AddVariable("message", messageToSend)
-                    .Build()
-                .WithReference(reference)
-                .UsingNotifyClient(this.notifyClient);
+            SendBasicSmsCommand command = new SendBasicSmsCommand()
+                .To(destinationNumber)
+                .Message(messageToSend)
+                .WithReference(reference);
 
             await this.sendSmsCommandHandler.HandleAsync(command);
-        }
-
-        private NotificationClient InitializeNotifyClient()
-        {
-            NotificationClient client = new NotificationClient(this.NotifyConfiguration.ApiKey);
-            return client;
         }
     }
 }

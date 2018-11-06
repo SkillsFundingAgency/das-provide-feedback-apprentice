@@ -12,7 +12,7 @@
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
-    public sealed class SurveyStartDialog : ComponentDialog
+    public sealed class SurveyStartDialog : ComponentDialog, ICustomComponent
     {
         private readonly BotSettings botSettings;
 
@@ -93,6 +93,8 @@
                     this.configuration,
                     cancellationToken);
             }
+
+            userInfo.TelephoneNumber = stepContext.Context.Activity.From.Id;
 
             return await stepContext.NextAsync(null, cancellationToken);
         }

@@ -18,7 +18,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
     using PromptOptions = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components.RetryPromptOptions;
 
-    public sealed class MultipleChoiceDialog : ComponentDialog
+    public sealed class MultipleChoiceDialog : ComponentDialog, ICustomComponent
     {
         public const string ChoicePrompt = "choicePrompt";
 
@@ -55,7 +55,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             var steps = new WaterfallStep[]
                 {
                     this.AskQuestionAsync,
-                    this.RespondToAnswerAsync,
+                    this.SendResponseAsync,
                     this.EndDialogAsync,
                 };
 
@@ -110,15 +110,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return await stepContext.PromptAsync(ChoicePrompt, promptOptions, cancellationToken);
         }
 
-        private BinaryQuestionResponse CreateResponse(WaterfallStepContext stepContext)
+        private MultipleChoiceQuestionResponse HandleResponse(WaterfallStepContext stepContext)
         {
             string utterance = stepContext.Context.Activity.Text; // What did they say?
             string intent = (stepContext.Result as FoundChoice)?.Value; // What did they mean?
 
             bool positive = intent == "yes"; // Was it positive?
 
-            BinaryQuestionResponse feedbackResponse = new BinaryQuestionResponse
-                {
+            var feedbackResponse = new MultipleChoiceQuestionResponse()
+            {
                     Question = this.PromptText,
                     Answer = utterance,
                     Intent = intent,
@@ -128,7 +128,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return feedbackResponse;
         }
 
-        private async Task<DialogTurnResult> RespondToAnswerAsync(
+        private async Task<DialogTurnResult> SendResponseAsync(
             WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
@@ -139,7 +139,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             userProfile.SurveyState.Progress = ProgressState.InProgress;
 
-            BinaryQuestionResponse feedbackResponse = this.CreateResponse(stepContext);
+            MultipleChoiceQuestionResponse feedbackResponse = this.HandleResponse(stepContext);
 
             userProfile.SurveyState.Responses.Add(feedbackResponse);
 

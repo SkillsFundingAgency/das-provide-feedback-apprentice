@@ -3,5 +3,6 @@
     public class Apprentice
     {
         public string UniqueLearnerNumber { get; set; }
+        public string MobilePhoneNumber { get; set; }
     }
 }

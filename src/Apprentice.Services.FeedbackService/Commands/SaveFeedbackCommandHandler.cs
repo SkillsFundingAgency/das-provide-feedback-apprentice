@@ -1,10 +1,13 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands
 {
+    using System;
     using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+
+    using ApprenticeFeedbackDto = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;
 
     public class SaveFeedbackCommandHandler : ICommandHandlerAsync<SaveFeedbackCommand>
     {
@@ -22,9 +25,24 @@
 
         public async Task HandleAsync(SaveFeedbackCommand command, CancellationToken cancellationToken = new CancellationToken())
         {
-            await command
-                .Using(this.repository)
-                .ExecuteAsync(cancellationToken);
+            if (this.repository == null)
+            {
+                throw new Exception("Repository is not configured.");
+            }
+
+            // TODO: Automapper
+            var feedbackDto = new ApprenticeFeedbackDto()
+            {
+                StartTime = command.Feedback.StartTime,
+                FinishTime = command.Feedback.FinishTime,
+                SurveyId = command.Feedback.SurveyId,
+                Apprentice = command.Feedback.Apprentice,
+                Apprenticeship = command.Feedback.Apprenticeship,
+                Responses = command.Feedback.Responses,
+                PartitionKey = command.Feedback.Apprentice.MobilePhoneNumber
+            };
+
+            await this.repository.SaveFeedback(feedbackDto);
         }
     }
 }
