@@ -18,7 +18,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs
                         {
                             StartTime = DateTime.UtcNow.AddDays(-30),
                             FinishTime = DateTime.UtcNow.AddDays(-30).AddMinutes(5),
-                            Apprentice = CreateApprentice("ULN100000"),
+                            SurveyId = "Survey0001",
+                            Apprentice = CreateApprentice("ULN100000", "447701234567"),
                             Apprenticeship = CreateStandard("1000190", "STN-999"),
                             Responses = new List<ApprenticeResponse>
                                 {
@@ -33,7 +34,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs
                 }
             };
 
-        internal static Apprentice CreateApprentice(string uln) => new Apprentice() { UniqueLearnerNumber = uln };
+        internal static Apprentice CreateApprentice(string uln, string phoneNumber) => new Apprentice() { UniqueLearnerNumber = uln, MobilePhoneNumber = phoneNumber };
 
         internal static Framework CreateFramework(
             string ukprn,

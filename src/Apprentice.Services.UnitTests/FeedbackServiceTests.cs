@@ -40,16 +40,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
             this.azureConfig = Options.Create(new AzureOptions());
 
             this.feedbackRepo = Substitute.For<IFeedbackRepository>();
-            this.saveFeedbackCommandHandler = Substitute.For<ICommandHandlerAsync<SaveFeedbackCommand>>();
+            this.saveFeedbackCommandHandler = new SaveFeedbackCommandHandler(this.feedbackRepo);
 
             this.sut = new FeedbackService(this.saveFeedbackCommandHandler);
         }
 
         public class SaveFeedbackTest : FeedbackServiceTests
         {
-            const string UNIQUE_LEARNER_NUMBER = "abc-123";
-            const string STANDARD_ID = "STN-001";
-            const string UKPRN = "100001";
+            private const string SurveyId = "Survey0001";
+            private const string UniqueLearnerNumber = "abc-123";
+            private const string PhoneNumber = "447701234567";
+            private const string StandardId = "STN-001";
+            private const string Ukprn = "100001";
 
             private readonly ApprenticeFeedback feedback;
 
@@ -59,8 +61,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
                     {
                         StartTime = DateTime.UtcNow.AddMinutes(-5),
                         FinishTime = DateTime.UtcNow,
-                        Apprentice = FakeFeedbackRepository.CreateApprentice(UNIQUE_LEARNER_NUMBER),
-                        Apprenticeship = FakeFeedbackRepository.CreateStandard(UKPRN, STANDARD_ID),
+                        SurveyId = SurveyId,
+                        Apprentice = FakeFeedbackRepository.CreateApprentice(UniqueLearnerNumber, PhoneNumber),
+                        Apprenticeship = FakeFeedbackRepository.CreateStandard(Ukprn, StandardId),
                         Responses = new List<ApprenticeResponse>() { FakeFeedbackRepository.CreateResponse(100, "question1", "yeah", "yes"), FakeFeedbackRepository.CreateResponse(100, "question2", "nah", "no") }
                     };
 
@@ -72,17 +75,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
                                 var dto = x.Arg<ApprenticeFeedbackDto>();
                                 var success = FakeFeedbackRepository.Feedback.TryAdd(key, dto);
                             });
-
-                this.saveFeedbackCommandHandler.When(x => x.HandleAsync(Arg.Any<SaveFeedbackCommand>(), Arg.Any<CancellationToken>()))
-                    .Do(
-                        async x =>
-                            {
-                                var command = this.BuildCommand(this.feedback);
-                                await command
-                                    .Using(this.feedbackRepo)
-                                    .ExecuteAsync(x.Arg<CancellationToken>());
-                            });
-
             }
 
             [Fact]
@@ -94,12 +86,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
                 // act
                 this.sut.SaveFeedbackAsync(expected);
                 var actual = FakeFeedbackRepository.Feedback.FirstOrDefault(
-                    f => f.Value.Apprentice.UniqueLearnerNumber == UNIQUE_LEARNER_NUMBER);
+                    f => f.Value.Apprentice.UniqueLearnerNumber == UniqueLearnerNumber);
 
                 // assert
                 Assert.NotNull(actual.Value);
                 Assert.Equal(expected.StartTime, actual.Value.StartTime);
                 Assert.Equal(expected.FinishTime, actual.Value.FinishTime);
+                Assert.Equal(expected.SurveyId, actual.Value.SurveyId);
                 Assert.Equal(expected.Apprentice, actual.Value.Apprentice);
                 Assert.Equal(expected.Apprenticeship, actual.Value.Apprenticeship);
                 Assert.Equal(expected.Responses, actual.Value.Responses);
@@ -109,11 +102,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
         private SaveFeedbackCommand BuildCommand(ApprenticeFeedback feedback)
         {
             SaveFeedbackCommand command = new SaveFeedbackCommand()
-                .StartedOn(feedback.StartTime)
-                .CompletedOn(feedback.FinishTime)
-                .SubmittedBy(feedback.Apprentice)
-                .WithResponses(feedback.Responses)
-                .ForApprenticeship(feedback.Apprenticeship);
+            {
+                Feedback = feedback
+            };
 
             return command;
         }
