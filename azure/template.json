@@ -472,10 +472,7 @@
                         "value": "[parameters('elasticPoolName')]"
                     }
                 }
-            },
-            "dependsOn": [
-                "<Any dependencies>"
-            ]
+            }
         }
     ],
     "outputs": {}
