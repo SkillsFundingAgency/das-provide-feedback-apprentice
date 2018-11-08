@@ -71,6 +71,9 @@
         "sqlServerName": {
             "type": "string"
         },
+        "sqlServerResourceGroupName": {
+            "type": "string"
+        },
         "elasticPoolName": {
             "type": "string"
         }
@@ -455,6 +458,7 @@
             "apiVersion": "2017-05-10",
             "name": "SQLDatabase",
             "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[parameters('sqlServerResourceGroupName')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
