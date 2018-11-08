@@ -5,9 +5,12 @@
     using Newtonsoft.Json;
 
     [Serializable]
-    public class FreeTextStep : SurveyStepBase
+    public class QuestionStepDefinition : SurveyStepDefinitionBase
     {
         [JsonProperty("prompt")]
         public string Prompt { get; set; }
+
+        [JsonProperty("score")]
+        public int Score { get; set; }
     }
 }

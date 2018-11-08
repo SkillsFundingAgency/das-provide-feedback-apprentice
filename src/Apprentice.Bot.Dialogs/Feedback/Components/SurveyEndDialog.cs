@@ -10,13 +10,19 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
+
     using Microsoft.Bot.Builder.Dialogs;
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
-    using DtoApprenticeFeedback = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
+    public interface ICustomComponent
+    {
+
+    }
+
     /// <inheritdoc />
-    public sealed class SurveyEndDialog : ComponentDialog
+    public sealed class SurveyEndDialog : ComponentDialog, ICustomComponent
     {
         private readonly BotSettings botSettings;
 
@@ -26,7 +32,7 @@
 
         private readonly DialogConfiguration configuration;
 
-        private readonly IFeedbackRepository feedbackRepository;
+        private readonly IFeedbackService feedbackService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SurveyEndDialog"/> class.
@@ -36,12 +42,12 @@
         /// <param name="state">the state repository/accessors.</param>
         /// <param name="botSettings">configuration for the bot.</param>
         /// <param name="features">feature configuration.</param>
-        public SurveyEndDialog(string dialogId, FeedbackBotStateRepository state, BotSettings botSettings, FeatureToggles features, IFeedbackRepository feedbackRepository)
+        public SurveyEndDialog(string dialogId, FeedbackBotStateRepository state, BotSettings botSettings, FeatureToggles features, IFeedbackService feedbackService)
             : base(dialogId)
         {
             this.botSettings = botSettings;
             this.features = features;
-            this.feedbackRepository = feedbackRepository;
+            this.feedbackService = feedbackService;
             this.state = state;
             this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
@@ -107,37 +113,36 @@
 
             userProfile.SurveyState.Progress = ProgressState.Complete;
             userProfile.SurveyState.EndDate = DateTime.Now;
-            DtoApprenticeFeedback feedback = CreateFeedbackDto(userProfile);
-            await this.feedbackRepository.SaveFeedback(feedback);
+
+            ApprenticeFeedback feedback = CreateFeedbackDto(userProfile);
+            await this.feedbackService.SaveFeedbackAsync(feedback);
 
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
-        private static DtoApprenticeFeedback CreateFeedbackDto(UserProfile userProfile)
-        {
-            return new DtoApprenticeFeedback
+        private static ApprenticeFeedback CreateFeedbackDto(UserProfile userProfile) =>
+            new ApprenticeFeedback
             {
                 Apprentice = new Apprentice
                 {
-                    UniqueLearnerNumber = userProfile.IlrNumber
+
+                    UniqueLearnerNumber = userProfile.IlrNumber,
+                    MobilePhoneNumber = userProfile.TelephoneNumber,
                 },
+                SurveyId = userProfile.SurveyState.SurveyId,
                 StartTime = userProfile.SurveyState.StartDate,
                 FinishTime = userProfile.SurveyState.EndDate.GetValueOrDefault(),
-                Responses = userProfile.SurveyState.Responses.Select(ConvertToResponseData).ToList(),
-                PartitionKey = userProfile.TelephoneNumber
+                Responses = userProfile.SurveyState.Responses.Select(ConvertToResponseData).ToList()
             };
-        }
 
-        private static ApprenticeResponse ConvertToResponseData(BinaryQuestionResponse binaryQuestionResponse)
-        {
-            return new ApprenticeResponse
+        private static ApprenticeResponse ConvertToResponseData(IQuestionResponse questionResponse) =>
+            new ApprenticeResponse
             {
-                Question =  binaryQuestionResponse.Question,
-                Answer = binaryQuestionResponse.Answer,
-                Intent = binaryQuestionResponse.Intent,
-                Score = binaryQuestionResponse.Score
+                Question = questionResponse.Question,
+                Answer = questionResponse.Answer,
+                Intent = questionResponse.Intent,
+                Score = questionResponse.Score
             };
-        }
 
         private async Task<DialogTurnResult> EndDialogAsync(
             WaterfallStepContext stepContext,

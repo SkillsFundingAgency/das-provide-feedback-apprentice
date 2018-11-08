@@ -35,6 +35,8 @@
     <ProjectReference Include="..\Apprentice.Bot.Connectors\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.csproj" />
     <ProjectReference Include="..\Apprentice.Bot.Dialogs\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
+    <ProjectReference Include="..\Apprentice.Services.FeedbackService\ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.csproj" />
+    <ProjectReference Include="..\Apprentice.Services.NotifySmsService\ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.csproj" />
     <ProjectReference Include="..\Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj" />
   </ItemGroup>
 

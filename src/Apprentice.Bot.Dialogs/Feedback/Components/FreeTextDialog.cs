@@ -15,17 +15,17 @@
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
-    public sealed class FreeTextDialog : ComponentDialog
+    public sealed class FreeTextDialog : ComponentDialog, ICustomComponent
     {
         public const string FreeTextPrompt = "freeTextPrompt";
 
         private readonly BotSettings botSettings;
 
+        private readonly DialogConfiguration configuration;
+
         private readonly FeatureToggles features;
 
-        private FeedbackBotStateRepository state;
-
-        private DialogConfiguration configuration;
+        private readonly FeedbackBotStateRepository state;
 
         /// <inheritdoc />
         public FreeTextDialog(
@@ -43,6 +43,8 @@
             this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
 
+        public string PromptText { get; set; }
+
         public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
 
         public FreeTextDialog AddResponse(IResponse response)
@@ -56,7 +58,7 @@
             var steps = new WaterfallStep[]
             {
                 this.AskQuestionAsync,
-                this.ProcessAnswerAsync,
+                this.SendResponseAsync,
                 this.FinishDialogAsync,
             };
 
@@ -69,15 +71,20 @@
             return this;
         }
 
-        public FreeTextDialog WithResponses(ICollection<IResponse> responses)
-        {
-            this.Responses = responses;
-            return this;
-        }
+        public async Task<DialogTurnResult> FinishDialogAsync(
+            WaterfallStepContext stepContext,
+            CancellationToken cancellationToken) =>
+            await stepContext.EndDialogAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
 
         public FreeTextDialog WithPrompt(string prompt)
         {
             this.PromptText = prompt;
+            return this;
+        }
+
+        public FreeTextDialog WithResponses(ICollection<IResponse> responses)
+        {
+            this.Responses = responses;
             return this;
         }
 
@@ -98,12 +105,22 @@
             return await stepContext.PromptAsync(FreeTextPrompt, promptOptions, cancellationToken);
         }
 
-        public string PromptText { get; set; }
-
-        private async Task<DialogTurnResult> ProcessAnswerAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        // TODO: Add LUIS for natural language processing
+        private FreeTextResponse HandleResponse(WaterfallStepContext stepContext)
         {
             string utterance = stepContext.Context.Activity.Text; // What did they say?
 
+            var feedbackResponse = new FreeTextResponse
+            {
+                Question = this.PromptText,
+                Answer = utterance
+            };
+
+            return feedbackResponse;
+        }
+
+        private async Task<DialogTurnResult> SendResponseAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
+        {
             UserProfile userProfile = await this.state.UserProfile.GetAsync(
                 stepContext.Context,
                 () => new UserProfile(),
@@ -111,6 +128,10 @@
 
             userProfile.SurveyState.Progress = ProgressState.InProgress;
 
+            FreeTextResponse feedbackResponse = this.HandleResponse(stepContext);
+
+            userProfile.SurveyState.Responses.Add(feedbackResponse);
+            
             if (this.configuration.CollateResponses)
             {
                 await this.Responses.RespondAsSingleMessageAsync(
@@ -131,10 +152,5 @@
             // Ask next question
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
-
-        public async Task<DialogTurnResult> FinishDialogAsync(
-            WaterfallStepContext stepContext,
-            CancellationToken cancellationToken) =>
-            await stepContext.EndDialogAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 }

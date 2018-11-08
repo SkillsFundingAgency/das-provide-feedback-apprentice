@@ -42,7 +42,7 @@
         public InMemoryApprenticeFeedbackSurvey()
         {
             this.Id = "afb-v3";
-            this.Steps = new List<ISurveyStep>()
+            this.Steps = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestionOne(),
@@ -55,7 +55,7 @@
         public InMemoryApprenticeFeedbackSurvey(string id)
         {
             this.Id = id;
-            this.Steps = new List<ISurveyStep>()
+            this.Steps = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestionOne(),
@@ -67,9 +67,9 @@
 
         public string Id { get; set; }
 
-        public ICollection<ISurveyStep> Steps { get; set; }
+        public ICollection<ISurveyStepDefinition> Steps { get; set; }
 
-        public EndStep CreateEndStep()
+        public EndStepDefinition CreateEndStep()
         {
             var id = "feedback-end";
             var responses = new List<IResponse>
@@ -93,10 +93,10 @@
                             Prompt = FinishFormalComplaint,
                         },
                 };
-            return new EndStep() { Id = id, Responses = responses };
+            return new EndStepDefinition() { Id = id, Responses = responses };
         }
 
-        public QuestionStep CreateQuestionOne()
+        public QuestionStepDefinition CreateQuestionOne()
         {
             var id = "feedback-q1";
             var responses = new List<IResponse>
@@ -110,7 +110,7 @@
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestionThree()
+        public QuestionStepDefinition CreateQuestionThree()
         {
             var id = "feedback-q3";
             var responses = new List<IResponse>
@@ -124,7 +124,7 @@
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public QuestionStep CreateQuestionTwo()
+        public QuestionStepDefinition CreateQuestionTwo()
         {
             var id = "feedback-q2";
             var responses = new List<IResponse>
@@ -138,7 +138,7 @@
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
-        public StartStep CreateStartStep()
+        public StartStepDefinition CreateStartStep()
         {
             var id = "feedback-start";
             var responses = new List<IResponse>
@@ -146,7 +146,7 @@
                     new StaticResponse() { Id = nameof(IntroWelcome), Prompt = IntroWelcome },
                     new StaticResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut },
                 };
-            return new StartStep() { Id = id, Responses = responses };
+            return new StartStepDefinition() { Id = id, Responses = responses };
         }
     }
 }

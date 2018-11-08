@@ -55,7 +55,7 @@
                 }
                 else
                 {
-                    return await dc.CancelAllDialogsAsync();
+                    return await dc.CancelAllDialogsAsync(cancellationToken);
                 }
             }
             catch (Exception e)
@@ -70,7 +70,7 @@
 
         public override bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
         {
-            return conversationProgress != ProgressState.OptedOut ? base.IsTriggered(dc, conversationProgress) : false;
+            return conversationProgress != ProgressState.OptedOut && base.IsTriggered(dc, conversationProgress);
         }
     }
 }

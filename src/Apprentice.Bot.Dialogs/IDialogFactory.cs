@@ -10,9 +10,9 @@
         /// Create a survey step DialogContainer
         /// </summary>
         /// <typeparam name="T">The type of step to create</typeparam>
-        /// <param name="step">The step DTO</param>
+        /// <param name="stepDefinition">The step DTO</param>
         /// <returns>a new <see cref="ComponentDialog"/></returns>
-        T Create<T>(ISurveyStep step)
+        T Create<T>(ISurveyStepDefinition stepDefinition)
             where T : ComponentDialog;
 
         /// <summary>

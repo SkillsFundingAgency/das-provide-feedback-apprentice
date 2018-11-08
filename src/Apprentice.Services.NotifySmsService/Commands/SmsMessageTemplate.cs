@@ -4,11 +4,11 @@
 
     public class SmsMessageTemplate
     {
-        private readonly NotifySendSmsCommand parent;
+        private readonly NotifySendSmsCommandHandler handler;
 
-        public SmsMessageTemplate(NotifySendSmsCommand parent)
+        public SmsMessageTemplate(NotifySendSmsCommandHandler handler)
         {
-            this.parent = parent;
+            this.handler = handler;
         }
 
         public string TemplateId { get; set; }
@@ -21,9 +21,9 @@
             return this;
         }
 
-        public NotifySendSmsCommand Build()
+        public NotifySendSmsCommandHandler Build()
         {
-            return this.parent;
+            return this.handler;
         }
     }
 }

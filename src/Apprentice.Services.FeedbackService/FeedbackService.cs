@@ -1,15 +1,12 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService
 {
-    using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
 
-    using ApprenticeFeedbackDto = Data.Dto.ApprenticeFeedback;
+    using ApprenticeFeedbackDto = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;
 
     public class FeedbackService : IFeedbackService
     {
@@ -23,11 +20,9 @@
         public async Task SaveFeedbackAsync(ApprenticeFeedback feedback)
         {
             SaveFeedbackCommand command = new SaveFeedbackCommand()
-                .StartedOn(feedback.StartTime)
-                .CompletedOn(feedback.FinishTime)
-                .SubmittedBy(feedback.Apprentice)
-                .WithResponses(feedback.Responses)
-                .ForApprenticeship(feedback.Apprenticeship);
+            {
+                Feedback = feedback
+            };
 
             await this.saveFeedbackCommandHandler.HandleAsync(command);
         }

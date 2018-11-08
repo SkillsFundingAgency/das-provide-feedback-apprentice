@@ -5,6 +5,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
@@ -14,9 +15,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Helpers;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands;
 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -35,12 +40,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
     using Newtonsoft.Json;
     using Newtonsoft.Json.Converters;
+
     using NLog.Extensions.Logging;
+
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
     public class Startup
     {
         private bool isProduction = false;
+
         private ILoggerFactory loggerFactory;
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -100,8 +108,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             // register all surveys
             this.RegisterAllSurveys(services);
 
-            services.AddSingleton<IFeedbackRepository, CosmosFeedbackRepository>();
-            services.AddSingleton<IConversationRepository, CosmosConversationRepository>();
+            // register all component builders
+            this.RegisterAllComponentBuilders(services);
 
             string secretKey = this.Configuration.GetSection("botFileSecret")?.Value;
             string botFilePath = this.Configuration.GetSection("botFilePath")?.Value;
@@ -147,6 +155,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
                     // options.Middleware.Add(new UserState<UserProfile>(dataStore));
                     // options.Middleware.Add<AzureStorageSmsRelay>(services);
+                    options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
@@ -194,22 +203,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             // *** WARNING: Do not use a CamelCasePropertyNamesContractResolver here - it breaks the bot session objects! ***
             JsonConvert.DefaultSettings = () =>
             {
-                JsonSerializerSettings settings = new JsonSerializerSettings();
-                settings.Formatting = Formatting.Indented;
+                JsonSerializerSettings settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None };
                 settings.Converters.Add(new StringEnumConverter { CamelCaseText = true });
                 return settings;
             };
-        }
-
-        private void ConfigureOptions(IServiceCollection services)
-        {
-            services.AddOptions()
-                .BindConfiguration<Azure>(this.Configuration)
-                .BindConfiguration<Bot>(this.Configuration)
-                .BindConfiguration<ConnectionStrings>(this.Configuration)
-                .BindConfiguration<Data>(this.Configuration)
-                .BindConfiguration<Notify>(this.Configuration)
-                .BindConfiguration<FeatureToggles>(this.Configuration);
         }
 
         private void ConfigureLocalization(IServiceCollection services)
@@ -224,33 +221,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                 });
         }
 
-        private void RegisterServices(IServiceCollection services)
-        {
-            services.AddSingleton<IDialogFactory, DialogFactory>();
-            services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
-            services.AddSingleton<IMessageQueueMiddleware, AzureServiceBusSmsRelay>();
-            services.AddTransient<ChannelConfigurationMiddleware>();
-            services.AddTransient<ConversationLogMiddleware>();
-        }
-
-        private void RegisterAllSurveys(IServiceCollection services)
-        {
-            services.RegisterAllTypes<ISurvey>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
-        }
-
-        private void RegisterAllDialogCommands(IServiceCollection services)
-        {
-            services.RegisterAllTypes<IBotDialogCommand>(new Assembly[] { typeof(FeedbackBot).Assembly });
-        }
-
-        private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
-        {
-            AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
-                configuration["ConnectionStrings:StorageAccount"],
-                configuration["Data:SessionStateTable"]);
-            return azureBlobStorage;
-        }
-
         private ILoggerFactory ConfigureLoggerFactory(ILoggerFactory loggerFactory)
         {
             loggerFactory.AddNLog(new NLogProviderOptions { CaptureMessageProperties = true, CaptureMessageTemplates = true });
@@ -259,5 +229,85 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
             return loggerFactory;
         }
 
+        private void ConfigureOptions(IServiceCollection services)
+        {
+            services.AddOptions()
+                .BindConfiguration<Azure>(this.Configuration)
+                .BindConfiguration<Bot>(this.Configuration)
+                .BindConfiguration<ConnectionStrings>(this.Configuration)
+                .BindConfiguration<Data>(this.Configuration)
+                .BindConfiguration<Notify>(this.Configuration)
+                .BindConfiguration<FeatureToggles>(this.Configuration);
+        }
+
+        private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
+        {
+            AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
+                configuration["ConnectionStrings:StorageAccount"],
+                configuration["Data:SessionStateTable"]);
+
+            return azureBlobStorage;
+        }
+
+        private void RegisterAllComponentBuilders(IServiceCollection services)
+        {
+            services.RegisterAllTypes<IComponentBuilder<ComponentDialog>>(new Assembly[] { typeof(DialogFactory).Assembly }, ServiceLifetime.Singleton);
+        }
+
+        private void RegisterAllDialogCommands(IServiceCollection services)
+        {
+            services.RegisterAllTypes<IBotDialogCommand>(new Assembly[] { typeof(FeedbackBot).Assembly });
+        }
+
+        private void RegisterAllSurveys(IServiceCollection services)
+        {
+            services.RegisterAllTypes<ISurvey>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
+        }
+
+        private void RegisterServices(IServiceCollection services)
+        {
+            services.AddSingleton<IDialogFactory, DialogFactory>();
+            services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
+            services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
+
+            services.AddSingleton<IFeedbackService, FeedbackService>();
+            services.AddSingleton<ICommandHandlerAsync<SaveFeedbackCommand>, SaveFeedbackCommandHandler>();
+            services.AddSingleton<ICommandHandlerAsync<SendBasicSmsCommand>, NotifySendSmsCommandHandler>();
+
+            services.AddTransient<ChannelConfigurationMiddleware>();
+            services.AddTransient<ConversationLogMiddleware>();
+
+            services.AddSingleton<IConversationRepository>(
+                (svc) =>
+                {
+                    string endpoint = this.Configuration["Azure:CosmosEndpoint"];
+                    string authKey = this.Configuration["Azure:CosmosKey"];
+                    string database = this.Configuration["Data:DatabaseName"];
+                    string collection = this.Configuration["Data:ConversationLogTable"];
+
+                    return CosmosConversationRepository
+                        .Instance
+                        .ConnectTo(endpoint)
+                        .WithAuthKeyOrResourceToken(authKey)
+                        .UsingDatabase(database)
+                        .UsingCollection(collection);
+                });
+
+            services.AddSingleton<IFeedbackRepository>(
+                (svc) =>
+                {
+                    string endpoint = this.Configuration["Azure:CosmosEndpoint"];
+                    string authKey = this.Configuration["Azure:CosmosKey"];
+                    string database = this.Configuration["Data:DatabaseName"];
+                    string collection = this.Configuration["Data:FeedbackTable"];
+
+                    return CosmosFeedbackRepository
+                        .Instance
+                        .ConnectTo(endpoint)
+                        .WithAuthKeyOrResourceToken(authKey)
+                        .UsingDatabase(database)
+                        .UsingCollection(collection);
+                });
+        }
     }
 }

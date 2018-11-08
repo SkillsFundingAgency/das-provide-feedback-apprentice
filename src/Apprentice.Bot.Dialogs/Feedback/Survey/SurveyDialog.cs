@@ -24,7 +24,7 @@
             this.InitialDialogId = id;
         }
 
-        public ICollection<ISurveyStep> Steps { get; protected set; }
+        public ICollection<ISurveyStepDefinition> Steps { get; protected set; }
 
         public SurveyDialog Build(DialogFactory factory)
         {
@@ -37,7 +37,7 @@
             return this;
         }
 
-        public SurveyDialog WithSteps(ICollection<ISurveyStep> steps)
+        public SurveyDialog WithSteps(ICollection<ISurveyStepDefinition> steps)
         {
             this.Steps = steps;
             return this;
@@ -106,13 +106,13 @@
             return EndOfTurn;
         }
 
-        private WaterfallStep BuildDialog(ISurveyStep step, IDialogFactory dialogFactory)
+        private WaterfallStep BuildDialog(ISurveyStepDefinition stepDefinition, IDialogFactory dialogFactory)
         {
             ComponentDialog dialog;
 
-            switch (step)
+            switch (stepDefinition)
             {
-                case StartStep startStep:
+                case StartStepDefinition startStep:
                     dialog = dialogFactory.Create<SurveyStartDialog>(startStep);
                     break;
 
@@ -124,12 +124,12 @@
                     dialog = dialogFactory.Create<FreeTextDialog>(freeTextQuestionStep);
                     break;
 
-                case EndStep endStep:
+                case EndStepDefinition endStep:
                     dialog = dialogFactory.Create<SurveyEndDialog>(endStep);
                     break;
 
                 default:
-                    throw new ArgumentOutOfRangeException($"Unrecognized type [{step.GetType().FullName}]");
+                    throw new ArgumentOutOfRangeException($"Unrecognized type [{stepDefinition.GetType().FullName}]");
             }
 
             this.AddDialog(dialog);

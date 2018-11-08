@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-using Newtonsoft.Json;
-
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 
     [Serializable]
@@ -16,7 +13,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
         {
         }
 
-        public List<BinaryQuestionResponse> Responses { get; set; } = new List<BinaryQuestionResponse>();
+        public List<IQuestionResponse> Responses { get; set; } = new List<IQuestionResponse>();
 
         public string SurveyId { get; set; }
 

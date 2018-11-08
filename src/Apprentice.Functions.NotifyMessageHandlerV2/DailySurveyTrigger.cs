@@ -9,8 +9,6 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
-{
     public static class DailySurveyTrigger
     {
         private static IStoreApprenticeSurveyDetails _surveyDetailsRepo;
@@ -20,7 +18,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
             [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
             ILogger log,
-            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)] ICollector<string> outputSbQueue,
+            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            ICollector<string> outputSbQueue,
             ExecutionContext executionContext)
         {
             _surveyDetailsRepo = surveyDetailsRepo;
