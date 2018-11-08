@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -243,7 +244,8 @@
         {
             await this.HandleCommandsAsync(dialog, cancellationToken);
 
-            if (!dialog.Context.Responded)
+            // TODO: swap out for channel ?
+            if (!dialog.Context.Responded && Debugger.IsAttached)
             {
                 await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
             }

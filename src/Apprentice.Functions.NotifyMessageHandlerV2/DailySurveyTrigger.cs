@@ -1,94 +1,55 @@
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
+using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+
+public static class DailySurveyTrigger
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+    private static IStoreApprenticeSurveyDetails _surveyDetailsRepo;
 
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Data;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
-
-    using Microsoft.Azure.Documents.Client;
-    using Microsoft.Azure.WebJobs;
-    using Microsoft.Extensions.Logging;
-
-    using Newtonsoft.Json;
-
-    public static class DailySurveyTrigger
-    {
-        private static readonly Lazy<SettingsProvider> LazyConfigProvider = new Lazy<SettingsProvider>(Configure);
-
-        private static ExecutionContext currentContext;
-
-        public static SettingsProvider Configuration => LazyConfigProvider.Value;
-
-        private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
-
-        [FunctionName("DailySurveyTrigger")]
-        public static async Task Run(
-            [TimerTrigger("0 0 11 * * MON-FRI")] TimerInfo myTimer,
-            ILogger log,
-            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+    [FunctionName("DailySurveyTrigger")]
+    public static async Task Run(
+        [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
+        [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
+        ILogger log,
+        [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
             ICollector<string> outputSbQueue,
-            ExecutionContext executionContext)
+        ExecutionContext executionContext)
+    {
+        _surveyDetailsRepo = surveyDetailsRepo;
+        log.LogInformation($"Daily survey trigger started");
+
+        var batchSize = 100;
+        var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
+
+        foreach (var apprenticeDetail in apprenticeDetails)
         {
-            currentContext = executionContext;
-            log.LogInformation($"Daily survey trigger started");
-
-            var batchSize = 100;
-            var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
-
-            foreach (var apprenticeDetail in apprenticeDetails)
+            var now = DateTime.Now;
+            var trigger = new SmsConversationTrigger()
             {
-                var now = DateTime.Now;
-                var trigger = new SmsConversationTrigger()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    SourceNumber = apprenticeDetail.MobileNumber,
-                    DestinationNumber = null,
-                    Message = $"start {apprenticeDetail.SurveyCode}",
-                    DateReceived = now
-                };
+                Id = Guid.NewGuid().ToString(),
+                SourceNumber = apprenticeDetail.MobileNumber.ToString(),
+                DestinationNumber = null,
+                Message = $"start {apprenticeDetail.SurveyCode}",
+                DateReceived = now
+            };
 
-                var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
+            var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 
-                outputSbQueue.Add(JsonConvert.SerializeObject(payload));
+            outputSbQueue.Add(JsonConvert.SerializeObject(payload));
 
-                apprenticeDetail.SentDate = now;
-                await DocumentClient.UpsertItemAsync(apprenticeDetail);
-            }
+            await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.MobileNumber, apprenticeDetail.SurveyCode);
         }
+    }
 
-        private static SettingsProvider Configure()
-        {
-            if (currentContext == null)
-            {
-                throw new Exception("Could not initialize the settings provider, ExecutionContext is null");
-            }
-
-            return new SettingsProvider(currentContext);
-        }
-
-        private static Task<IEnumerable<ApprenticeDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
-        {
-            return DocumentClient.GetItemsAsync<ApprenticeDetail>(ad => ad.SentDate == null, new FeedOptions { MaxItemCount = batchSize });
-        }
-
-        private static CosmosDbRepository InitializeDocumentClient()
-        {
-            string endpoint = Configuration.Get("AzureCosmosEndpoint");
-            string authKey = Configuration.Get("AzureCosmosKey");
-            string database = Configuration.Get("DatabaseName");
-            string collection = Configuration.Get("ApprenticeSurveyDetailTable");
-
-            CosmosDbRepository repo = CosmosDbRepository.Instance
-                .ConnectTo(endpoint)
-                .WithAuthKeyOrResourceToken(authKey)
-                .UsingDatabase(database)
-                .UsingCollection(collection);
-
-            return repo;
-        }
+    private static Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
+    {
+        return _surveyDetailsRepo.GetApprenticeSurveyDetailsAsync(batchSize);
     }
 }
