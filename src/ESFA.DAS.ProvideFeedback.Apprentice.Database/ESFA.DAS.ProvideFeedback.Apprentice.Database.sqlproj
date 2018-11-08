@@ -59,7 +59,7 @@
     <Folder Include="Properties" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="ApprenticeSurveyDetails.sql" />
+    <Build Include="ApprenticeSurveyInvites.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="ESFA.DAS.ProvideFeedback.Apprentice.Database.refactorlog" />
