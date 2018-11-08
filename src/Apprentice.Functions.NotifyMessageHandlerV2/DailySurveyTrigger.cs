@@ -9,48 +9,47 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-    public static class DailySurveyTrigger
-    {
-        private static IStoreApprenticeSurveyDetails _surveyDetailsRepo;
+public static class DailySurveyTrigger
+{
+    private static IStoreApprenticeSurveyDetails _surveyDetailsRepo;
 
-        [FunctionName("DailySurveyTrigger")]
-        public static async Task Run(
-            [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
-            [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
-            ILogger log,
-            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+    [FunctionName("DailySurveyTrigger")]
+    public static async Task Run(
+        [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
+        [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
+        ILogger log,
+        [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
             ICollector<string> outputSbQueue,
-            ExecutionContext executionContext)
+        ExecutionContext executionContext)
+    {
+        _surveyDetailsRepo = surveyDetailsRepo;
+        log.LogInformation($"Daily survey trigger started");
+
+        var batchSize = 100;
+        var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
+
+        foreach (var apprenticeDetail in apprenticeDetails)
         {
-            _surveyDetailsRepo = surveyDetailsRepo;
-            log.LogInformation($"Daily survey trigger started");
-
-            var batchSize = 100;
-            var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
-
-            foreach (var apprenticeDetail in apprenticeDetails)
+            var now = DateTime.Now;
+            var trigger = new SmsConversationTrigger()
             {
-                var now = DateTime.Now;
-                var trigger = new SmsConversationTrigger()
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    SourceNumber = apprenticeDetail.MobileNumber.ToString(),
-                    DestinationNumber = null,
-                    Message = $"start {apprenticeDetail.SurveyCode}",
-                    DateReceived = now
-                };
+                Id = Guid.NewGuid().ToString(),
+                SourceNumber = apprenticeDetail.MobileNumber.ToString(),
+                DestinationNumber = null,
+                Message = $"start {apprenticeDetail.SurveyCode}",
+                DateReceived = now
+            };
 
-                var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
+            var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 
-                outputSbQueue.Add(JsonConvert.SerializeObject(payload));
+            outputSbQueue.Add(JsonConvert.SerializeObject(payload));
 
-                await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.MobileNumber, apprenticeDetail.SurveyCode);
-            }
+            await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.MobileNumber, apprenticeDetail.SurveyCode);
         }
+    }
 
-        private static Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
-        {
-            return _surveyDetailsRepo.GetApprenticeSurveyDetailsAsync(batchSize);
-        }
+    private static Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
+    {
+        return _surveyDetailsRepo.GetApprenticeSurveyDetailsAsync(batchSize);
     }
 }

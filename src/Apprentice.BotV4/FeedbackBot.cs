@@ -244,6 +244,7 @@
         {
             await this.HandleCommandsAsync(dialog, cancellationToken);
 
+            // TODO: swap out for channel ?
             if (!dialog.Context.Responded && Debugger.IsAttached)
             {
                 await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
