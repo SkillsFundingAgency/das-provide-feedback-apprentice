@@ -64,6 +64,15 @@
         },
         "environmentName": {
             "type": "string"
+        },
+        "databaseName": {
+            "type": "string"
+        },
+        "sqlServerName": {
+            "type": "string"
+        },
+        "elasticPoolName": {
+            "type": "string"
         }
     },
     "variables": {
@@ -441,6 +450,32 @@
                     }
                 }
             }
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "SQLDatabase",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/sql-database.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "databaseName": {
+                        "value": "[parameters('databaseName')]"
+                    },
+                    "sqlServerName": {
+                        "value": "[parameters('sqlServerName')]"
+                    },
+                    "elasticPoolName": {
+                        "value": "[parameters('elasticPoolName')]"
+                    }
+                }
+            },
+            "dependsOn": [
+                "<Any dependencies>"
+            ]
         }
     ],
     "outputs": {}
