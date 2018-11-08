@@ -6,9 +6,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
 {
     using System.Collections.Generic;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
 
-    public class InMemoryApprenticeFeedbackSurveyV5 : ISurvey
+    public class InMemoryApprenticeFeedbackSurveyV5 : ISurveyDefinition
     {
         private const string FinishKeepUpTheGoodWork = "That's the end of the survey for now. Keep up the good work!";
 
@@ -50,7 +51,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public InMemoryApprenticeFeedbackSurveyV5()
         {
             this.Id = "afb-v5";
-            this.Steps = new List<ISurveyStepDefinition>()
+            this.StepDefinitions = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestion1(),
@@ -63,7 +64,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public InMemoryApprenticeFeedbackSurveyV5(string id)
         {
             this.Id = id;
-            this.Steps = new List<ISurveyStepDefinition>()
+            this.StepDefinitions = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestion1(),
@@ -75,26 +76,26 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
 
         public string Id { get; set; }
 
-        public ICollection<ISurveyStepDefinition> Steps { get; set; }
+        public ICollection<ISurveyStepDefinition> StepDefinitions { get; set; }
 
         public EndStepDefinition CreateEndStep()
         {
             var id = "feedback-end";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PredicateResponse
+                    new PredicateBotResponse
                         {
                             Id = nameof(FinishKeepUpTheGoodWork),
                             Predicate = u => u.Score >= 300,
                             Prompt = FinishKeepUpTheGoodWork,
                         },
-                    new PredicateResponse
+                    new PredicateBotResponse
                         {
                             Id = nameof(FinishSpeakToYourEmployer),
                             Predicate = u => u.Score < 300 && u.Score >= 200,
                             Prompt = FinishWeWillBeInTouch,
                         },
-                    new PredicateResponse
+                    new PredicateBotResponse
                         {
                             Id = nameof(FinishSpeakToYourEmployer),
                             Predicate = u => u.Score < 200,
@@ -107,10 +108,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public QuestionStepDefinition CreateQuestion1()
         {
             var id = "feedback-q1";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PositiveResponse { Prompt = ResponsesPositive01 },
-                    new NegativeResponse { Prompt = ResponsesNegative01 },
+                    new PositiveBotResponse { Prompt = ResponsesPositive01 },
+                    new NegativeBotResponse { Prompt = ResponsesNegative01 },
                 };
             var prompt = $"{QuestionsHelpingWithJob} \n {QuestionsPleaseTypeYesOrNo}";
             var score = 100;
@@ -121,10 +122,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public QuestionStepDefinition CreateQuestion2()
         {
             var id = "feedback-q2";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PositiveResponse { Prompt = ResponsesPositive02 },
-                    new NegativeResponse { Prompt = ResponsesNegative02 },
+                    new PositiveBotResponse { Prompt = ResponsesPositive02 },
+                    new NegativeBotResponse { Prompt = ResponsesNegative02 },
                 };
             var prompt = QuestionsGettingSupport;
             var score = 100;
@@ -135,10 +136,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public QuestionStepDefinition CreateQuestion3()
         {
             var id = "feedback-q3";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PositiveResponse { Prompt = ResponsesPositive03 },
-                    new NegativeResponse { Prompt = ResponsesNegative03 },
+                    new PositiveBotResponse { Prompt = ResponsesPositive03 },
+                    new NegativeBotResponse { Prompt = ResponsesNegative03 },
                 };
             var prompt = QuestionsOverallSatisfaction;
             var score = 100;
@@ -149,14 +150,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
         public StartStepDefinition CreateStartStep()
         {
             var id = "feedback-start";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new StaticResponse() { Id = nameof(IntroWelcome), Prompt = IntroWelcome, },
-                    new StaticResponse()
+                    new StaticBotResponse() { Id = nameof(IntroWelcome), Prompt = IntroWelcome, },
+                    new StaticBotResponse()
                         {
                             Id = nameof(IntroJustThreeQuestions), Prompt = IntroJustThreeQuestions,
                         },
-                    new StaticResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, },
+                    new StaticBotResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, },
                 };
             return new StartStepDefinition() { Id = id, Responses = responses };
         }

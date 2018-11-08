@@ -10,6 +10,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
@@ -261,7 +262,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
         private void RegisterAllSurveys(IServiceCollection services)
         {
-            services.RegisterAllTypes<ISurvey>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
+            services.RegisterAllTypes<ISurveyDefinition>(new Assembly[] { typeof(FeedbackBot).Assembly }, ServiceLifetime.Singleton);
         }
 
         private void RegisterServices(IServiceCollection services)

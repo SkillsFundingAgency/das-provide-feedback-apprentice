@@ -4,7 +4,7 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    public class PredicateResponse : ConditionalResponse
+    public class PredicateBotResponse : ConditionalBotResponse
     {
         public Func<SurveyState, bool> Predicate { get; set; }
 

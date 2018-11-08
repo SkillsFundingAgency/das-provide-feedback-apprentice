@@ -1,5 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs
 {
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
 
     using Microsoft.Bot.Builder.Dialogs;
@@ -19,9 +20,9 @@
         /// Create a survey DialogContainer
         /// </summary>
         /// <typeparam name="T">The type of survey to create</typeparam>
-        /// <param name="survey">The survey DTO</param>
+        /// <param name="surveyDefinition">The survey DTO</param>
         /// <returns>a new <see cref="ComponentDialog"/></returns>
-        T Create<T>(ISurvey survey)
+        T Create<T>(ISurveyDefinition surveyDefinition)
             where T : ComponentDialog;
     }
 }

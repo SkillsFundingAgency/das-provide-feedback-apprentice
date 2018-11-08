@@ -18,17 +18,20 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
     using PromptOptions = ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components.RetryPromptOptions;
 
-    public sealed class MultipleChoiceDialog : ComponentDialog, ICustomComponent
+    /// <summary>
+    /// A MultipleChoiceDialog, commonly used for survey questions that expect a singular response from a closed set.
+    /// </summary>
+    public sealed class MultipleChoiceDialog : ComponentDialog, ICustomComponent<MultipleChoiceDialog>
     {
         public const string ChoicePrompt = "choicePrompt";
 
-        private BotSettings botSettings;
+        private readonly BotSettings botSettings;
 
-        private DialogConfiguration configuration;
+        private readonly DialogConfiguration configuration;
 
-        private FeatureToggles features;
+        private readonly FeatureToggles features;
 
-        private FeedbackBotStateRepository state;
+        private readonly FeedbackBotStateRepository state;
 
         /// <inheritdoc />
         public MultipleChoiceDialog(
@@ -48,7 +51,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
         public string PromptText { get; private set; }
 
-        public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
+        public ICollection<IBotResponse> Responses { get; private set; } = new List<IBotResponse>();
 
         public MultipleChoiceDialog Build()
         {
@@ -74,13 +77,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return this;
         }
 
-        public MultipleChoiceDialog WithResponse(IResponse response)
+        public MultipleChoiceDialog WithResponse(IBotResponse botResponse)
         {
-            this.Responses.Add(response);
+            this.Responses.Add(botResponse);
             return this;
         }
 
-        public MultipleChoiceDialog WithResponses(ICollection<IResponse> responses)
+        public MultipleChoiceDialog WithResponses(ICollection<IBotResponse> responses)
         {
             this.Responses = responses;
             return this;
@@ -119,11 +122,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             var feedbackResponse = new MultipleChoiceQuestionResponse()
             {
-                    Question = this.PromptText,
-                    Answer = utterance,
-                    Intent = intent,
-                    Score = positive ? this.PointsAvailable : -this.PointsAvailable,
-                };
+                Question = this.PromptText,
+                Answer = utterance,
+                Intent = intent,
+                Score = positive ? this.PointsAvailable : -this.PointsAvailable,
+            };
 
             return feedbackResponse;
         }
@@ -143,22 +146,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             userProfile.SurveyState.Responses.Add(feedbackResponse);
 
-            if (this.configuration.CollateResponses)
-            {
-                await this.Responses.RespondAsSingleMessageAsync(
-                    stepContext.Context,
-                    userProfile.SurveyState,
-                    this.configuration,
-                    cancellationToken);
-            }
-            else
-            {
-                await this.Responses.RespondAsMultipleMessagesAsync(
-                    stepContext.Context,
-                    userProfile.SurveyState,
-                    this.configuration,
-                    cancellationToken);
-            }
+            await this.Responses.Create(
+                stepContext.Context,
+                userProfile.SurveyState,
+                this.botSettings,
+                this.features,
+                cancellationToken);
 
             // Ask next question
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
