@@ -19,7 +19,7 @@ public static class DailySurveyTrigger
         [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
         ILogger log,
         [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
-            ICollector<string> outputSbQueue,
+        ICollector<string> outputSbQueue,
         ExecutionContext executionContext)
     {
         _surveyDetailsRepo = surveyDetailsRepo;
