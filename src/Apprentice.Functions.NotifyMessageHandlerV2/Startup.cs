@@ -30,7 +30,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         private void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<IDbConnection>(c => new SqlConnection(_configuration.GetConnectionStringOrSetting("SqlConnectionString")));
-            services.AddScoped<IStoreApprenticeSurveyDetails, ApprenticeSurveyDetailsRepository>();
+            services.AddScoped<IStoreApprenticeSurveyInvites, ApprenticeSurveyInvitesRepository>();
         }
     }
 }
