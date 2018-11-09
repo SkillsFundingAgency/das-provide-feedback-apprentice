@@ -11,12 +11,12 @@ using Newtonsoft.Json;
 
 public static class DailySurveyTrigger
 {
-    private static IStoreApprenticeSurveyDetails _surveyDetailsRepo;
+    private static IStoreApprenticeSurveyInvites _surveyDetailsRepo;
 
     [FunctionName("DailySurveyTrigger")]
     public static async Task Run(
         [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
-        [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
+        [Inject]IStoreApprenticeSurveyInvites surveyDetailsRepo,
         ILogger log,
         [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
         ICollector<string> outputSbQueue,
@@ -48,8 +48,8 @@ public static class DailySurveyTrigger
         }
     }
 
-    private static Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeDetailsToSendSurvey(int batchSize)
+    private static Task<IEnumerable<ApprenticeSurveyInvite>> GetApprenticeDetailsToSendSurvey(int batchSize)
     {
-        return _surveyDetailsRepo.GetApprenticeSurveyDetailsAsync(batchSize);
+        return _surveyDetailsRepo.GetApprenticeSurveyInvitesAsync(batchSize);
     }
 }

@@ -8,21 +8,21 @@ using Polly;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
 {
-    public class ApprenticeSurveyDetailsRepository : IStoreApprenticeSurveyDetails
+    public class ApprenticeSurveyInvitesRepository : IStoreApprenticeSurveyInvites
     {
         private const int _commandTimeoutSeconds = 120;
         private readonly IDbConnection _dbConnection;
 
-        public ApprenticeSurveyDetailsRepository(IDbConnection dbConnection)
+        public ApprenticeSurveyInvitesRepository(IDbConnection dbConnection)
         {
             _dbConnection = dbConnection;
         }
 
-        public async Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeSurveyDetailsAsync(int batchSize)
+        public async Task<IEnumerable<ApprenticeSurveyInvite>> GetApprenticeSurveyInvitesAsync(int batchSize)
         {
-            return await _dbConnection.QueryAsync<ApprenticeSurveyDetail>(sql: $@"
+            return await _dbConnection.QueryAsync<ApprenticeSurveyInvite>(sql: $@"
                                         SELECT TOP {batchSize} * 
-                                        FROM ApprenticeSurveyDetails
+                                        FROM ApprenticeSurveyInvites
                                         WHERE SentDate IS NULL", param: null, transaction: null, commandTimeout: _commandTimeoutSeconds);
         }
 
@@ -30,7 +30,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
         {
             var now = DateTime.Now;
             var sql = $@"
-                        UPDATE EmployerEmailDetails
+                        UPDATE ApprenticeSurveyInvites
                         SET EmailSentDate = @{nameof(now)}
                         WHERE MobileNumber = @{nameof(mobileNumber)}
                         AND SurveyCode = @{nameof(surveyCode)}";

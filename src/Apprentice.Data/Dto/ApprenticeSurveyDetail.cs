@@ -2,7 +2,7 @@
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto
 {
-    public class ApprenticeSurveyDetail
+    public class ApprenticeSurveyInvite
     {
         public string UniqueLearnerNumber { get; set; }
 

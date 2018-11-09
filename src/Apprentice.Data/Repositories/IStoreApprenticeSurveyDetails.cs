@@ -4,9 +4,9 @@ using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
 {
-    public interface IStoreApprenticeSurveyDetails
+    public interface IStoreApprenticeSurveyInvites
     {
-        Task<IEnumerable<ApprenticeSurveyDetail>> GetApprenticeSurveyDetailsAsync(int batchSize);
+        Task<IEnumerable<ApprenticeSurveyInvite>> GetApprenticeSurveyInvitesAsync(int batchSize);
 
         Task SetApprenticeSurveySentAsync(long mobileNumber, string surveyCode);
     }
