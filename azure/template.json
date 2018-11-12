@@ -5,10 +5,7 @@
         "appServiceName": {
             "type": "string"
         },
-        "sharedAppServicePlanName": {
-            "type": "string"
-        },
-        "sharedAppServicePlanResourceGroup": {
+        "appServicePlanName": {
             "type": "string"
         },
         "botServiceName": {
@@ -76,6 +73,16 @@
         },
         "elasticPoolName": {
             "type": "string"
+        },
+        "functionCustomHostname": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "functionCertificateName": {
+            "type": "string"
+        },
+        "botEndpoint": {
+            "type": "string"
         }
     },
     "variables": {
@@ -96,6 +103,35 @@
         }
     },
     "resources": [
+        {
+            "apiVersion": "2017-05-10",
+            "name": "AppServicePlan",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service-plan.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "appServicePlanName": {
+                        "value": "[parameters('appServicePlanName')]"
+                    },
+                    "aseHostingEnvironmentName": {
+                        "value": ""
+                    },
+                    "aseResourceGroup": {
+                        "value": ""
+                    },
+                    "aspSize": {
+                        "value": "1"
+                    },
+                    "aspInstances": {
+                        "value": 2
+                    }
+                }
+            }
+        },        
         {
             "apiVersion": "2017-05-10",
             "name": "StorageAccount",
@@ -168,10 +204,10 @@
                         "value": "[parameters('appServiceName')]"
                     },
                     "appServicePlanName": {
-                        "value": "[parameters('sharedAppServicePlanName')]"
+                        "value": "[parameters('appServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
-                        "value": "[parameters('sharedAppServicePlanResourceGroup')]"
+                        "value": "[resourceGroup().name]"
                     },
                     "appServiceAppSettings": {
                         "value": [
@@ -273,7 +309,7 @@
                         "value": "[parameters('botServiceSku')]"
                     },
                     "botEndpoint": {
-                        "value": "[concat('https://', parameters('appServiceName'), '.azurewebsites.net/api/messages')]"
+                        "value": "[parameters('botEndpoint')]"
                     },
                     "microsoftAppId": {
                         "value": "[parameters('microsoftAppCredentials').Id]"
@@ -296,10 +332,10 @@
                         "value": "[parameters('functionAppName')]"
                     },
                     "appServicePlanName": {
-                        "value": "[parameters('sharedAppServicePlanName')]"
+                        "value": "[parameters('appServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
-                        "value": "[parameters('sharedAppServicePlanResourceGroup')]"
+                        "value": "[resourceGroup().name]"
                     },
                     "functionAppAppSettings": {
                         "value": [
@@ -404,6 +440,12 @@
                                 "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
                             }
                         ]
+                    },
+                    "customHostName": {
+                        "value": "[parameters('functionCustomHostname')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": ""
                     }
                 }
             }
