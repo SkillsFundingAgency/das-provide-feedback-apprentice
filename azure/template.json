@@ -440,12 +440,6 @@
                                 "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
                             }
                         ]
-                    },
-                    "customHostName": {
-                        "value": "[parameters('functionCustomHostname')]"
-                    },
-                    "certificateThumbprint": {
-                        "value": ""
                     }
                 }
             }
