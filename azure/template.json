@@ -74,28 +74,7 @@
         "elasticPoolName": {
             "type": "string"
         },
-        "functionCustomHostname": {
-            "type": "string",
-            "defaultValue": ""
-        },
-        "functionCertificateName": {
-            "type": "string"
-        },
         "botEndpoint": {
-            "type": "string"
-        },
-        "aseHostingEnvironmentName": {
-            "type": "string",
-            "defaultValue": ""
-        },
-        "aseResourceGroup": {
-            "type": "string",
-            "defaultValue": ""
-        },
-        "certificateKeyVaultName": {
-            "type": "string"
-        },
-        "certificateKeyVaultResourceGroupName": {
             "type": "string"
         },
         "logAnalyticsSubscriptionId": {
@@ -141,40 +120,11 @@
                     "appServicePlanName": {
                         "value": "[parameters('appServicePlanName')]"
                     },
-                    "aseHostingEnvironmentName": {
-                        "value": "[parameters('aseHostingEnvironmentName')]"
-                    },
-                    "aseResourceGroup": {
-                        "value": "[parameters('aseResourceGroup')]"
-                    },
                     "aspSize": {
                         "value": "1"
                     },
                     "aspInstances": {
                         "value": 2
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "FunctionAppCertificate",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service-certificate.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "keyVaultCertificateName": {
-                        "value": "[parameters('functionCertificateName')]"
-                    },
-                    "keyVaultName": {
-                        "value": "[parameters('certificateKeyVaultName')]"
-                    },
-                    "keyVaultResourceGroup": {
-                        "value": "[parameters('certificateKeyVaultResourceGroupName')]"
                     }
                 }
             }
@@ -487,12 +437,6 @@
                                 "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
                             }
                         ]
-                    },
-                    "customHostName": {
-                        "value": "[parameters('functionCustomHostname')]"
-                    },
-                    "certificateThumbprint": {
-                        "value": "[reference('FunctionAppCertificate').outputs.certificateThumbprint.value]"
                     }
                 }
             }
