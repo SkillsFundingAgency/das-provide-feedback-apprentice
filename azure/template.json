@@ -95,7 +95,7 @@
         "certificateKeyVaultName": {
             "type": "string"
         },
-        "certificateResourceGroupName": {
+        "certificateKeyVaultResourceGroupName": {
             "type": "string"
         },
         "logAnalyticsSubscriptionId": {
@@ -173,7 +173,7 @@
                         "value": "[parameters('certificateKeyVaultName')]"
                     },
                     "keyVaultResourceGroup": {
-                        "value": "[parameters('certificateResourceGroupName')]"
+                        "value": "[parameters('certificateKeyVaultResourceGroupName')]"
                     }
                 }
             }
