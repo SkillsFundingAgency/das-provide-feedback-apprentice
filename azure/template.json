@@ -99,7 +99,8 @@
             "type": "string"
         },
         "logAnalyticsSubscriptionId": {
-            "type": "string"
+            "type": "string",
+            "defaultValue": "[subscription().id]"
         },
         "logAnalyticsResourceGroup": {
             "type": "string"
