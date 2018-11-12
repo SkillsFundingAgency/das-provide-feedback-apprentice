@@ -8,6 +8,6 @@
     public class Participant
     {
         [JsonProperty("id")]
-        public string PhoneNumber { get; set; }
+        public string UserId { get; set; }
     }
 }

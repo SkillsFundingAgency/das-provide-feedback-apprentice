@@ -13,7 +13,7 @@
     "ConversationLogTable": "Conversations",
     "ConversationLogPartitionKey": "/conversation/id",
     "SessionLogTable": "Sessions",
-    "SessionLogPartitionKey": "/mobile_number",
+    "SessionLogPartitionKey": "/userId",
     "SessionStateTable": "feedback-bot-sessions",
     "OutgoingMessageQueueName": "sms-outgoing-messages",
     "IncomingMessageQueueName": "sms-incoming-messages",

@@ -55,9 +55,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs
             {
                 var d = new Dictionary<string, BotConversation>
                     {
-                        { "01234567890", new BotConversation() { MobileNumber = "01234567890", ConversationId = "aaa-bbb-ccc-ddd", TurnId = 3 } },
-                        { "07798765432", new BotConversation() { MobileNumber = "01234567890", ConversationId = "bbb-ccc-ddd-aaa", TurnId = 1 } },
-                        { "09876543210", new BotConversation() { MobileNumber = "01234567890", ConversationId = "ccc-ddd-aaa-bbb", TurnId = 99 } },
+                        { "01234567890", new BotConversation() { UserId = "01234567890", ConversationId = "aaa-bbb-ccc-ddd", TurnId = 3 } },
+                        { "07798765432", new BotConversation() { UserId = "01234567890", ConversationId = "bbb-ccc-ddd-aaa", TurnId = 1 } },
+                        { "09876543210", new BotConversation() { UserId = "01234567890", ConversationId = "ccc-ddd-aaa-bbb", TurnId = 99 } },
                     };
 
                 return d;

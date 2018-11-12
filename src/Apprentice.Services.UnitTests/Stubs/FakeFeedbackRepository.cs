@@ -34,7 +34,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs
                 }
             };
 
-        internal static Apprentice CreateApprentice(string uln, string phoneNumber) => new Apprentice() { UniqueLearnerNumber = uln, MobilePhoneNumber = phoneNumber };
+        internal static Apprentice CreateApprentice(string uln, string userId) => new Apprentice() { UniqueLearnerNumber = uln, ApprenticeId = userId };
 
         internal static Framework CreateFramework(
             string ukprn,
