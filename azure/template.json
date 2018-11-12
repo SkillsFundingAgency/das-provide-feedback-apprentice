@@ -83,6 +83,29 @@
         },
         "botEndpoint": {
             "type": "string"
+        },
+        "aseHostingEnvironmentName": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "aseResourceGroup": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "certificateKeyVaultName": {
+            "type": "string"
+        },
+        "certificateResourceGroupName": {
+            "type": "string"
+        },
+        "logAnalyticsSubscriptionId": {
+            "type": "string"
+        },
+        "logAnalyticsResourceGroup": {
+            "type": "string"
+        },
+        "logAnalyticsWorkspaceName": {
+            "type": "string"
         }
     },
     "variables": {
@@ -118,10 +141,10 @@
                         "value": "[parameters('appServicePlanName')]"
                     },
                     "aseHostingEnvironmentName": {
-                        "value": ""
+                        "value": "[parameters('aseHostingEnvironmentName')]"
                     },
                     "aseResourceGroup": {
-                        "value": ""
+                        "value": "[parameters('aseResourceGroup')]"
                     },
                     "aspSize": {
                         "value": "1"
@@ -131,7 +154,30 @@
                     }
                 }
             }
-        },        
+        },
+        {
+            "apiVersion": "2017-05-10",
+            "name": "FunctionAppCertificate",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service-certificate.json",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "keyVaultCertificateName": {
+                        "value": "[parameters('functionCertificateName')]"
+                    },
+                    "keyVaultName": {
+                        "value": "[parameters('certificateKeyVaultName')]"
+                    },
+                    "keyVaultResourceGroup": {
+                        "value": "[parameters('certificateResourceGroupName')]"
+                    }
+                }
+            }
+        },
         {
             "apiVersion": "2017-05-10",
             "name": "StorageAccount",
@@ -440,6 +486,12 @@
                                 "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
                             }
                         ]
+                    },
+                    "customHostName": {
+                        "value": "[parameters('functionCustomHostname')]"
+                    },
+                    "certificateThumbprint": {
+                        "value": "[reference('FunctionAppCertificate').outputs.certificateThumbprint.value]"
                     }
                 }
             }
@@ -510,6 +562,15 @@
                     },
                     "elasticPoolName": {
                         "value": "[parameters('elasticPoolName')]"
+                    },
+                    "logAnalyticsSubscriptionId": {
+                        "value": "[parameters('logAnalyticsSubscriptionId')]"
+                    },
+                    "logAnalyticsResourceGroup": {
+                        "value": "[parameters('logAnalyticsResourceGroup')]"
+                    },
+                    "logAnalyticsWorkspaceName": {
+                        "value": "[parameters('logAnalyticsWorkspaceName')]"
                     }
                 }
             }
