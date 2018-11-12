@@ -8,7 +8,7 @@ using Polly;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
 {
-    public class ApprenticeSurveyInvitesRepository : IStoreApprenticeSurveyInvites
+    public class ApprenticeSurveyInvitesRepository : IStoreApprenticeSurveyDetails
     {
         private const int _commandTimeoutSeconds = 120;
         private readonly IDbConnection _dbConnection;
