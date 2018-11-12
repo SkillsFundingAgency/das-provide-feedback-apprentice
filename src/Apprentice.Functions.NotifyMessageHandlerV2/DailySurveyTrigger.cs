@@ -25,7 +25,7 @@ public static class DailySurveyTrigger
         _surveyDetailsRepo = surveyDetailsRepo;
         log.LogInformation($"Daily survey trigger started");
 
-        var batchSize = 100;
+        var batchSize = 200;
         var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
 
         foreach (var apprenticeDetail in apprenticeDetails)
