@@ -31,7 +31,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
             var now = DateTime.Now;
             var sql = $@"
                         UPDATE ApprenticeSurveyInvites
-                        SET EmailSentDate = @{nameof(now)}
+                        SET SentDate = @{nameof(now)}
                         WHERE MobileNumber = @{nameof(mobileNumber)}
                         AND SurveyCode = @{nameof(surveyCode)}";
 
