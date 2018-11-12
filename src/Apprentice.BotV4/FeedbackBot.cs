@@ -133,13 +133,6 @@
                     // Continue as normal
                     return await dialog.ContinueDialogAsync(cancellationToken);
 
-                case ProgressState.Complete:
-                    // Survey already completed, so let them know
-                    reply.Text = $"Thanks for your interest, but it looks like you've already given us some feedback!";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
                 case ProgressState.Expired:
                     // Survey window has expired, so let them know
                     reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
@@ -150,17 +143,9 @@
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 case ProgressState.OptedOut:
-                    // User opted out. Respond accordingly!
-                    reply.Text = "You have opted out of surveys.";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
+                case ProgressState.Complete:
                 case ProgressState.BlackListed:
-                    // Survey user blacklisted. Let them know
-                    reply.Text = $"You'll get another chance to leave feedback in about 3 months. Thanks and goodbye!";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    // Do not respond anymore, preventing spam using up sms allowance
                     return await dialog.CancelAllDialogsAsync(cancellationToken);
 
                 default:
@@ -245,7 +230,7 @@
             await this.HandleCommandsAsync(dialog, cancellationToken);
 
             // TODO: swap out for channel ?
-            if (!dialog.Context.Responded && Debugger.IsAttached)
+            if (!dialog.Context.Responded && dialog.Context.Activity.ChannelId == "emulator")
             {
                 await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
             }

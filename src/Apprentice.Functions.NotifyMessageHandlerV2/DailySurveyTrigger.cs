@@ -15,7 +15,7 @@ public static class DailySurveyTrigger
 
     [FunctionName("DailySurveyTrigger")]
     public static async Task Run(
-        [TimerTrigger("0 0 11 * * MON-FRI", RunOnStartup = true)]TimerInfo myTimer,
+        [TimerTrigger("0 0 11 * * MON-FRI")]TimerInfo myTimer,
         [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
         ILogger log,
         [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
