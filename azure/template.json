@@ -182,6 +182,9 @@
                     },
                     "keyVaultResourceGroup": {
                         "value": "[parameters('certificateKeyVaultResourceGroupName')]"
+                    },
+                    "serverFarmId": {
+                        "value": "[reference('AppServicePlan').outputs.appServicePlanId.value]"
                     }
                 }
             }
@@ -206,6 +209,9 @@
                     },
                     "keyVaultResourceGroup": {
                         "value": "[parameters('certificateKeyVaultResourceGroupName')]"
+                    },
+                    "serverFarmId": {
+                        "value": "[reference('AppServicePlan').outputs.appServicePlanId.value]"
                     }
                 }
             }
