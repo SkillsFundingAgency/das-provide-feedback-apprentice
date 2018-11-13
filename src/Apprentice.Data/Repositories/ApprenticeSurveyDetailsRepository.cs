@@ -26,16 +26,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
                                         WHERE SentDate IS NULL", param: null, transaction: null, commandTimeout: _commandTimeoutSeconds);
         }
 
-        public async Task SetApprenticeSurveySentAsync(long mobileNumber, string surveyCode)
+        public async Task SetApprenticeSurveySentAsync(string uniqueLearnerNumber, string surveyCode)
         {
             var now = DateTime.Now;
+            var expiry = now.AddDays(7);
             var sql = $@"
                         UPDATE ApprenticeSurveyInvites
-                        SET SentDate = @{nameof(now)}
-                        WHERE MobileNumber = @{nameof(mobileNumber)}
+                        SET SentDate = @{nameof(now)}, ExpiryDate = @{nameof(expiry)}
+                        WHERE UniqueLearnerNumber = @{nameof(uniqueLearnerNumber)}
                         AND SurveyCode = @{nameof(surveyCode)}";
 
-            await ExecuteUpdateAsync(sql, new { now, mobileNumber, surveyCode });
+            await ExecuteUpdateAsync(sql, new { now, expiry, uniqueLearnerNumber, surveyCode });
         }
 
         private async Task ExecuteUpdateAsync(string sql, object param)

@@ -8,6 +8,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
     {
         Task<IEnumerable<ApprenticeSurveyInvite>> GetApprenticeSurveyInvitesAsync(int batchSize);
 
-        Task SetApprenticeSurveySentAsync(long mobileNumber, string surveyCode);
+        Task SetApprenticeSurveySentAsync(string uniqueLearnerNumber, string surveyCode);
     }
 }
