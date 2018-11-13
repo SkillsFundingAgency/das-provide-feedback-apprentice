@@ -49,7 +49,7 @@
         {
             var id = "feedback-q1";
             var responses = new List<IBotResponse> { };
-            var prompt = $"{Question1} \n {QuestionPleaseTypeYesOrNo}";
+            var prompt = $"{Question1}\n{QuestionPleaseTypeYesOrNo}";
             var score = 100;
 
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
@@ -59,7 +59,7 @@
         {
             var id = "feedback-q2";
             var responses = new List<IBotResponse> { };
-            var prompt = $"{Question2} \n {QuestionFreeTextInstructions}";
+            var prompt = $"{Question2}\n{QuestionFreeTextInstructions}";
             var score = 100;
 
             return new FreeTextQuestion() { Id = id, Responses = responses, Prompt = prompt, Score = score };
@@ -69,7 +69,7 @@
         {
             var id = "feedback-q3";
             var responses = new List<IBotResponse> { };
-            var prompt = $"{Question3} \n {QuestionFreeTextInstructions}";
+            var prompt = $"{Question3}\n{QuestionFreeTextInstructions}";
             var score = 100;
 
             return new FreeTextQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
@@ -79,7 +79,7 @@
         {
             var id = "feedback-q4";
             var responses = new List<IBotResponse> { };
-            var prompt = $"{Question4} \n {QuestionPleaseTypeYesOrNo}";
+            var prompt = $"{Question4}\n{QuestionPleaseTypeYesOrNo}";
             var score = 100;
 
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };

@@ -113,7 +113,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
                     new PositiveBotResponse { Prompt = ResponsesPositive01 },
                     new NegativeBotResponse { Prompt = ResponsesNegative01 },
                 };
-            var prompt = $"{QuestionsHelpingWithJob} \n {QuestionsPleaseTypeYesOrNo}";
+            var prompt = $"{QuestionsHelpingWithJob}\n{QuestionsPleaseTypeYesOrNo}";
             var score = 100;
 
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
