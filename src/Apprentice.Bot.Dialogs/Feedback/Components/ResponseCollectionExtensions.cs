@@ -1,6 +1,7 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -12,28 +13,64 @@
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
 
+    using BotSettings = Core.Configuration.Bot;
+    using FeatureToggles = Core.Configuration.Features;
+
     public static class ResponseCollectionExtensions
     {
-        public static async Task RespondAsMultipleMessagesAsync(
-            this IEnumerable<IResponse> responses,
+        public static async Task Create(
+            this IEnumerable<IBotResponse> responses,
             ITurnContext context,
             SurveyState surveyState,
-            DialogConfiguration configuration,
+            BotSettings botSettings,
+            FeatureToggles features,
             CancellationToken cancellationToken)
         {
-            foreach (var r in responses)
+            var botResponses = responses as IBotResponse[] ?? responses.ToArray();
+            if (botResponses.Any())
             {
-                if (r is ConditionalResponse conditionalResponse && !conditionalResponse.IsValid(surveyState))
+                if (features.CollateResponses)
+                {
+                    await botResponses.RespondAsSingleMessageAsync(
+                        context,
+                        surveyState,
+                        botSettings,
+                        features,
+                        cancellationToken);
+                }
+                else
+                {
+                    await botResponses.RespondAsMultipleMessagesAsync(
+                        context,
+                        surveyState,
+                        botSettings,
+                        features,
+                        cancellationToken);
+                }
+            }
+        }
+
+        public static async Task RespondAsMultipleMessagesAsync(
+            this IEnumerable<IBotResponse> responses,
+            ITurnContext context,
+            SurveyState surveyState,
+            BotSettings botSettings,
+            FeatureToggles features,
+            CancellationToken cancellationToken)
+        {
+            foreach (IBotResponse r in responses)
+            {
+                if (r is ConditionalBotResponse conditionalResponse && !conditionalResponse.IsValid(surveyState))
                 {
                     continue;
                 }
 
-                if (configuration != null && configuration.RealisticTypingDelay)
+                if (features != null && features.RealisticTypingDelay)
                 {
                     await context.SendTypingActivityAsync(
                         r.Prompt,
-                        configuration.CharactersPerMinute,
-                        configuration.ThinkingTimeDelayMs);
+                        botSettings.Typing.CharactersPerMinute,
+                        botSettings.Typing.ThinkingTimeDelay);
                 }
 
                 await context.SendActivityAsync(r.Prompt, InputHints.IgnoringInput, cancellationToken: cancellationToken);
@@ -41,16 +78,17 @@
         }
 
         public static async Task RespondAsSingleMessageAsync(
-            this IEnumerable<IResponse> responses,
+            this IEnumerable<IBotResponse> responses,
             ITurnContext context,
             SurveyState surveyState,
-            DialogConfiguration configuration,
+            BotSettings botSettings,
+            FeatureToggles features,
             CancellationToken cancellationToken)
         {
             var sb = new StringBuilder();
             foreach (var r in responses)
             {
-                if (r is ConditionalResponse conditionalResponse && !conditionalResponse.IsValid(surveyState))
+                if (r is ConditionalBotResponse conditionalResponse && !conditionalResponse.IsValid(surveyState))
                 {
                     continue;
                 }
@@ -60,12 +98,12 @@
 
             var response = sb.ToString();
 
-            if (configuration != null && configuration.RealisticTypingDelay)
+            if (features != null && features.RealisticTypingDelay)
             {
                 await context.SendTypingActivityAsync(
                     response,
-                    configuration.CharactersPerMinute,
-                    configuration.ThinkingTimeDelayMs);
+                    botSettings.Typing.CharactersPerMinute,
+                    botSettings.Typing.ThinkingTimeDelay);
             }
 
             await context.SendActivityAsync(response, InputHints.IgnoringInput, cancellationToken: cancellationToken);

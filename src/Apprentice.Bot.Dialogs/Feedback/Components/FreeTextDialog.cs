@@ -1,6 +1,8 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 {
+    using System;
     using System.Collections.Generic;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -15,7 +17,7 @@
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
-    public sealed class FreeTextDialog : ComponentDialog, ICustomComponent
+    public sealed class FreeTextDialog : ComponentDialog, ICustomComponent<FreeTextDialog>
     {
         public const string FreeTextPrompt = "freeTextPrompt";
 
@@ -43,13 +45,15 @@
             this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
 
+        public int PointsAvailable { get; private set; } = 1;
+
         public string PromptText { get; set; }
 
-        public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
+        public ICollection<IBotResponse> Responses { get; private set; } = new List<IBotResponse>();
 
-        public FreeTextDialog AddResponse(IResponse response)
+        public FreeTextDialog AddResponse(IBotResponse botResponse)
         {
-            this.Responses.Add(response);
+            this.Responses.Add(botResponse);
             return this;
         }
 
@@ -82,9 +86,15 @@
             return this;
         }
 
-        public FreeTextDialog WithResponses(ICollection<IResponse> responses)
+        public FreeTextDialog WithResponses(ICollection<IBotResponse> responses)
         {
             this.Responses = responses;
+            return this;
+        }
+
+        public FreeTextDialog WithScore(int score)
+        {
+            this.PointsAvailable = score;
             return this;
         }
 
@@ -106,14 +116,19 @@
         }
 
         // TODO: Add LUIS for natural language processing
-        private FreeTextResponse HandleResponse(WaterfallStepContext stepContext)
+        private FreeTextResponse HandleResponse(DialogContext stepContext)
         {
             string utterance = stepContext.Context.Activity.Text; // What did they say?
+            // TODO: add LUIS service to process free text responses
+            // string intent = Luis.GetIntention(); // What did they mean?
+
+            bool skipped = utterance.Equals("skip", StringComparison.OrdinalIgnoreCase);
 
             var feedbackResponse = new FreeTextResponse
             {
                 Question = this.PromptText,
-                Answer = utterance
+                Answer = utterance,
+                Score = !skipped ? this.PointsAvailable : 0,
             };
 
             return feedbackResponse;
@@ -131,23 +146,13 @@
             FreeTextResponse feedbackResponse = this.HandleResponse(stepContext);
 
             userProfile.SurveyState.Responses.Add(feedbackResponse);
-            
-            if (this.configuration.CollateResponses)
-            {
-                await this.Responses.RespondAsSingleMessageAsync(
-                    stepContext.Context,
-                    userProfile.SurveyState,
-                    this.configuration,
-                    cancellationToken);
-            }
-            else
-            {
-                await this.Responses.RespondAsMultipleMessagesAsync(
-                    stepContext.Context,
-                    userProfile.SurveyState,
-                    this.configuration,
-                    cancellationToken);
-            }
+
+            await this.Responses.Create(
+                stepContext.Context,
+                userProfile.SurveyState,
+                this.botSettings,
+                this.features,
+                cancellationToken);
 
             // Ask next question
             return await stepContext.NextAsync(cancellationToken: cancellationToken);

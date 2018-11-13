@@ -12,6 +12,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     public static class ReceiveNotifyMessage
     {
+        // TODO: [security] hash the incoming phone number
         [FunctionName("ReceiveNotifyMessage")]
         [return: ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection")]
         public static ActionResult Run(

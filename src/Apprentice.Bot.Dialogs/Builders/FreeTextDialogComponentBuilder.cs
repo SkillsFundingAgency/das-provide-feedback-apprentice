@@ -3,6 +3,7 @@
     using System;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
@@ -26,6 +27,7 @@
                     return new FreeTextDialog(questionStep.Id, this.State, this.BotSettings, this.Features)
                         .WithPrompt(questionStep.Prompt)
                         .WithResponses(questionStep.Responses)
+                        .WithScore(questionStep.Score)
                         .Build();
                 }
 

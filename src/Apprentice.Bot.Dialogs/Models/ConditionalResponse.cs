@@ -2,12 +2,12 @@
 {
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    public interface IConditionalResponse : IResponse
+    public interface IConditionalBotResponse : IBotResponse
     {
         bool IsValid(SurveyState state);
     }
 
-    public abstract class ConditionalResponse : IConditionalResponse
+    public abstract class ConditionalBotResponse : IConditionalBotResponse
     {
         public string Id { get; set; }
 

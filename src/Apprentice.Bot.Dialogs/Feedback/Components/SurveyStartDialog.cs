@@ -12,15 +12,13 @@
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
 
-    public sealed class SurveyStartDialog : ComponentDialog, ICustomComponent
+    public sealed class SurveyStartDialog : ComponentDialog, ICustomComponent<SurveyStartDialog>
     {
         private readonly BotSettings botSettings;
 
         private readonly FeatureToggles features;
 
-        private FeedbackBotStateRepository state;
-
-        private DialogConfiguration configuration;
+        private readonly FeedbackBotStateRepository state;
 
         /// <inheritdoc />
         public SurveyStartDialog(
@@ -35,14 +33,13 @@
             this.botSettings = botSettings;
             this.features = features;
             this.state = state;
-            this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
 
-        public ICollection<IResponse> Responses { get; private set; } = new List<IResponse>();
+        public ICollection<IBotResponse> Responses { get; private set; } = new List<IBotResponse>();
 
-        public SurveyStartDialog AddResponse(IResponse response)
+        public SurveyStartDialog AddResponse(IBotResponse botResponse)
         {
-            this.Responses.Add(response);
+            this.Responses.Add(botResponse);
             return this;
         }
 
@@ -62,7 +59,7 @@
             return this;
         }
 
-        public SurveyStartDialog WithResponses(ICollection<IResponse> responses)
+        public SurveyStartDialog WithResponses(ICollection<IBotResponse> responses)
         {
             this.Responses = responses;
             return this;
@@ -77,24 +74,14 @@
                                () => new UserProfile(),
                                cancellationToken);
 
-            if (this.configuration.CollateResponses)
-            {
-                await this.Responses.RespondAsSingleMessageAsync(
-                    stepContext.Context,
-                    userInfo.SurveyState,
-                    this.configuration,
-                    cancellationToken);
-            }
-            else
-            {
-                await this.Responses.RespondAsMultipleMessagesAsync(
-                    stepContext.Context,
-                    userInfo.SurveyState,
-                    this.configuration,
-                    cancellationToken);
-            }
+            await this.Responses.Create(
+                stepContext.Context,
+                userInfo.SurveyState,
+                this.botSettings,
+                this.features,
+                cancellationToken);
 
-            userInfo.TelephoneNumber = stepContext.Context.Activity.From.Id;
+            userInfo.UserId = stepContext.Context.Activity.From.Id;
 
             return await stepContext.NextAsync(null, cancellationToken);
         }

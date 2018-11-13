@@ -4,14 +4,10 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
 
-    public interface ISurveyStepDefinition
+    public interface ISurveyDefinition
     {
         string Id { get; set; }
 
-        bool IsValid { get; set; }
-
-        int Order { get; set; }
-
-        ICollection<IBotResponse> Responses { get; set; }
+        ICollection<ISurveyStepDefinition> StepDefinitions { get; set; }
     }
 }

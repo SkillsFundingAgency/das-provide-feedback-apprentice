@@ -56,8 +56,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
             try
             {
-                string mobileNumber = incomingSms?.Value?.source_number;
-                BotConversation conversation = await GetConversationByMobileNumber(mobileNumber);
+                string userId = incomingSms?.Value?.source_number; // TODO: [security] hash me please!
+                BotConversation conversation = await GetConversationByUserId(userId);
 
                 if (conversation == null)
                 {
@@ -78,11 +78,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
         }
 
-        private static async Task<BotConversation> GetConversationByMobileNumber(string mobileNumber)
+        private static async Task<BotConversation> GetConversationByUserId(string userId)
         {
             // TODO: extract this and inject an instance of IBotConversationProvider
             await DocumentClient.GetDocumentCollectionAsync();
-            BotConversation conversation = await DocumentClient.GetItemAsync<BotConversation>(c => c.MobileNumber == mobileNumber);
+            BotConversation conversation = await DocumentClient.GetItemAsync<BotConversation>(c => c.UserId == userId);
             return conversation;
         }
 
@@ -187,7 +187,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogInformation($"Started new conversation with id {jsonResponse.conversationId}");
 
                 // TODO: write the conversation ID to a session log with the mobile phone number
-                conversation.MobileNumber = incomingSms?.Value.source_number;
+                conversation.UserId = incomingSms?.Value.source_number; // TODO: [security] hash this please!
                 conversation.ConversationId = jsonResponse.conversationId;
                 conversation.UniqueLearnerNumber = incomingSms?.Value.Uln;
 

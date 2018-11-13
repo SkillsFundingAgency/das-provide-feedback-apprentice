@@ -1,6 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models
 {
-    public class StaticResponse : IResponse
+    public class StaticBotResponse : IBotResponse
     {
         public string Id { get; set; }
 

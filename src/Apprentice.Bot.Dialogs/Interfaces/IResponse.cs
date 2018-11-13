@@ -1,6 +1,9 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models
 {
-    public interface IResponse
+    /// <summary>
+    /// A response from the bot, based on user interaction
+    /// </summary>
+    public interface IBotResponse
     {
         string Id { get; set; }
 

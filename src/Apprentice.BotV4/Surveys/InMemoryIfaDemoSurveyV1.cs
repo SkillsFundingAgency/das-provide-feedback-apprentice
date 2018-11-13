@@ -2,89 +2,54 @@
 {
     using System.Collections.Generic;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
 
-    public class InMemoryIfaDemoSurveyV1 : ISurvey
+    public class InMemoryIfaDemoSurveyV1 : ISurveyDefinition
     {
-        private const string Intro = "Here's a new survey from the Institute for Apprenticeships - they make sure apprenticeships teach people the right skills for their job." +
-            "It's just 3 questions and it'll really help to improve Data Analyst apprenticeships. " +
-            "This isn't a test - there are no right or wrong answers :)";
+        private const string Intro = "Please complete 4 quick questions to help the government improve apprenticeships in the digital sector.";
 
-        private const string IntroOptOut =
-            "Normal SMS charges apply.To stop receiving these messages, please type ‘Stop’";
+        private const string IntroOptOut = "Normal SMS charges apply. Text ‘Stop’ to opt out.";
 
         private const string Question1 = "Is your apprenticeship helping you to do your job?";
 
-        private const string Question2 = "Does your experience of your apprenticeship match the standard?";
+        private const string Question2 = "Thanks. What skills or knowledge could we add to your apprenticeship training to make it better?";
 
-        private const string Question3 = "Should anything be added to the apprenticeship standard?";
+        private const string Question3 = "Thanks. What part of your apprenticeship is not relevant to your work or needs to be updated?";
 
-        private const string Question3b = "Can you please explain this in more detail?";
+        private const string Question4 = "Thanks for that. Do you think your apprenticeship will help you progress in your career?";
 
-        private const string Question4 = "Any other thoughts on your apprenticeship.";
+        private const string QuestionPleaseTypeYesOrNo = "Please type 'Yes' or 'No'";
 
-        private const string QuestionsPleaseTypeYesOrNo = "Please type 'Yes' or 'No'";
+        private const string QuestionFreeTextInstructions = "Tell us or type to ‘skip’ to go to the next question.";
 
-        private const string ResponsesNegative01 = ":(";
+        private const string EndThanks = "Thanks very much for your answers. That's it for now.";
 
-        private const string ResponsesPositive01 = ":)";
-
-        private const string End = "That's the end, thanks!";
+        private const string EndWeWontReply = "We won't get back to you directly, but your answers will help us improve digital sector apprenticeships.";
 
         public InMemoryIfaDemoSurveyV1(string id = "ifa-v1")
         {
             this.Id = id;
-            this.Steps = new List<ISurveyStepDefinition>()
+            this.StepDefinitions = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestion1(),
                     this.CreateQuestion2(),
                     this.CreateQuestion3(),
-                    this.CreateQuestion3b(),
+                    this.CreateQuestion4(),
                     this.CreateEndStep(),
                 };
         }
 
         public string Id { get; set; }
 
-        public ICollection<ISurveyStepDefinition> Steps { get; set; }
-
-        //public EndStep CreateEndStep()
-        //{
-        //    var id = "feedback-end";
-        //    var responses = new List<IResponse>
-        //        {
-        //            new PredicateResponse
-        //                {
-        //                    Id = nameof(FinishKeepUpTheGoodWork),
-        //                    Predicate = u => u.Score >= 300,
-        //                    Prompt = FinishKeepUpTheGoodWork,
-        //                },
-        //            new PredicateResponse
-        //                {
-        //                    Id = nameof(FinishSpeakToYourEmployer),
-        //                    Predicate = u => u.Score < 300 && u.Score >= 200,
-        //                    Prompt = FinishWeWillBeInTouch,
-        //                },
-        //            new PredicateResponse
-        //                {
-        //                    Id = nameof(FinishSpeakToYourEmployer),
-        //                    Predicate = u => u.Score < 200,
-        //                    Prompt = FinishSpeakToYourEmployer,
-        //                },
-        //        };
-        //    return new EndStep() { Id = id, Responses = responses };
-        //}
-
+        public ICollection<ISurveyStepDefinition> StepDefinitions { get; set; }
+        
         public QuestionStepDefinition CreateQuestion1()
         {
             var id = "feedback-q1";
-            var responses = new List<IResponse>
-                {
-                    new PositiveResponse { Prompt = ResponsesPositive01 },
-                    new NegativeResponse { Prompt = ResponsesNegative01 },
-                };
-            var prompt = $"{Question1} \n {QuestionsPleaseTypeYesOrNo}";
+            var responses = new List<IBotResponse> { };
+            var prompt = $"{Question1} \n {QuestionPleaseTypeYesOrNo}";
             var score = 100;
 
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
@@ -93,51 +58,40 @@
         public QuestionStepDefinition CreateQuestion2()
         {
             var id = "feedback-q2";
-            var responses = new List<IResponse>
-                {
-                    new PositiveResponse { Prompt = ResponsesPositive01 },
-                    new NegativeResponse { Prompt = ResponsesNegative01 },
-                };
-            var prompt = Question2;
+            var responses = new List<IBotResponse> { };
+            var prompt = $"{Question2} \n {QuestionFreeTextInstructions}";
             var score = 100;
 
-            return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
+            return new FreeTextQuestion() { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
         public QuestionStepDefinition CreateQuestion3()
         {
             var id = "feedback-q3";
-            var responses = new List<IResponse>
-                {
-                    new PositiveResponse { Prompt = ResponsesPositive01 },
-                    new NegativeResponse { Prompt = ResponsesNegative01 },
-                };
-            var prompt = Question3;
-            var score = 100;
-
-            return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
-        }
-
-        public QuestionStepDefinition CreateQuestion3b()
-        {
-            var id = "feedback-q3b";
-            var responses = new List<IResponse>
-                {
-                    new StaticResponse { Prompt = ResponsesPositive01 }
-                };
-            var prompt = Question3b;
+            var responses = new List<IBotResponse> { };
+            var prompt = $"{Question3} \n {QuestionFreeTextInstructions}";
             var score = 100;
 
             return new FreeTextQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
         }
 
+        public QuestionStepDefinition CreateQuestion4()
+        {
+            var id = "feedback-q4";
+            var responses = new List<IBotResponse> { };
+            var prompt = $"{Question4} \n {QuestionPleaseTypeYesOrNo}";
+            var score = 100;
+
+            return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
+        }
+
         public StartStepDefinition CreateStartStep()
         {
             var id = "feedback-start";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new StaticResponse() { Id = nameof(Intro), Prompt = Intro, },
-                    new StaticResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, }
+                    new StaticBotResponse() { Id = nameof(Intro), Prompt = Intro, },
+                    new StaticBotResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, }
                 };
             return new StartStepDefinition() { Id = id, Responses = responses };
         }
@@ -145,9 +99,10 @@
         public EndStepDefinition CreateEndStep()
         {
             var id = "feedback-end";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
             {
-                new StaticResponse() { Id = nameof(End), Prompt = End, },
+                new StaticBotResponse() { Id = nameof(EndThanks), Prompt = EndThanks },
+                new StaticBotResponse() { Id = nameof(EndWeWontReply), Prompt = EndWeWontReply }
             };
             return new EndStepDefinition() { Id = id, Responses = responses };
         }

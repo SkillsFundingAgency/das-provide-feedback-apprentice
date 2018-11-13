@@ -12,8 +12,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
         [JsonProperty("conversationId")]
         public string ConversationId { get; set; }
 
-        [JsonProperty("mobileNumber")]
-        public string MobileNumber { get; set; }
+        [JsonProperty("userId")]
+        public string UserId { get; set; }
 
         [JsonProperty("turnId")]
         public int TurnId { get; set; }

@@ -21,8 +21,8 @@
         public static async Task SendTypingActivityAsync(
             this ITurnContext ctx,
             string textToType,
-            int charactersPerMinute = 500,
-            int thinkingTimeDelay = 1000)
+            int charactersPerMinute = 1500,
+            int thinkingTimeDelay = 0)
         {
             Activity typing = new Activity() { Type = ActivityTypes.Typing, InputHint = InputHints.IgnoringInput };
             await ctx.SendActivityAsync(typing);

@@ -18,7 +18,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
     {
         public List<string> AdminCommands { get; set; }
 
-        public int DefaultConversationExpiryDays { get; set; }
+        public int DefaultConversationExpiryDays { get; set; } = 7;
 
         /// <summary>
         /// Gets or sets the typing configuration.
@@ -33,19 +33,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
             /// <summary>
             /// Gets or sets the bot typing speed in characters per minute.
             /// </summary>
-            public int CharactersPerMinute { get; set; }
+            public int CharactersPerMinute { get; set; } = 1500;
 
             /// <summary>
             /// Gets or sets the bot response thinking time in milliseconds.
             /// </summary>
-            public int ThinkingTimeDelay { get; set; }
+            public int ThinkingTimeDelay { get; set; } = 0;
         }
-    }
-
-    public class DirectLine
-    {
-        public string BotClientBaseAddress { get; set; }
-
-        public string BotClientAuthToken { get; set; }
     }
 }

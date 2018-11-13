@@ -50,7 +50,10 @@
                 context.OnSendActivities(
                     async (activityContext, activityList, activityNext) =>
                     {
-                        botReply = string.Join("\n\n", activityList.Select(a => a.Text.ToString()).ToArray());
+                        if (activityList.Any())
+                        {
+                            botReply = string.Join("\n\n", activityList.Select(a => a.Text));
+                        }
                         return await activityNext();
                     });
             }
@@ -62,7 +65,7 @@
             if (context.Activity.Type == ActivityTypes.Message)
             {
                 // Build a log object to write to the database.
-                ConversationLog logData = new ConversationLog
+                var logData = new ConversationLog
                 {
                     From = context.Activity.From,
                     Recipient = context.Activity.Recipient,

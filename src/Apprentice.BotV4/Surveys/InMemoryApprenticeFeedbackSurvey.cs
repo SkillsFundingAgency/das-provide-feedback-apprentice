@@ -2,9 +2,10 @@
 {
     using System.Collections.Generic;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
 
-    public class InMemoryApprenticeFeedbackSurvey : ISurvey
+    public class InMemoryApprenticeFeedbackSurvey : ISurveyDefinition
     {
         private const string FinishFormalComplaint =
             "If you’ve talked to them already, you might want to make a formal complaint: https://www.gov.uk/complainfurthereducationapprenticeship";
@@ -42,7 +43,7 @@
         public InMemoryApprenticeFeedbackSurvey()
         {
             this.Id = "afb-v3";
-            this.Steps = new List<ISurveyStepDefinition>()
+            this.StepDefinitions = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestionOne(),
@@ -55,7 +56,7 @@
         public InMemoryApprenticeFeedbackSurvey(string id)
         {
             this.Id = id;
-            this.Steps = new List<ISurveyStepDefinition>()
+            this.StepDefinitions = new List<ISurveyStepDefinition>()
                 {
                     this.CreateStartStep(),
                     this.CreateQuestionOne(),
@@ -67,26 +68,26 @@
 
         public string Id { get; set; }
 
-        public ICollection<ISurveyStepDefinition> Steps { get; set; }
+        public ICollection<ISurveyStepDefinition> StepDefinitions { get; set; }
 
         public EndStepDefinition CreateEndStep()
         {
             var id = "feedback-end";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PredicateResponse
+                    new PredicateBotResponse
                         {
                             Id = nameof(FinishSpeakToYourEmployer),
                             Predicate = u => u.Score < 300,
                             Prompt = FinishSpeakToYourEmployer,
                         },
-                    new PredicateResponse
+                    new PredicateBotResponse
                         {
                             Id = nameof(FinishKeepUpTheGoodWork),
                             Predicate = u => u.Score >= 300,
                             Prompt = FinishKeepUpTheGoodWork,
                         },
-                    new PredicateResponse
+                    new PredicateBotResponse
                         {
                             Id = nameof(FinishFormalComplaint),
                             Predicate = u => u.Score < 0,
@@ -99,10 +100,10 @@
         public QuestionStepDefinition CreateQuestionOne()
         {
             var id = "feedback-q1";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PositiveResponse { Prompt = ResponsesPositive01 },
-                    new NegativeResponse { Prompt = ResponsesNegative01 },
+                    new PositiveBotResponse { Prompt = ResponsesPositive01 },
+                    new NegativeBotResponse { Prompt = ResponsesNegative01 },
                 };
             var prompt = QuestionsDaysOfTraining;
             var score = 100;
@@ -113,10 +114,10 @@
         public QuestionStepDefinition CreateQuestionThree()
         {
             var id = "feedback-q3";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PositiveResponse { Prompt = ResponsesItsReallyHelpful },
-                    new NegativeResponse { Prompt = ResponsesSorryToHearThat },
+                    new PositiveBotResponse { Prompt = ResponsesItsReallyHelpful },
+                    new NegativeBotResponse { Prompt = ResponsesSorryToHearThat },
                 };
             var prompt = QuestionsOverallSatisfaction;
             var score = 100;
@@ -127,10 +128,10 @@
         public QuestionStepDefinition CreateQuestionTwo()
         {
             var id = "feedback-q2";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new PositiveResponse { Prompt = ResponsesPositive02 },
-                    new NegativeResponse { Prompt = ResponsesNegative02 },
+                    new PositiveBotResponse { Prompt = ResponsesPositive02 },
+                    new NegativeBotResponse { Prompt = ResponsesNegative02 },
                 };
             var prompt = QuestionsTrainerKnowledge;
             var score = 100;
@@ -141,10 +142,10 @@
         public StartStepDefinition CreateStartStep()
         {
             var id = "feedback-start";
-            var responses = new List<IResponse>
+            var responses = new List<IBotResponse>
                 {
-                    new StaticResponse() { Id = nameof(IntroWelcome), Prompt = IntroWelcome },
-                    new StaticResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut },
+                    new StaticBotResponse() { Id = nameof(IntroWelcome), Prompt = IntroWelcome },
+                    new StaticBotResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut },
                 };
             return new StartStepDefinition() { Id = id, Responses = responses };
         }

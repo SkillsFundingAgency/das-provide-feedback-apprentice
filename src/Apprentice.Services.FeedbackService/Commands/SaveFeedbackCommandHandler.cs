@@ -39,7 +39,7 @@
                 Apprentice = command.Feedback.Apprentice,
                 Apprenticeship = command.Feedback.Apprenticeship,
                 Responses = command.Feedback.Responses,
-                PartitionKey = command.Feedback.Apprentice.MobilePhoneNumber
+                PartitionKey = command.Feedback.Apprentice.ApprenticeId
             };
 
             await this.repository.SaveFeedback(feedbackDto);

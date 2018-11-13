@@ -16,11 +16,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
         /// <summary>
         /// Adds a delay to bot responses, and a typing indicator to fake human input
         /// </summary>
-        public bool RealisticTypingDelay { get; set; }
+        public bool RealisticTypingDelay { get; set; } = true;
 
         /// <summary>
         /// Group multiple responses into a single response back to the user
         /// </summary>
-        public bool CollateResponses { get; set; }
+        public bool CollateResponses { get; set; } = true;
     }
 }

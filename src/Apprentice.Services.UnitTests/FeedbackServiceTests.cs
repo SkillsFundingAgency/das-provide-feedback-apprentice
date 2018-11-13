@@ -49,7 +49,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
         {
             private const string SurveyId = "Survey0001";
             private const string UniqueLearnerNumber = "abc-123";
-            private const string PhoneNumber = "447701234567";
+            private const string UserId = "User0001";
             private const string StandardId = "STN-001";
             private const string Ukprn = "100001";
 
@@ -62,7 +62,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
                         StartTime = DateTime.UtcNow.AddMinutes(-5),
                         FinishTime = DateTime.UtcNow,
                         SurveyId = SurveyId,
-                        Apprentice = FakeFeedbackRepository.CreateApprentice(UniqueLearnerNumber, PhoneNumber),
+                        Apprentice = FakeFeedbackRepository.CreateApprentice(UniqueLearnerNumber, UserId),
                         Apprenticeship = FakeFeedbackRepository.CreateStandard(Ukprn, StandardId),
                         Responses = new List<ApprenticeResponse>() { FakeFeedbackRepository.CreateResponse(100, "question1", "yeah", "yes"), FakeFeedbackRepository.CreateResponse(100, "question2", "nah", "no") }
                     };

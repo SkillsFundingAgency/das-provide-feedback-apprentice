@@ -4,7 +4,7 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
-    public class PositiveResponse : ConditionalResponse
+    public class PositiveBotResponse : ConditionalBotResponse
     {
         public override bool IsValid(SurveyState state)
         {

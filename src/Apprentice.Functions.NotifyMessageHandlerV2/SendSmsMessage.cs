@@ -41,7 +41,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             {
                 log.LogInformation($"Received response from {outgoingSms?.recipient?.id}");
 
-                string mobileNumber = outgoingSms?.from?.id;
+                string mobileNumber = outgoingSms?.from?.id; // TODO: [security] read mobile number from userId hash
                 string templateId = Configuration.Get("NotifyTemplateId");
                 var personalization = new Dictionary<string, dynamic> { { "message", outgoingSms?.messageReceived } };
                 string reference = outgoingSms?.conversation?.id;

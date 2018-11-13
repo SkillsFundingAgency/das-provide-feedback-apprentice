@@ -1,22 +1,19 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Survey
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
 
-    using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Schema;
 
     /// <summary>
-    /// Represents an end-to-end dynamic survey dialog.
+    /// Represents an end-to-end dynamic survey dialog. Usually contains a collection of dialogs that build up the conversational paths.
     /// </summary>
-    public class SurveyDialog : ComponentDialog
+    public class SurveyDialog : ComponentDialog, ICustomComponent<SurveyDialog>
     {
         public SurveyDialog(string id)
             : base(id)
@@ -24,11 +21,11 @@
             this.InitialDialogId = id;
         }
 
-        public ICollection<ISurveyStepDefinition> Steps { get; protected set; }
+        public ICollection<Dialog> Dialogs { get; protected set; }
 
-        public SurveyDialog Build(DialogFactory factory)
+        public SurveyDialog Build()
         {
-            WaterfallStep[] waterfall = this.Steps.Select(x => this.BuildDialog(x, factory)).ToArray();
+            WaterfallStep[] waterfall = this.Dialogs.Select(this.CreateWaterfallStep).ToArray();
 
             var dialog = new WaterfallDialog(this.Id, waterfall);
 
@@ -37,9 +34,9 @@
             return this;
         }
 
-        public SurveyDialog WithSteps(ICollection<ISurveyStepDefinition> steps)
+        public SurveyDialog WithDialogSteps(List<Dialog> dialogs)
         {
-            this.Steps = steps;
+            this.Dialogs = dialogs;
             return this;
         }
 
@@ -55,83 +52,59 @@
             switch (activity.Type)
             {
                 case ActivityTypes.Message:
+                {
+                    var result = await innerDc.ContinueDialogAsync(cancellationToken);
+
+                    switch (result.Status)
                     {
-                        var result = await innerDc.ContinueDialogAsync(cancellationToken);
-
-                        switch (result.Status)
+                        case DialogTurnStatus.Empty:
                         {
-                            case DialogTurnStatus.Empty:
-                                {
-                                    // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"TURN EMPTY"),cancellationToken);
-                                    break;
-                                }
-
-                            case DialogTurnStatus.Complete:
-                                {
-                                    // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"TURN COMPLETE"),cancellationToken);
-
-                                    // End active dialog.
-                                    await innerDc.EndDialogAsync(cancellationToken: cancellationToken);
-                                    break;
-                                }
-
-                            default:
-                                {
-                                    break;
-                                }
+                            // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"TURN EMPTY"),cancellationToken);
+                            break;
                         }
 
-                        break;
+                        case DialogTurnStatus.Complete:
+                        {
+                            // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"TURN COMPLETE"),cancellationToken);
+
+                            // End active dialog.
+                            await innerDc.EndDialogAsync(cancellationToken: cancellationToken);
+                            break;
+                        }
+
+                        default:
+                        {
+                            break;
+                        }
                     }
+
+                    break;
+                }
 
                 case ActivityTypes.Event:
-                    {
-                        // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"ONEVENT"), cancellationToken);
-                        break;
-                    }
+                {
+                    // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"ONEVENT"), cancellationToken);
+                    break;
+                }
 
                 case ActivityTypes.ConversationUpdate:
-                    {
-                        // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"ONSTART"), cancellationToken);
-                        break;
-                    }
+                {
+                    // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"ONSTART"), cancellationToken);
+                    break;
+                }
 
                 default:
-                    {
-                        // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"DEFAULT"), cancellationToken);
-                        break;
-                    }
+                {
+                    // await innerDc.Context.SendActivityAsync(MessageFactory.Text($"DEFAULT"), cancellationToken);
+                    break;
+                }
             }
 
             return EndOfTurn;
         }
 
-        private WaterfallStep BuildDialog(ISurveyStepDefinition stepDefinition, IDialogFactory dialogFactory)
+        private WaterfallStep CreateWaterfallStep(Dialog dialog)
         {
-            ComponentDialog dialog;
-
-            switch (stepDefinition)
-            {
-                case StartStepDefinition startStep:
-                    dialog = dialogFactory.Create<SurveyStartDialog>(startStep);
-                    break;
-
-                case BinaryQuestion binaryQuestionStep:
-                    dialog = dialogFactory.Create<MultipleChoiceDialog>(binaryQuestionStep);
-                    break;
-
-                case FreeTextQuestion freeTextQuestionStep:
-                    dialog = dialogFactory.Create<FreeTextDialog>(freeTextQuestionStep);
-                    break;
-
-                case EndStepDefinition endStep:
-                    dialog = dialogFactory.Create<SurveyEndDialog>(endStep);
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException($"Unrecognized type [{stepDefinition.GetType().FullName}]");
-            }
-
             this.AddDialog(dialog);
 
             // return async (stepContext, cancellationToken) => await stepContext.ReplaceDialogAsync(dialog.Id, cancellationToken: cancellationToken);

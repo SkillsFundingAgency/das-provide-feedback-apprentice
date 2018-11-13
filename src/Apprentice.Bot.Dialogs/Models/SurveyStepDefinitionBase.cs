@@ -2,6 +2,8 @@
 {
     using System.Collections.Generic;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
+
     using Newtonsoft.Json;
 
     public abstract class SurveyStepDefinitionBase : ISurveyStepDefinition
@@ -16,6 +18,6 @@
         public int Order { get; set; } // TODO: Add survey builder UI
 
         [JsonProperty("responses")]
-        public ICollection<IResponse> Responses { get; set; } = new List<IResponse>();
+        public ICollection<IBotResponse> Responses { get; set; } = new List<IBotResponse>();
     }
 }

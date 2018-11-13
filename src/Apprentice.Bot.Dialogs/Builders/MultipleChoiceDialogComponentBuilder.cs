@@ -3,6 +3,7 @@
     using System;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;

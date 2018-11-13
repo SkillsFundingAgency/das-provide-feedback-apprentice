@@ -15,7 +15,7 @@
     {
         public SurveyState SurveyState { get; set; } = new SurveyState();
 
-        public string TelephoneNumber { get; set; }
+        public string UserId { get; set; }
 
         public string IlrNumber { get; set; }
 

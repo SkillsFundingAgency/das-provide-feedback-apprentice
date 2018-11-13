@@ -12,6 +12,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Root;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Survey;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
@@ -37,13 +38,13 @@
 
         private readonly FeedbackBotStateRepository stateRepository;
 
-        private readonly IEnumerable<ISurvey> surveys;
+        private readonly IEnumerable<ISurveyDefinition> surveys;
 
         public FeedbackBot(
             FeedbackBotStateRepository stateRepository,
             ILoggerFactory loggerFactory,
             IEnumerable<IBotDialogCommand> commands,
-            IEnumerable<ISurvey> surveys,
+            IEnumerable<ISurveyDefinition> surveys,
             IDialogFactory dialogFactory,
             IOptions<Features> featureToggles)
         {
