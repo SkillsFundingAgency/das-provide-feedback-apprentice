@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="AsyncUsageAnalyzers" Version="1.0.0-alpha003" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.5.1" />
     <PackageReference Include="Microsoft.Bot.Builder.Azure" Version="4.0.8" />
     <PackageReference Include="Microsoft.Bot.Builder.TemplateManager" Version="4.0.8" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="4.7.0" />
