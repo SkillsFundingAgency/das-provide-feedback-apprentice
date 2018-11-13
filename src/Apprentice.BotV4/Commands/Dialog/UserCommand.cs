@@ -17,7 +17,7 @@
 
         public bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
         {
-            return dc.Context.Activity.Text.ToLowerInvariant().StartsWith(this.Trigger);
+            return dc.Context.Activity.Text.ToLowerInvariant().Equals(this.Trigger);
         }
     }
 }
