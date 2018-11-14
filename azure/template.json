@@ -347,10 +347,10 @@
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
                             },
-                          {
-                            "name": "Bot:AdminCommands",
-                            "value": "[string(parameters('botAdminCommands'))]"
-                          },
+                            {
+                                "name": "Bot:AdminCommands",
+                                "value": "[string(parameters('botAdminCommands'))]"
+                            },
                             {
                                 "name": "Notify:OutgoingMessageQueueName",
                                 "value": "[variables('queues').OutgoingMessageQueueName]"
