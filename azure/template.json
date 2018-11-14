@@ -112,9 +112,13 @@
         "certificateKeyVaultName": {
             "type": "string"
         },
-        "certificateKeyVaultResourceGroupName": {
-            "type": "string"
-        }
+      "certificateKeyVaultResourceGroupName": {
+        "type": "string"
+      },
+      "botAdminCommands": {
+        "type": "array",
+        "defaultValue": [ "admin", "expire", "reset", "start", "status" ]
+      }
     },
     "variables": {
         "azureCosmosEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]",
@@ -127,9 +131,6 @@
             "SessionStateTable": "feedback-bot-sessions",
             "SessionLogTable": "Sessions",
             "SessionLogPartitionKey": "/mobile_number"
-        },
-        "bot": {
-            "AdminCommands": [ "admin", "expire", "reset", "start", "status" ]
         },
         "queues": {
             "OutgoingMessageQueueName": "sms-outgoing-messages",
@@ -346,10 +347,10 @@
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
                             },
-                            {
-                                "name": "Bot:AdminCommands",
-                                "value": "[variables('bot').AdminCommands]"
-                            },
+                          {
+                            "name": "Bot:AdminCommands",
+                            "value": "[parameters('botAdminCommands')]"
+                          },
                             {
                                 "name": "Notify:OutgoingMessageQueueName",
                                 "value": "[variables('queues').OutgoingMessageQueueName]"
