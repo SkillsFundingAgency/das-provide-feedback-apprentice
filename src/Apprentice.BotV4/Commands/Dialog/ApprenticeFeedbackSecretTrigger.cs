@@ -11,11 +11,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
 
     using Microsoft.Bot.Builder.Dialogs;
 
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+
+
     public sealed class ApprenticeFeedbackSecretTrigger : AdminCommand, IBotDialogCommand
     {
         private readonly FeedbackBotStateRepository state;
 
-        public ApprenticeFeedbackSecretTrigger(FeedbackBotStateRepository state) : base("I like avocado")
+        public ApprenticeFeedbackSecretTrigger(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+            : base("I like avocado", botConfiguration)
         {
             this.state = state;
         }

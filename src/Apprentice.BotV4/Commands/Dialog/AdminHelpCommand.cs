@@ -16,7 +16,7 @@
         private readonly BotConfiguration configuration;
 
         public AdminHelpCommand(BotConfiguration configuration)
-            : base("admin")
+            : base("admin", configuration)
         {
             this.configuration = configuration;
         }

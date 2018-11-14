@@ -16,14 +16,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
 
     using Newtonsoft.Json;
 
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+
     public sealed class SendToMobileTrigger : AdminCommand, IBotDialogCommand
     {
         private readonly ISmsQueueProvider queue;
 
         private readonly Notify notifyConfig;
 
-        public SendToMobileTrigger(ISmsQueueProvider queue, IOptions<Notify> notifyConfig)
-            : base("^invite (44)(7)\\d{9}$")
+        public SendToMobileTrigger(ISmsQueueProvider queue, IOptions<Notify> notifyConfig, BotConfiguration botConfiguration)
+            : base("^invite (44)(7)\\d{9}$", botConfiguration)
         {
             this.queue = queue;
             this.notifyConfig = notifyConfig.Value;

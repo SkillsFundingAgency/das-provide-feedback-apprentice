@@ -12,12 +12,14 @@
 
     using Newtonsoft.Json;
 
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+
     public sealed class StatusCommand : AdminCommand, IBotDialogCommand
     {
         private readonly FeedbackBotStateRepository state;
 
-        public StatusCommand(FeedbackBotStateRepository state)
-            : base("status")
+        public StatusCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+            : base("status", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }
