@@ -128,6 +128,9 @@
             "SessionLogTable": "Sessions",
             "SessionLogPartitionKey": "/mobile_number"
         },
+        "bot": {
+            "AdminCommands": [ "admin", "expire", "reset", "start", "status" ]
+        },
         "queues": {
             "OutgoingMessageQueueName": "sms-outgoing-messages",
             "IncomingMessageQueueName": "sms-incoming-messages"
@@ -342,6 +345,10 @@
                             {
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
+                            },
+                            {
+                                "name": "Bot:AdminCommands",
+                                "value": "[variables('bot').AdminCommands]"
                             },
                             {
                                 "name": "Notify:OutgoingMessageQueueName",
