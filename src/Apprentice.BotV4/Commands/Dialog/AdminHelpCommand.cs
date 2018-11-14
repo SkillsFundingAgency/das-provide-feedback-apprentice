@@ -23,7 +23,7 @@
 
         public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
         {
-            var menu = this.configuration.AdminCommands;
+            var menu = this.configuration.AdminCommandsSplit;
             if (menu.Any())
             {
                 await dc.Context.SendActivityAsync(MessageFactory.SuggestedActions(menu, "Administrative tasks available:"), cancellationToken);

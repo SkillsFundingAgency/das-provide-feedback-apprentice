@@ -116,8 +116,8 @@
             "type": "string"
         },
         "botAdminCommands": {
-            "type": "array",
-            "defaultValue": [ "admin", "expire", "reset", "start", "status" ]
+            "type": "string",
+            "defaultValue": "admin, expire, reset, start, status"
         }
     },
     "variables": {
