@@ -348,7 +348,7 @@
                             },
                             {
                                 "name": "Bot:AdminCommands",
-                                "value": "[variables('bot').AdminCommands]"
+                                "value": "[parameters('botAdminCommands')]"
                             },
                             {
                                 "name": "Notify:OutgoingMessageQueueName",
