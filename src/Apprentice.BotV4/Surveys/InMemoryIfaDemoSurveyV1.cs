@@ -21,7 +21,7 @@
 
         private const string QuestionPleaseTypeYesOrNo = "Please type 'Yes' or 'No'";
 
-        private const string QuestionFreeTextInstructions = "Tell us or type to ‘skip’ to go to the next question.";
+        private const string QuestionFreeTextInstructions = "Tell us or type ‘skip’ to go to the next question.";
 
         private const string EndThanks = "Thanks very much for your answers. That's it for now.";
 
