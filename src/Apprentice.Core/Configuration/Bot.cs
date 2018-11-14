@@ -33,7 +33,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
             /// <summary>
             /// Gets or sets the bot typing speed in characters per minute.
             /// </summary>
-            public int CharactersPerMinute { get; set; } = 1500;
+            public int CharactersPerMinute { get; set; } = 15000;
 
             /// <summary>
             /// Gets or sets the bot response thinking time in milliseconds.

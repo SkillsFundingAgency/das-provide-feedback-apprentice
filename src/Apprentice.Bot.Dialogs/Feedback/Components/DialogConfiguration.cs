@@ -2,11 +2,11 @@
 {
     public class DialogConfiguration
     {
-        public int CharactersPerMinute { get; set; } = 1500;
+        public int CharactersPerMinute { get; set; } = 15000;
 
         public bool CollateResponses { get; set; } = true;
 
-        public bool RealisticTypingDelay { get; set; } = false;
+        public bool RealisticTypingDelay { get; set; } = true;
 
         public int ThinkingTimeDelayMs { get; set; } = 0;
     }
