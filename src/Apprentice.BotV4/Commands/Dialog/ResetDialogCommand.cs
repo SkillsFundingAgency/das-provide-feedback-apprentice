@@ -9,12 +9,14 @@
 
     using Microsoft.Bot.Builder.Dialogs;
 
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+
     public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
     {
         private readonly FeedbackBotStateRepository state;
 
-        public ResetDialogCommand(FeedbackBotStateRepository state)
-            : base("reset")
+        public ResetDialogCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+            : base("reset", botConfiguration)
         {
             this.state = state;
         }

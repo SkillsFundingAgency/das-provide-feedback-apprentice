@@ -10,13 +10,15 @@
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     /// <summary>
     /// The bot configuration class.
     /// </summary>
     public class Bot
     {
-        public List<string> AdminCommands { get; set; }
+        public string AdminCommands { get; set; }
+        public List<string> AdminCommandsSplit => AdminCommands.Replace(" ", string.Empty).Split(',').ToList();
 
         public int DefaultConversationExpiryDays { get; set; } = 7;
 

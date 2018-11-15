@@ -11,12 +11,14 @@
 
     using Microsoft.Bot.Builder.Dialogs;
 
+    using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+
     public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
         private readonly FeedbackBotStateRepository state;
 
-        public StartDialogCommand(FeedbackBotStateRepository state)
-            : base("start")
+        public StartDialogCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+            : base("start", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }

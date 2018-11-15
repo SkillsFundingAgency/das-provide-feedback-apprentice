@@ -114,6 +114,10 @@
         },
         "certificateKeyVaultResourceGroupName": {
             "type": "string"
+        },
+        "botAdminCommands": {
+            "type": "string",
+            "defaultValue": "admin, expire, reset, start, status"
         }
     },
     "variables": {
@@ -342,6 +346,10 @@
                             {
                                 "name": "Data:SessionStateTable",
                                 "value": "[variables('data').SessionStateTable]"
+                            },
+                            {
+                                "name": "Bot:AdminCommands",
+                                "value": "[string(parameters('botAdminCommands'))]"
                             },
                             {
                                 "name": "Notify:OutgoingMessageQueueName",
