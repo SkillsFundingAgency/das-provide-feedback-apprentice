@@ -19,6 +19,8 @@
 
         public string IlrNumber { get; set; }
 
-        public string StandardOrProgram { get; set; }
+        public int StandardCode { get; set; }
+
+        public DateTime ApprenticeshipStartDate { get; set; }
     }
 }

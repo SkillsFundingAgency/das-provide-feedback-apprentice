@@ -132,7 +132,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             from.role = null;
 
             dynamic channelData = new ExpandoObject();
-            channelData.UniqueLearnerNumber = conversation.UniqueLearnerNumber ?? incomingSms?.Uln;
+            channelData.UniqueLearnerNumber = conversation.UniqueLearnerNumber;
+            channelData.StandardCode = conversation.StandardCode;
+            channelData.ApprenticeshipStartDate = conversation.ApprenticeshipStartDate;
             channelData.NotifyMessage = new NotifyMessage()
                                              {
                                                  Id = incomingSms?.Value?.id,
@@ -190,6 +192,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 conversation.UserId = incomingSms?.Value.source_number; // TODO: [security] hash this please!
                 conversation.ConversationId = jsonResponse.conversationId;
                 conversation.UniqueLearnerNumber = incomingSms?.Value.Uln;
+                conversation.StandardCode = incomingSms?.Value.StandardCode;
+                conversation.ApprenticeshipStartDate = incomingSms?.Value.ApprenticeshipStartDate;
 
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
                 if (newSession.IsNull())
