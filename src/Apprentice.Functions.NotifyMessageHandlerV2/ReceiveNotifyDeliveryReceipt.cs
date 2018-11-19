@@ -17,28 +17,30 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("ReceiveNotifyDeliveryReceipt")]
         [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
         public static ActionResult Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             ILogger log,
             ExecutionContext context)
         {
             var config = new SettingsProvider(context);
 
-            log.LogInformation("ReceiveNotifyDeliveryReceipt trigger function processed a request.");
-
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
 
-                return data != null
-                           ? (ActionResult)new OkObjectResult(data)
+                dynamic deliveryReceipt = data?.Value;
+
+                log.LogInformation($"Message to {deliveryReceipt?.to} has an updated status: {deliveryReceipt?.status}");
+
+                return deliveryReceipt != null
+                           ? (ActionResult)new OkObjectResult(data.Value)
                            : new BadRequestObjectResult(
                                "Expecting a text message receipt payload. Ensure that the payload has an ID, reference, recipient, status and notification type");
             }
             catch (Exception e)
             {
-                log.LogInformation($"Exception: {e.Message}");
+                log.LogError($"ReceiveNotifyDeliveryReceipt ERROR", e, e.Message);
                 return new ExceptionResult(e, true);
             }
         }

@@ -28,12 +28,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
 
-                log.LogInformation($"result: {data}");
+                dynamic receivedSms = data?.Value;
 
-                return data != null
-                           ? (ActionResult)new OkObjectResult(data)
-                           : new BadRequestObjectResult(
-                               "Expecting a text message receipt payload. Ensure that the payload has an ID, reference, recipient, status and notification type");
+                log.LogInformation($"Message received from {receivedSms?.source_number}");
+
+                return receivedSms != null
+                    ? (ActionResult)new OkObjectResult(receivedSms)
+                    : new BadRequestObjectResult(
+                        "Expecting a text message payload. Please see the Notify callback documentation for details: https://www.notifications.service.gov.uk/callbacks");
             }
             catch (Exception e)
             {
