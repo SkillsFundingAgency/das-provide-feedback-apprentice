@@ -3,7 +3,6 @@
     public class Standard : Apprenticeship
     {
         public Standard()
-            : base(nameof(Standard))
         {
         }
 
