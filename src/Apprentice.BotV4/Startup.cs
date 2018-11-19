@@ -144,7 +144,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     {
                         var botLogger = this.loggerFactory.CreateLogger<FeedbackBot>();
                         botLogger.LogError($"Exception caught: {context.Activity.Text} {Environment.NewLine} {exception}");
-                        await context.SendActivityAsync($"Exception {exception}");
                     };
 
                     var conversationState = new ConversationState(dataStore);
