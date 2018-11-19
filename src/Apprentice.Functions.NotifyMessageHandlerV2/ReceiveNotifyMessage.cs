@@ -2,6 +2,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
     using System.IO;
+    using System.Threading.Tasks;
     using System.Web.Http;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     {
         // TODO: [security] hash the incoming phone number
         [FunctionName("ReceiveNotifyMessage")]
-        [return: ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection")]
-        public static ActionResult Run(
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
+            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            ICollector<string> queue,
             ILogger log,
             ExecutionContext context)
         {
@@ -26,16 +28,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
-
-                dynamic receivedSms = data?.Value;
+                dynamic receivedSms = JsonConvert.DeserializeObject(requestBody);
 
                 log.LogInformation($"Message received from {receivedSms?.source_number}");
 
-                return receivedSms != null
-                    ? (ActionResult)new OkObjectResult(receivedSms)
-                    : new BadRequestObjectResult(
+                if (receivedSms == null)
+                {
+                    return new BadRequestObjectResult(
                         "Expecting a text message payload. Please see the Notify callback documentation for details: https://www.notifications.service.gov.uk/callbacks");
+                }
+
+                queue.Add(JsonConvert.SerializeObject(receivedSms));
+                return new OkObjectResult(receivedSms);
             }
             catch (Exception e)
             {

@@ -73,7 +73,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogError($"DeliverMessageToBot ERROR", e, e.Message);
                 DirectLineClient.CancelPendingRequests();
                 throw new BotConnectorException("Something went wrong when relaying the message to the bot framework", e);
-                // return new ExceptionResult(e, true);
             }
         }
 

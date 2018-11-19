@@ -2,6 +2,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
     using System.IO;
+    using System.Threading.Tasks;
     using System.Web.Http;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.AspNetCore.Http;
@@ -15,10 +16,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     {
         // TODO: [security] hash the incoming phone number
         [FunctionName("ReceiveNotifyDeliveryReceipt")]
-        [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
-        public static ActionResult Run(
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
+            [ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            ICollector<string> queue,
             ILogger log,
             ExecutionContext context)
         {
@@ -27,16 +29,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
-
-                dynamic deliveryReceipt = data?.Value;
+                dynamic deliveryReceipt = JsonConvert.DeserializeObject(requestBody);
 
                 log.LogInformation($"Message to {deliveryReceipt?.to} has an updated status: {deliveryReceipt?.status}");
 
-                return deliveryReceipt != null
-                           ? (ActionResult)new OkObjectResult(data.Value)
-                           : new BadRequestObjectResult(
-                               "Expecting a text message receipt payload. Ensure that the payload has an ID, reference, recipient, status and notification type");
+                if (deliveryReceipt == null)
+                {
+                    return new BadRequestObjectResult(
+                        "Expecting a text message receipt payload. Ensure that the payload has an ID, reference, recipient, status and notification type");
+                }
+
+                queue.Add(JsonConvert.SerializeObject(deliveryReceipt));
+                return new OkObjectResult(deliveryReceipt);
             }
             catch (Exception e)
             {
