@@ -15,7 +15,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     {
         // TODO: [security] hash the incoming phone number
         [FunctionName("ReceiveNotifyDeliveryReceipt")]
-        // [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
+        [return: ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection")]
         public static ActionResult Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]
             HttpRequest req,
@@ -30,8 +30,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
-
-                log.LogInformation($"result: {data}");
 
                 return data != null
                            ? (ActionResult)new OkObjectResult(data)
