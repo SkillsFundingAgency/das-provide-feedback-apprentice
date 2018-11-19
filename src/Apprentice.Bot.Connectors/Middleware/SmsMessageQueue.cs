@@ -44,7 +44,7 @@
 
             var message = JsonConvert.SerializeObject(sms);
 
-            await this.smsQueueProvider.SendAsync(message, this.notifyConfig.OutgoingMessageQueueName);
+            await this.smsQueueProvider.SendAsync(activity.Conversation.Id, message, this.notifyConfig.OutgoingMessageQueueName);
         }
 
         public async Task OnTurnAsync(

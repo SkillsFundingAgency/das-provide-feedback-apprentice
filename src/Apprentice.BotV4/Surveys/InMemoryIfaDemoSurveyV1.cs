@@ -44,7 +44,17 @@
         public string Id { get; set; }
 
         public ICollection<ISurveyStepDefinition> StepDefinitions { get; set; }
-        
+        public StartStepDefinition CreateStartStep()
+        {
+            var id = "feedback-start";
+            var responses = new List<IBotResponse>
+            {
+                new StaticBotResponse() { Id = nameof(Intro), Prompt = Intro, },
+                new StaticBotResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, }
+            };
+            return new StartStepDefinition() { Id = id, Responses = responses };
+        }
+
         public QuestionStepDefinition CreateQuestion1()
         {
             var id = "feedback-q1";
@@ -83,17 +93,6 @@
             var score = 100;
 
             return new BinaryQuestion { Id = id, Responses = responses, Prompt = prompt, Score = score };
-        }
-
-        public StartStepDefinition CreateStartStep()
-        {
-            var id = "feedback-start";
-            var responses = new List<IBotResponse>
-                {
-                    new StaticBotResponse() { Id = nameof(Intro), Prompt = Intro, },
-                    new StaticBotResponse() { Id = nameof(IntroOptOut), Prompt = IntroOptOut, }
-                };
-            return new StartStepDefinition() { Id = id, Responses = responses };
         }
 
         public EndStepDefinition CreateEndStep()

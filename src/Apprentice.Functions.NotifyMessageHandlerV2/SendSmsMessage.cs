@@ -27,6 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         private static NotificationClient NotifyClient => LazyNotifyClient.Value;
 
         [FunctionName("SendSmsMessage")]
+        [Singleton("SendSmsMessage", SingletonScope.Host)]
         public static async Task Run(
         [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
