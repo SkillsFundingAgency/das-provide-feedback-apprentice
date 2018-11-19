@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -23,8 +22,6 @@
 
         private readonly BotSettings botSettings;
 
-        private readonly DialogConfiguration configuration;
-
         private readonly FeatureToggles features;
 
         private readonly FeedbackBotStateRepository state;
@@ -42,7 +39,6 @@
             this.botSettings = botSettings;
             this.features = features;
             this.state = state;
-            this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
 
         public int PointsAvailable { get; private set; } = 1;
@@ -102,12 +98,12 @@
             WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            if (this.configuration.RealisticTypingDelay)
+            if (this.features.RealisticTypingDelay)
             {
                 await stepContext.Context.SendTypingActivityAsync(
                     this.PromptText,
-                    this.configuration.CharactersPerMinute,
-                    this.configuration.ThinkingTimeDelayMs);
+                    this.botSettings.Typing.CharactersPerMinute,
+                    this.botSettings.Typing.ThinkingTimeDelay);
             }
 
             var promptOptions = new PromptOptions { Prompt = MessageFactory.Text(this.PromptText) };
