@@ -132,10 +132,11 @@
             "SessionLogTable": "Sessions",
             "SessionLogPartitionKey": "/mobile_number"
         },
-        "queues": {
-            "OutgoingMessageQueueName": "sms-outgoing-messages",
-            "IncomingMessageQueueName": "sms-incoming-messages"
-        }
+      "queues": {
+        "OutgoingMessageQueueName": "sms-outgoing-messages",
+        "IncomingMessageQueueName": "sms-incoming-messages",
+        "DeliveryReceiptQueueName": "sms-delivery-log"
+      }
     },
     "resources": [
         {
@@ -565,7 +566,8 @@
                     "serviceBusQueues": {
                         "value": [
                             "[variables('queues').OutgoingMessageQueueName]",
-                            "[variables('queues').IncomingMessageQueueName]"
+                            "[variables('queues').IncomingMessageQueueName]",
+                            "[variables('queues').DeliveryReceiptQueueName]"
                         ]
                     }
                 }
