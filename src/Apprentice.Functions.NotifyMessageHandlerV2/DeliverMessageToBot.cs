@@ -52,12 +52,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("DeliverMessageToBot")]
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
-        Message queueMessage,
+        string queueMessage,
         ILogger log,
         ExecutionContext context)
         {
             currentContext = context;
-            IncomingSms incomingSms = queueMessage.GetBody<IncomingSms>();
+            IncomingSms incomingSms = JsonConvert.DeserializeObject<IncomingSms>(queueMessage);
 
             try
             {

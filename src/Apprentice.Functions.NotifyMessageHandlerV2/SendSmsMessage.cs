@@ -33,12 +33,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
         [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
-        Message queueMessage,
+        string queueMessage,
         ILogger log,
         ExecutionContext context)
         {
             currentContext = context;
-            OutgoingSms outgoingSms = queueMessage.GetBody<OutgoingSms>();
+            OutgoingSms outgoingSms = JsonConvert.DeserializeObject<OutgoingSms>(queueMessage);
 
             try
             {
