@@ -4,7 +4,7 @@
 
     using Newtonsoft.Json;
 
-    public enum SmsTypes
+    public enum SmsType
     {
         NotifySms,
         SurveyInvitation
@@ -29,7 +29,7 @@
         public string SourceNumber { get; set; }
 
         [JsonProperty("type")]
-        public SmsTypes Type { get; set; }
+        public SmsType Type { get; set; }
 
         [JsonProperty("unique_learner_number")]
         public string UniqueLearnerNumber { get; set; }

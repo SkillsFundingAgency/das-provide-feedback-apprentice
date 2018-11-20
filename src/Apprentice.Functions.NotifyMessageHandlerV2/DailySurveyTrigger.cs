@@ -40,7 +40,7 @@ public static class DailySurveyTrigger
                 var now = DateTime.Now;
                 var trigger = new IncomingSms()
                 {
-                    Type = SmsTypes.SurveyInvitation,
+                    Type = SmsType.SurveyInvitation,
                     Id = Guid.NewGuid().ToString(),
                     SourceNumber = apprenticeDetail.MobileNumber.ToString(),
                     DestinationNumber = null,
