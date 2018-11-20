@@ -54,7 +54,8 @@ public static class DailySurveyTrigger
                 outputSbQueue.Add(JsonConvert.SerializeObject(trigger));
 
                 await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.UniqueLearnerNumber, apprenticeDetail.SurveyCode);
-            }
+                await Task.Delay(1000);
+            }            
         }
         catch(Exception ex)
         {
