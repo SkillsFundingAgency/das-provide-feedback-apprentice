@@ -4,6 +4,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.IO;
     using System.Threading.Tasks;
     using System.Web.Http;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.ServiceBus;
@@ -20,26 +23,25 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
-            ICollector<string> queue,
+            IAsyncCollector<IncomingSms> queue,
             ILogger log,
             ExecutionContext context)
         {
-            log.LogInformation("ReceiveNotifyMessage trigger function processed a request.");
-
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
-                dynamic receivedSms = JsonConvert.DeserializeObject(requestBody);
+                IncomingSms receivedSms = JsonConvert.DeserializeObject<IncomingSms>(requestBody);
+                receivedSms.Type = SmsTypes.NotifySms;
 
-                log.LogInformation($"Message received from {receivedSms?.source_number}");
+                log.LogInformation($"Message received from {receivedSms.SourceNumber}");
 
-                if (receivedSms == null)
+                if (receivedSms.Message == null || receivedSms.DestinationNumber == null || receivedSms.SourceNumber == null)
                 {
                     return new BadRequestObjectResult(
                         "Expecting a text message payload. Please see the Notify callback documentation for details: https://www.notifications.service.gov.uk/callbacks");
                 }
 
-                queue.Add(JsonConvert.SerializeObject(receivedSms));
+                await queue.AddAsync(receivedSms);
                 return new OkObjectResult(receivedSms);
             }
             catch (MessageLockLostException e)

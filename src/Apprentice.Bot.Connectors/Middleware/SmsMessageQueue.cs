@@ -2,7 +2,6 @@
 {
     using System;
     using System.Globalization;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -11,7 +10,6 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
-    using Microsoft.Azure.ServiceBus;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;
@@ -33,9 +31,9 @@
         {
             OutgoingSms sms = new OutgoingSms
                 {
-                    From = context.Activity.From,
-                    Recipient = context.Activity.Recipient,
-                    Conversation = context.Activity.Conversation,
+                    From = new Participant { UserId = context.Activity.From.Id },
+                    Recipient = new Participant { UserId = context.Activity.Recipient.Id },
+                    Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id },
                     ChannelData = context.Activity.ChannelData,
                     ChannelId = context.Activity.ChannelId,
                     Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),

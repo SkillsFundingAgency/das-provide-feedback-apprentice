@@ -5,10 +5,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.Linq;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.InteropExtensions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -31,31 +33,31 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
         [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
-        string queueMessage,
+        Message queueMessage,
         ILogger log,
         ExecutionContext context)
         {
             currentContext = context;
-            dynamic outgoingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
+            OutgoingSms outgoingSms = queueMessage.GetBody<OutgoingSms>();
 
             try
             {
-                log.LogInformation($"Response received from bot, sending to {outgoingSms?.recipient?.id}...");
+                log.LogInformation($"Response received from bot, sending to {outgoingSms.From.UserId}...");
 
-                string mobileNumber = outgoingSms?.from?.id; // TODO: [security] read mobile number from userId hash
+                string mobileNumber = outgoingSms.From.UserId; // TODO: [security] read mobile number from userId hash
                 string templateId = Configuration.Get("NotifyTemplateId");
-                var personalization = new Dictionary<string, dynamic> { { "message", outgoingSms?.messageReceived } };
-                string reference = outgoingSms?.conversation?.id;
+                var personalization = new Dictionary<string, dynamic> { { "message", outgoingSms.Message } };
+                string reference = outgoingSms.Conversation.ConversationId;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                SmsNotificationResponse sendSmsTask = SendSms(
-                                                          mobileNumber,
-                                                          templateId,
-                                                          personalization,
-                                                          reference,
-                                                          smsSenderId);
+                SmsNotificationResponse sendSmsResponse = await SendSms(
+                  mobileNumber,
+                  templateId,
+                  personalization,
+                  reference,
+                  smsSenderId);
 
-                log.LogInformation($"Success!");
+                log.LogInformation($"Sent! Reference: {sendSmsResponse.reference}");
             }
             catch (MessageLockLostException e)
             {
@@ -99,14 +101,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             return lastNotification != null && lastNotification.status != "delivered";
         }
 
-        private static SmsNotificationResponse SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
+        private static async Task<SmsNotificationResponse> SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
         {
-            return NotifyClient.SendSms(
-                mobileNumber,
-                templateId,
-                personalization,
-                reference,
-                smsSenderId);
+            return await Task.Run(
+                () => NotifyClient.SendSms(
+                    mobileNumber,
+                    templateId,
+                    personalization,
+                    reference,
+                    smsSenderId));
         }
 
         private static SettingsProvider Configure()

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
+using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
@@ -36,8 +38,9 @@ public static class DailySurveyTrigger
             foreach (var apprenticeDetail in apprenticeDetails)
             {
                 var now = DateTime.Now;
-                var trigger = new SmsConversationTrigger()
+                var trigger = new IncomingSms()
                 {
+                    Type = SmsTypes.SurveyInvitation,
                     Id = Guid.NewGuid().ToString(),
                     SourceNumber = apprenticeDetail.MobileNumber.ToString(),
                     DestinationNumber = null,

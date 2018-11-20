@@ -10,12 +10,12 @@
 
     public abstract class AdminCommand
     {
-        protected readonly BotConfiguration botConfiguration;
+        protected readonly BotConfiguration BotConfiguration;
 
         protected AdminCommand(string triggerWord, BotConfiguration botConfiguration)
         {
             this.Trigger = triggerWord ?? throw new ArgumentNullException(nameof(triggerWord));
-            this.botConfiguration = botConfiguration;
+            this.BotConfiguration = botConfiguration;
         }
 
         public string Trigger { get; }
@@ -25,7 +25,7 @@
         public virtual bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
         {
             // TODO: check auth
-            return this.botConfiguration.AdminCommandsSplit.Contains(this.Trigger)
+            return this.BotConfiguration.AdminCommandsSplit.Contains(this.Trigger)
                 && dc.Context.Activity.Text.ToLowerInvariant().StartsWith(this.Trigger, StringComparison.InvariantCultureIgnoreCase);
         }
     }

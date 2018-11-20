@@ -4,6 +4,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.IO;
     using System.Threading.Tasks;
     using System.Web.Http;
+
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -21,26 +23,24 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
             [ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
-            ICollector<string> queue,
+            IAsyncCollector<SmsDeliveryReceipt> queue,
             ILogger log,
             ExecutionContext context)
         {
-            var config = new SettingsProvider(context);
-
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
-                dynamic deliveryReceipt = JsonConvert.DeserializeObject(requestBody);
+                SmsDeliveryReceipt deliveryReceipt = JsonConvert.DeserializeObject<SmsDeliveryReceipt>(requestBody);
 
-                log.LogInformation($"Message to {deliveryReceipt?.to} has an updated status: {deliveryReceipt?.status}");
+                log.LogInformation($"{deliveryReceipt.Status}: (to: {deliveryReceipt.To} uuid: {deliveryReceipt.Reference}");
 
-                if (deliveryReceipt == null)
+                if (deliveryReceipt.Id == null)
                 {
                     return new BadRequestObjectResult(
                         "Expecting a text message receipt payload. Ensure that the payload has an ID, reference, recipient, status and notification type");
                 }
 
-                queue.Add(JsonConvert.SerializeObject(deliveryReceipt));
+                await queue.AddAsync(deliveryReceipt);
                 return new OkObjectResult(deliveryReceipt);
             }
             catch (MessageLockLostException e)

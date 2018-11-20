@@ -5,6 +5,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
+    using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
@@ -142,8 +143,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     // Catches any errors that occur during a conversation turn and logs them.
                     options.OnTurnError = async (context, exception) =>
                     {
-                        var botLogger = this.loggerFactory.CreateLogger<FeedbackBot>();
-                        botLogger.LogError($"Exception caught: {context.Activity.Text} {Environment.NewLine} {exception}");
+                        await Task.Run(
+                            () =>
+                            {
+                                var botLogger = this.loggerFactory.CreateLogger<FeedbackBot>();
+                                botLogger.LogError($"Exception caught: {context.Activity.Text} {Environment.NewLine} {exception}");
+                            });
                     };
 
                     var conversationState = new ConversationState(dataStore);

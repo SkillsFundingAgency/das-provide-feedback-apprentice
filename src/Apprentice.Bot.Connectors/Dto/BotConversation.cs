@@ -7,7 +7,7 @@
     [Serializable]
     public class BotConversation
     {
-        [JsonProperty("conversationId")]
+        [JsonProperty("id")]
         public string ConversationId { get; set; }
 
         [JsonProperty("userId")]

@@ -2,19 +2,26 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
     using System.Dynamic;
+    using System.Globalization;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
 
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.InteropExtensions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
+
+    using BotConversation = ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto.BotConversation;
 
     /// <summary>
     /// A function that delivers a message to the bot, using the DirectLine API and a Azure Storage Queue Trigger
@@ -25,7 +32,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static readonly Lazy<HttpClient> LazyDirectLineClient = new Lazy<HttpClient>(InitializeHttpClient);
 
-        //private static readonly Lazy<CosmosDbRepository> LazyDocClient = new Lazy<CosmosDbRepository>(InitializeDocumentClient);
+        private static readonly Lazy<CosmosConversationRepository> LazyDocClient = new Lazy<CosmosConversationRepository>(InitializeDocumentClient);
 
         private static ExecutionContext currentContext;
 
@@ -33,7 +40,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static HttpClient DirectLineClient => LazyDirectLineClient.Value;
 
-        private static CosmosDbRepository DocumentClient => InitializeDocumentClient();
+        private static CosmosConversationRepository DocumentClient => LazyDocClient.Value;
 
         /// <summary>
         /// Queue based trigger. Delivers incoming SMS messages from a queue to our bot using the DirectLine connector
@@ -45,18 +52,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         [FunctionName("DeliverMessageToBot")]
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
-        string queueMessage,
+        Message queueMessage,
         ILogger log,
         ExecutionContext context)
         {
             currentContext = context;
-            dynamic incomingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
+            IncomingSms incomingSms = queueMessage.GetBody<IncomingSms>();
 
             try
             {
-                log.LogInformation($"Response received from {incomingSms?.source_number}, sending to bot...");
+                log.LogInformation($"Response received from {incomingSms.SourceNumber}, sending to bot...");
 
-                string userId = incomingSms?.source_number; // TODO: [security] hash me please!
+                string userId = incomingSms.SourceNumber; // TODO: [security] hash me please!
                 BotConversation conversation = await GetConversationByUserId(userId);
 
                 if (conversation == null)
@@ -98,14 +105,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             return new SettingsProvider(currentContext);
         }
 
-        private static CosmosDbRepository InitializeDocumentClient()
+        private static CosmosConversationRepository InitializeDocumentClient()
         {
             string endpoint = Configuration.Get("AzureCosmosEndpoint");
             string authKey = Configuration.Get("AzureCosmosKey");
             string database = Configuration.Get("DatabaseName");
             string collection = Configuration.Get("ConversationLogTable");
 
-            CosmosDbRepository repo = CosmosDbRepository.Instance
+            CosmosConversationRepository repo = CosmosConversationRepository.Instance
                 .ConnectTo(endpoint)
                 .WithAuthKeyOrResourceToken(authKey)
                 .UsingDatabase(database)
@@ -124,13 +131,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             return client;
         }
 
-        private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, ILogger log)
+        private static async Task PostToConversation(IncomingSms incomingSms, BotConversation conversation, ILogger log)
         {
             log.LogInformation($"Posting message to conversationId {conversation.ConversationId}");
 
             dynamic from = new ExpandoObject();
-            from.id = incomingSms?.source_number;
-            from.name = incomingSms?.source_number;
+            from.id = incomingSms.SourceNumber;
+            from.name = incomingSms.SourceNumber;
             from.role = null;
 
             dynamic channelData = new ExpandoObject();
@@ -139,12 +146,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             channelData.ApprenticeshipStartDate = conversation.ApprenticeshipStartDate;
             channelData.NotifyMessage = new NotifyMessage()
                                              {
-                                                 Id = incomingSms?.id,
-                                                 DateReceived = incomingSms?.date_received,
+                                                 Id = incomingSms.Id,
+                                                 DateReceived = incomingSms.DateReceived.ToString(CultureInfo.InvariantCulture),
                                                  DestinationNumber =
-                                                     incomingSms?.destination_number,
-                                                 SourceNumber = incomingSms?.source_number,
-                                                 Message = incomingSms?.message,
+                                                     incomingSms.DestinationNumber,
+                                                 SourceNumber = incomingSms.SourceNumber,
+                                                 Message = incomingSms.Message,
                                                  Type = "callback",
                                              };
 
@@ -152,7 +159,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                                      {
                                          Type = "message",
                                          From = from,
-                                         Text = incomingSms?.message,
+                                         Text = incomingSms.Message,
                                          ChannelData = channelData
                                      };
 
@@ -175,9 +182,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
         }
 
-        private static async Task StartNewConversation(dynamic incomingSms, ILogger log)
+        private static async Task StartNewConversation(IncomingSms incomingSms, ILogger log)
         {
-            log.LogInformation($"Starting new conversation with {incomingSms?.source_number}");
+            log.LogInformation($"Starting new conversation with {incomingSms.SourceNumber}");
 
             var content = new StringContent(string.Empty);
 
@@ -191,11 +198,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogInformation($"Started new conversation with id {jsonResponse.conversationId}");
 
                 // TODO: write the conversation ID to a session log with the mobile phone number
-                conversation.UserId = incomingSms?.source_number; // TODO: [security] hash this please!
+                conversation.UserId = incomingSms.SourceNumber; // TODO: [security] hash this please!
                 conversation.ConversationId = jsonResponse.conversationId;
-                conversation.UniqueLearnerNumber = incomingSms?.unique_learner_number;
-                conversation.StandardCode = incomingSms?.standard_code;
-                conversation.ApprenticeshipStartDate = incomingSms?.apprenticeship_start_date;
+                conversation.UniqueLearnerNumber = incomingSms.UniqueLearnerNumber;
+                conversation.StandardCode = incomingSms.StandardCode;
+                conversation.ApprenticeshipStartDate = incomingSms.ApprenticeshipStartDate;
 
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
                 if (newSession.IsNull())
@@ -204,7 +211,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                     throw new BotConnectorException(message);
                 }
 
-                if (incomingSms != null)
+                if (incomingSms.Message != null)
                 {
                     await PostToConversation(incomingSms, conversation, log);
                 }

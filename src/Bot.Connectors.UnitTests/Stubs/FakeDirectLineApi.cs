@@ -69,8 +69,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs
             var sms = new IncomingSms()
                 {
                     DateReceived =
-                        DateTime.UtcNow.ToString(
-                            CultureInfo.InvariantCulture),
+                        DateTime.UtcNow,
                     DestinationNumber = "00000000000",
                     SourceNumber = phoneNumber,
                     Message = message

@@ -34,13 +34,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
         /// Gets or sets the conversation specific data. Includes items like the conversation Id.
         /// </summary>
         [JsonProperty("conversation")]
-        public dynamic Conversation { get; set; }
+        public BotConversation Conversation { get; set; }
 
         /// <summary>
         /// Gets or sets the details of the sender.
         /// </summary>
         [JsonProperty("from")]
-        public dynamic From { get; set; }
+        public Participant From { get; set; }
 
         /// <summary>
         /// Gets or sets the message sent by the user
@@ -52,7 +52,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
         /// Gets or sets the recipient details
         /// </summary>
         [JsonProperty("recipient")]
-        public dynamic Recipient { get; set; }
+        public Participant Recipient { get; set; }
 
         /// <summary>
         /// Gets or sets the timestamp of the exchange
