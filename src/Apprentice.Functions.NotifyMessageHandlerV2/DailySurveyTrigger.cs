@@ -48,9 +48,7 @@ public static class DailySurveyTrigger
                     ApprenticeshipStartDate = apprenticeDetail.ApprenticeshipStartDate
                 };
 
-                var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
-
-                outputSbQueue.Add(JsonConvert.SerializeObject(payload));
+                outputSbQueue.Add(JsonConvert.SerializeObject(trigger));
 
                 await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.UniqueLearnerNumber, apprenticeDetail.SurveyCode);
             }
