@@ -191,11 +191,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogInformation($"Started new conversation with id {jsonResponse.conversationId}");
 
                 // TODO: write the conversation ID to a session log with the mobile phone number
-                conversation.UserId = incomingSms?.ource_number; // TODO: [security] hash this please!
+                conversation.UserId = incomingSms?.source_number; // TODO: [security] hash this please!
                 conversation.ConversationId = jsonResponse.conversationId;
-                conversation.UniqueLearnerNumber = incomingSms?.Uln;
-                conversation.StandardCode = incomingSms?.StandardCode;
-                conversation.ApprenticeshipStartDate = incomingSms?.ApprenticeshipStartDate;
+                conversation.UniqueLearnerNumber = incomingSms?.unique_learner_number;
+                conversation.StandardCode = incomingSms?.standard_code;
+                conversation.ApprenticeshipStartDate = incomingSms?.apprenticeship_start_date;
 
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
                 if (newSession.IsNull())
