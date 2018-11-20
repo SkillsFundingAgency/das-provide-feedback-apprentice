@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
@@ -12,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 public static class DailySurveyTrigger
 {
@@ -24,7 +22,7 @@ public static class DailySurveyTrigger
         [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
         ILogger log,
         [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
-        ICollector<string> outputSbQueue,
+        IAsyncCollector<IncomingSms> outputSbQueue,
         ExecutionContext executionContext)
     {
         try
@@ -51,10 +49,10 @@ public static class DailySurveyTrigger
                     ApprenticeshipStartDate = apprenticeDetail.ApprenticeshipStartDate
                 };
 
-                outputSbQueue.Add(JsonConvert.SerializeObject(trigger));
+                await outputSbQueue.AddAsync(trigger);
 
                 await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.UniqueLearnerNumber, apprenticeDetail.SurveyCode);
-                await Task.Delay(1000);
+                await Task.Delay(250);
             }            
         }
         catch(Exception ex)
