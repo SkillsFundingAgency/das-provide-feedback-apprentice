@@ -35,6 +35,7 @@
             "newBatchThreshold": 1
         },
         "serviceBus": {
+            "autoRenewTimeout" : "00:05:00",
             "prefetchCount": 100,
             "messageHandlerOptions": {
                 "maxConcurrentCalls": 1,

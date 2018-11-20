@@ -43,7 +43,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         /// <param name="context">the function <see cref="ExecutionContext"/></param>
         /// <returns> the <see cref="Task"/> </returns>
         [FunctionName("DeliverMessageToBot")]
-        [Singleton("IncomingSmsQueue", Mode = SingletonMode.Listener)]
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
