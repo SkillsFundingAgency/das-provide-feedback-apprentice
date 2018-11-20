@@ -40,7 +40,7 @@
             throw new NotImplementedException();
         }
 
-        public async Task SendAsync(string message, string queueName)
+        public async Task SendAsync(string conversationId, string message, string queueName)
         {
             CloudQueue messageQueue = this.queueClient.GetQueueReference(queueName);
             await messageQueue.CreateIfNotExistsAsync();

@@ -27,8 +27,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
         private readonly BotSettings botSettings;
 
-        private readonly DialogConfiguration configuration;
-
         private readonly FeatureToggles features;
 
         private readonly FeedbackBotStateRepository state;
@@ -44,7 +42,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             this.botSettings = botSettings;
             this.features = features;
             this.state = state;
-            this.configuration = new DialogConfiguration(); // TODO: Inject from IOptions
         }
 
         public int PointsAvailable { get; private set; } = 1;
@@ -99,12 +96,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            if (this.configuration.RealisticTypingDelay)
+            if (this.features.RealisticTypingDelay)
             {
                 await stepContext.Context.SendTypingActivityAsync(
                     this.PromptText,
-                    this.configuration.CharactersPerMinute,
-                    this.configuration.ThinkingTimeDelayMs);
+                    this.botSettings.Typing.CharactersPerMinute,
+                    this.botSettings.Typing.ThinkingTimeDelay);
             }
 
             var promptOptions = PromptConfiguration.RetryPromptOptions;

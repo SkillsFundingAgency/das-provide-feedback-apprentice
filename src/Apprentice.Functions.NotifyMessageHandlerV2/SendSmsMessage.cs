@@ -7,6 +7,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
+
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -33,13 +35,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         ILogger log,
         ExecutionContext context)
         {
-            log.LogInformation($"Queue message {queueMessage}");
             currentContext = context;
             dynamic outgoingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
             try
             {
-                log.LogInformation($"Received response from {outgoingSms?.recipient?.id}");
+                log.LogInformation($"Response received from bot, sending to {outgoingSms?.recipient?.id}...");
 
                 string mobileNumber = outgoingSms?.from?.id; // TODO: [security] read mobile number from userId hash
                 string templateId = Configuration.Get("NotifyTemplateId");
@@ -47,8 +48,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string reference = outgoingSms?.conversation?.id;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                var sendTime = DateTime.Now;
-                WaitForPreviousSmsSendOrTimeout(reference);
                 SmsNotificationResponse sendSmsTask = SendSms(
                                                           mobileNumber,
                                                           templateId,
@@ -56,16 +55,20 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                                                           reference,
                                                           smsSenderId);
 
-                log.LogInformation($"SendSmsMessage response: {sendSmsTask}");
+                log.LogInformation($"Success!");
+            }
+            catch (MessageLockLostException e)
+            {
+                log.LogError($"SendSmsMessage MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                log.LogError($"SendSmsMessage ERROR", e, e.Message);
+                throw new BotConnectorException("Something went wrong when relaying the message to the Notify client", e);
             }
         }
 
-        private static void WaitForPreviousSmsSendOrTimeout(string notificationReference)
+        private static void WaitForPreviousSmsSendOrTimeout(string notificationReference, ILogger log)
         {
             var timeoutTime = DateTime.Now.AddSeconds(15);
 
@@ -73,10 +76,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             {
                 if (DateTime.Now > timeoutTime)
                 {
+                    log.LogInformation($"done!");
                     break;
                 }
                 else
                 {
+                    log.LogInformation($"Waiting for previous message to send...");
                     Task.Delay(200).Wait();
                     continue;
                 }

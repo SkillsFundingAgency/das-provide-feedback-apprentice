@@ -52,7 +52,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
 
             var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
 
-            await this.queue.SendAsync(JsonConvert.SerializeObject(payload), this.notifyConfig.IncomingMessageQueueName);
+            await this.queue.SendAsync(dc.Context.Activity.Conversation.Id, JsonConvert.SerializeObject(payload), this.notifyConfig.IncomingMessageQueueName);
             await dc.Context.SendActivityAsync($"OK. Sending survey to {mobileNumber}", cancellationToken: cancellationToken);
 
             return await dc.ContinueDialogAsync(cancellationToken);

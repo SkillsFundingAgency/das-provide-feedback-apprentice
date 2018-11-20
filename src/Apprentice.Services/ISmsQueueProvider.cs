@@ -6,6 +6,6 @@
     {
         void Send(string message, string queue);
 
-        Task SendAsync(string message, string queue);
+        Task SendAsync(string conversationId, string message, string queue);
     }
 }

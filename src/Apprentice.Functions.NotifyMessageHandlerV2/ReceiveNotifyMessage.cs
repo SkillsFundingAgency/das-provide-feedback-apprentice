@@ -2,9 +2,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 {
     using System;
     using System.IO;
+    using System.Threading.Tasks;
     using System.Web.Http;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -14,10 +16,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     {
         // TODO: [security] hash the incoming phone number
         [FunctionName("ReceiveNotifyMessage")]
-        [return: ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection")]
-        public static ActionResult Run(
+        public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
+            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            ICollector<string> queue,
             ILogger log,
             ExecutionContext context)
         {
@@ -26,14 +29,23 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             try
             {
                 string requestBody = new StreamReader(req.Body).ReadToEnd();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
+                dynamic receivedSms = JsonConvert.DeserializeObject(requestBody);
 
-                log.LogInformation($"result: {data}");
+                log.LogInformation($"Message received from {receivedSms?.source_number}");
 
-                return data != null
-                           ? (ActionResult)new OkObjectResult(data)
-                           : new BadRequestObjectResult(
-                               "Expecting a text message receipt payload. Ensure that the payload has an ID, reference, recipient, status and notification type");
+                if (receivedSms == null)
+                {
+                    return new BadRequestObjectResult(
+                        "Expecting a text message payload. Please see the Notify callback documentation for details: https://www.notifications.service.gov.uk/callbacks");
+                }
+
+                queue.Add(JsonConvert.SerializeObject(receivedSms));
+                return new OkObjectResult(receivedSms);
+            }
+            catch (MessageLockLostException e)
+            {
+                log.LogError($"ReceiveNotifyMessage MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
+                return new ExceptionResult(e, true);
             }
             catch (Exception e)
             {

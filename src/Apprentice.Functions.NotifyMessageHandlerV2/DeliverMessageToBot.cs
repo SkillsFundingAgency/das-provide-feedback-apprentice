@@ -8,12 +8,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.Azure.Documents.SystemFunctions;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
-    using Microsoft.Azure.WebJobs.Host;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
 
@@ -50,13 +49,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         ILogger log,
         ExecutionContext context)
         {
-            log.LogInformation($"Queue message {queueMessage}");
             currentContext = context;
             dynamic incomingSms = JsonConvert.DeserializeObject<dynamic>(queueMessage);
 
             try
             {
-                string userId = incomingSms?.Value?.source_number; // TODO: [security] hash me please!
+                log.LogInformation($"Response received from {incomingSms?.source_number}, sending to bot...");
+
+                string userId = incomingSms?.source_number; // TODO: [security] hash me please!
                 BotConversation conversation = await GetConversationByUserId(userId);
 
                 if (conversation == null)
@@ -68,13 +68,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                     await PostToConversation(incomingSms, conversation, log);
                 }
             }
+            catch (MessageLockLostException e)
+            {
+                log.LogError($"DeliverMessageToBot MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
+            }
             catch (Exception e)
             {
-                log.LogInformation($"Bot Connector Exception: {e.Message}");
+                log.LogError($"DeliverMessageToBot ERROR", e, e.Message);
                 DirectLineClient.CancelPendingRequests();
-                throw new BotConnectorException(
-                    "Something went wrong when relaying the message to the bot framework",
-                    e);
+                throw new BotConnectorException("Something went wrong when relaying the message to the bot framework", e);
             }
         }
 
@@ -124,11 +126,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private static async Task PostToConversation(dynamic incomingSms, BotConversation conversation, ILogger log)
         {
-            log.LogInformation($"Received response from {incomingSms?.Value?.source_number}");
+            log.LogInformation($"Posting message to conversationId {conversation.ConversationId}");
 
             dynamic from = new ExpandoObject();
-            from.id = incomingSms?.Value?.source_number;
-            from.name = incomingSms?.Value?.source_number;
+            from.id = incomingSms?.source_number;
+            from.name = incomingSms?.source_number;
             from.role = null;
 
             dynamic channelData = new ExpandoObject();
@@ -137,12 +139,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             channelData.ApprenticeshipStartDate = conversation.ApprenticeshipStartDate;
             channelData.NotifyMessage = new NotifyMessage()
                                              {
-                                                 Id = incomingSms?.Value?.id,
-                                                 DateReceived = incomingSms?.Value?.date_received,
+                                                 Id = incomingSms?.id,
+                                                 DateReceived = incomingSms?.date_received,
                                                  DestinationNumber =
-                                                     incomingSms?.Value?.destination_number,
-                                                 SourceNumber = incomingSms?.Value?.source_number,
-                                                 Message = incomingSms?.Value?.message,
+                                                     incomingSms?.destination_number,
+                                                 SourceNumber = incomingSms?.source_number,
+                                                 Message = incomingSms?.message,
                                                  Type = "callback",
                                              };
 
@@ -150,7 +152,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                                      {
                                          Type = "message",
                                          From = from,
-                                         Text = incomingSms?.Value?.message,
+                                         Text = incomingSms?.message,
                                          ChannelData = channelData
                                      };
 
@@ -168,14 +170,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             else
             {
-                log.LogInformation($"Could not post conversation. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}");
-                log.LogInformation($"{JsonConvert.SerializeObject(postMessageTask)}");
+                var message = $"Could not post conversation to DirectLineClient. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}";
+                throw new BotConnectorException(message);
             }
         }
 
         private static async Task StartNewConversation(dynamic incomingSms, ILogger log)
         {
-            log.LogInformation($"Starting new conversation with {incomingSms?.Value?.source_number}");
+            log.LogInformation($"Starting new conversation with {incomingSms?.source_number}");
 
             var content = new StringContent(string.Empty);
 
@@ -189,16 +191,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogInformation($"Started new conversation with id {jsonResponse.conversationId}");
 
                 // TODO: write the conversation ID to a session log with the mobile phone number
-                conversation.UserId = incomingSms?.Value.source_number; // TODO: [security] hash this please!
+                conversation.UserId = incomingSms?.ource_number; // TODO: [security] hash this please!
                 conversation.ConversationId = jsonResponse.conversationId;
-                conversation.UniqueLearnerNumber = incomingSms?.Value.Uln;
-                conversation.StandardCode = incomingSms?.Value.StandardCode;
-                conversation.ApprenticeshipStartDate = incomingSms?.Value.ApprenticeshipStartDate;
+                conversation.UniqueLearnerNumber = incomingSms?.Uln;
+                conversation.StandardCode = incomingSms?.StandardCode;
+                conversation.ApprenticeshipStartDate = incomingSms?.ApprenticeshipStartDate;
 
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
                 if (newSession.IsNull())
                 {
-                    throw new BotConnectorException($"Could not create session object for conversation id {conversation.ConversationId}");
+                    var message = $"Could not create session object for conversation id {conversation.ConversationId}";
+                    throw new BotConnectorException(message);
                 }
 
                 if (incomingSms != null)
@@ -208,8 +211,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             else
             {
-                log.LogInformation($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
-                log.LogInformation($"{JsonConvert.SerializeObject(startConversationTask)}");
+                var message = $"Could not start new conversation with DirectLineClient. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}";
+                throw new BotConnectorException(message);
             }
         }
     }
