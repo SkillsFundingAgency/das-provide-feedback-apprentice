@@ -129,6 +129,11 @@
                     UniqueLearnerNumber = userProfile.IlrNumber,
                     ApprenticeId = userProfile.UserId,
                 },
+                Apprenticeship = new Apprenticeship
+                {
+                    StandardCode = userProfile.StandardCode,
+                    ApprenticeshipStartDate = userProfile.ApprenticeshipStartDate
+                },
                 SurveyId = userProfile.SurveyState.SurveyId,
                 StartTime = userProfile.SurveyState.StartDate,
                 FinishTime = userProfile.SurveyState.EndDate.GetValueOrDefault(),

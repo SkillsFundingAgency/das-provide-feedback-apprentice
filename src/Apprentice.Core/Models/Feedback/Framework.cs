@@ -3,7 +3,6 @@
     public class Framework : Apprenticeship
     {
         public Framework()
-            : base(nameof(Framework))
         {
         }
 

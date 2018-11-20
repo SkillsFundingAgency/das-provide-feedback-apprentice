@@ -43,7 +43,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs
             string programmeType) =>
             new Framework
                 {
-                    Provider = ukprn,
                     FrameworkId = frameworkId,
                     Pathway = pathway,
                     ProgrammeType = programmeType
@@ -53,7 +52,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs
             new ApprenticeResponse { Score = score, Question = question, Answer = answer, Intent = intent };
 
         internal static Standard CreateStandard(string ukprn, string standardId) =>
-            new Standard { Provider = ukprn, StandardId = standardId };
+            new Standard { StandardId = standardId };
 
         internal static Task SaveFeedback(ApprenticeFeedbackDto feedbackToSave)
         {

@@ -20,5 +20,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
 
         [JsonProperty("uniqueLearnerNumber")]
         public string UniqueLearnerNumber { get; set; }
+
+        [JsonProperty("standardCode")]
+        public int StandardCode { get; internal set; }
+
+        [JsonProperty("apprenticeshipStartDate")]
+        public DateTime ApprenticeshipStartDate { get; internal set; }
     }
 }

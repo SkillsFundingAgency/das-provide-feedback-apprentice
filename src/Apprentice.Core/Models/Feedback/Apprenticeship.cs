@@ -1,14 +1,11 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback
+﻿using System;
+
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback
 {
     public class Apprenticeship
     {
-        protected Apprenticeship(string type)
-        {
-            this.Type = type;
-        }
+        public int StandardCode { get; set; }
 
-        public string Type { get; set; }
-
-        public string Provider { get; set; }
+        public DateTime ApprenticeshipStartDate { get; set; }
     }
 }

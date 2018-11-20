@@ -12,6 +12,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto
 
         public string SurveyCode { get; set; }
 
+        public int StandardCode { get; set; }
+
+        public DateTime ApprenticeshipStartDate { get; set; }
+
         public DateTime? SentDate { get; set; }
     }
 }

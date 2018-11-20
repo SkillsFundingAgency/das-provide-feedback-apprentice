@@ -24,5 +24,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 
         [JsonProperty("unique_learner_number")]
         public string UniqueLearnerNumber { get; set; }
+
+        [JsonProperty("standard_code")]
+        public int StandardCode { get; set; }
+
+        [JsonProperty("apprenticeship_start_date")]
+        public DateTime ApprenticeshipStartDate { get; set; }
     }
 }

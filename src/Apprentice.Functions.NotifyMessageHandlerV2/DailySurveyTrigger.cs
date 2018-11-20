@@ -42,7 +42,10 @@ public static class DailySurveyTrigger
                     SourceNumber = apprenticeDetail.MobileNumber.ToString(),
                     DestinationNumber = null,
                     Message = $"start {apprenticeDetail.SurveyCode}",
-                    DateReceived = now
+                    DateReceived = now,
+                    UniqueLearnerNumber = apprenticeDetail.UniqueLearnerNumber,
+                    StandardCode = apprenticeDetail.StandardCode,
+                    ApprenticeshipStartDate = apprenticeDetail.ApprenticeshipStartDate
                 };
 
                 var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
