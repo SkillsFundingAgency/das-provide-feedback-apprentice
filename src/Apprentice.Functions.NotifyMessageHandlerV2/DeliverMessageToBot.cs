@@ -11,6 +11,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.Azure.Documents.SystemFunctions;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -67,6 +68,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 {
                     await PostToConversation(incomingSms, conversation, log);
                 }
+            }
+            catch (MessageLockLostException e)
+            {
+                log.LogError($"DeliverMessageToBot MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
             }
             catch (Exception e)
             {
@@ -164,8 +169,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             else
             {
-                log.LogInformation($"Could not post conversation. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}");
-                log.LogInformation($"{JsonConvert.SerializeObject(postMessageTask)}");
+                var message = $"Could not post conversation to DirectLineClient. {postMessageTask.StatusCode}: {postMessageTask.ReasonPhrase}";
+                throw new BotConnectorException(message);
             }
         }
 
@@ -192,7 +197,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
                 if (newSession.IsNull())
                 {
-                    throw new BotConnectorException($"Could not create session object for conversation id {conversation.ConversationId}");
+                    var message = $"Could not create session object for conversation id {conversation.ConversationId}";
+                    throw new BotConnectorException(message);
                 }
 
                 if (incomingSms != null)
@@ -202,8 +208,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             else
             {
-                log.LogInformation($"Could not start new conversation. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}");
-                log.LogInformation($"{JsonConvert.SerializeObject(startConversationTask)}");
+                var message = $"Could not start new conversation with DirectLineClient. {startConversationTask.StatusCode}: {startConversationTask.ReasonPhrase}";
+                throw new BotConnectorException(message);
             }
         }
     }

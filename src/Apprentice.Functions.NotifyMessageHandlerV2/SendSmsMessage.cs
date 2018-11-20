@@ -7,6 +7,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
+
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -47,8 +49,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string reference = outgoingSms?.conversation?.id;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                var sendTime = DateTime.Now;
-                WaitForPreviousSmsSendOrTimeout(reference, log);
                 SmsNotificationResponse sendSmsTask = SendSms(
                                                           mobileNumber,
                                                           templateId,
@@ -57,6 +57,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                                                           smsSenderId);
 
                 log.LogInformation($"Success!");
+            }
+            catch (MessageLockLostException e)
+            {
+                log.LogError($"SendSmsMessage MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
             }
             catch (Exception e)
             {

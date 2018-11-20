@@ -7,6 +7,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Azure.WebJobs.Extensions.Http;
     using Microsoft.Extensions.Logging;
@@ -41,6 +42,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
                 queue.Add(JsonConvert.SerializeObject(deliveryReceipt));
                 return new OkObjectResult(deliveryReceipt);
+            }
+            catch (MessageLockLostException e)
+            {
+                log.LogError($"ReceiveNotifyDeliveryReceipt MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
+                return new ExceptionResult(e, true);
             }
             catch (Exception e)
             {
