@@ -131,8 +131,8 @@
                 },
                 Apprenticeship = new Apprenticeship
                 {
-                    StandardCode = userProfile.StandardCode,
-                    ApprenticeshipStartDate = userProfile.ApprenticeshipStartDate
+                    StandardCode = userProfile.StandardCode.GetValueOrDefault(),
+                    ApprenticeshipStartDate = userProfile.ApprenticeshipStartDate.GetValueOrDefault()
                 },
                 SurveyId = userProfile.SurveyState.SurveyId,
                 StartTime = userProfile.SurveyState.StartDate,
