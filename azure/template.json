@@ -117,7 +117,7 @@
         },
         "botAdminCommands": {
             "type": "string",
-            "defaultValue": "\"bot_state_expire, bot_state_reset, bot_state_view, bot_dialog_start"
+            "defaultValue": "bot_state_expire, bot_state_reset, bot_state_view, bot_dialog_start"
         }
     },
     "variables": {
