@@ -74,10 +74,7 @@
 
         public override bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
         {
-            return conversationProgress != ProgressState.OptedOut
-                   && conversationProgress != ProgressState.InProgress
-                   && conversationProgress != ProgressState.BlackListed
-                   && base.IsTriggered(dc, conversationProgress);
+            return conversationProgress != ProgressState.OptedOut && base.IsTriggered(dc, conversationProgress);
         }
     }
 }
