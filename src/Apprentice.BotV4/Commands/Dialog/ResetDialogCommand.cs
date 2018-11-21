@@ -16,7 +16,7 @@
         private readonly FeedbackBotStateRepository state;
 
         public ResetDialogCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("reset", botConfiguration)
+            : base("bot_state_reset", botConfiguration)
         {
             this.state = state;
         }

@@ -42,7 +42,7 @@ public static class DailySurveyTrigger
                     Id = Guid.NewGuid().ToString(),
                     SourceNumber = apprenticeDetail.MobileNumber.ToString(),
                     DestinationNumber = null,
-                    Message = $"start {apprenticeDetail.SurveyCode}",
+                    Message = $"bot_dialog_start {apprenticeDetail.SurveyCode}",
                     DateReceived = now,
                     UniqueLearnerNumber = apprenticeDetail.UniqueLearnerNumber,
                     StandardCode = apprenticeDetail.StandardCode,

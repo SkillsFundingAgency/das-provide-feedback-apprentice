@@ -18,7 +18,7 @@
         private readonly FeedbackBotStateRepository state;
 
         public StartDialogCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("start", botConfiguration)
+            : base("bot_dialog_start", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }
@@ -74,7 +74,10 @@
 
         public override bool IsTriggered(DialogContext dc, ProgressState conversationProgress)
         {
-            return conversationProgress != ProgressState.OptedOut && base.IsTriggered(dc, conversationProgress);
+            return conversationProgress != ProgressState.OptedOut
+                   && conversationProgress != ProgressState.InProgress
+                   && conversationProgress != ProgressState.BlackListed
+                   && base.IsTriggered(dc, conversationProgress);
         }
     }
 }

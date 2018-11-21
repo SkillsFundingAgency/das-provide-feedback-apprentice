@@ -17,7 +17,7 @@
         private readonly FeedbackBotStateRepository state;
 
         public ExpireCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("expire", botConfiguration)
+            : base("bot_session_expire", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }
