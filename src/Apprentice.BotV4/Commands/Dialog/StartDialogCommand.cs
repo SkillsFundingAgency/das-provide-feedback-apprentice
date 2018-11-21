@@ -43,7 +43,7 @@
                         dynamic channelData = dc.Context.Activity.ChannelData;
                         userProfile.IlrNumber = channelData?.UniqueLearnerNumber;
                         userProfile.StandardCode = channelData?.StandardCode;
-                        userProfile.ApprenticeshipStartDate = channelData.ApprenticeshipStartDate;
+                        userProfile.ApprenticeshipStartDate = channelData?.ApprenticeshipStartDate;
                         userProfile.SurveyState.SurveyId = dialogId;
                         userProfile.SurveyState.StartDate = DateTime.Now;
                         userProfile.SurveyState.Progress = ProgressState.InProgress;

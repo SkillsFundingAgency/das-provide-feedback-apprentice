@@ -50,7 +50,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.LogError($"ReceiveNotifyDeliveryReceipt ERROR", e, e.Message);
+                log.LogError($"ReceiveNotifyDeliveryReceipt ERROR: {e.Message}", e, e.Message);
                 return new ExceptionResult(e, true);
             }
         }

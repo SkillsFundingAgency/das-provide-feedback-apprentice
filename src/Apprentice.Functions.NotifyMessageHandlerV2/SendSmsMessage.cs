@@ -65,7 +65,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.LogError($"SendSmsMessage ERROR", e, e.Message);
+                log.LogError($"SendSmsMessage ERROR: {e.Message}", e, e.Message);
                 throw new BotConnectorException("Something went wrong when relaying the message to the Notify client", e);
             }
         }

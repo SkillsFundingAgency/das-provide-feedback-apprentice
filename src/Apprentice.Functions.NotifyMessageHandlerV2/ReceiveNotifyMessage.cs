@@ -6,6 +6,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.Web.Http;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -51,7 +52,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
             catch (Exception e)
             {
-                log.LogInformation($"Exception: {e.Message}");
+                log.LogError($"ReceiveNotifyMessage ERROR: {e.Message}", e, e.Message);
                 return new ExceptionResult(e, true);
             }
         }
