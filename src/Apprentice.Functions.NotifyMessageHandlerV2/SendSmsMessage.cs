@@ -10,6 +10,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.InteropExtensions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -49,7 +50,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 string reference = outgoingSms.Conversation.ConversationId;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                WaitForPreviousSmsSendOrTimeout(reference, log);
+                // WaitForPreviousSmsSendOrTimeout(reference, log);
                 SmsNotificationResponse sendSmsResponse = await SendSms(
                   mobileNumber,
                   templateId,
