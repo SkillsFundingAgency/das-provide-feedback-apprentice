@@ -19,8 +19,8 @@
 
         public string IlrNumber { get; set; }
 
-        public int StandardCode { get; set; }
+        public int? StandardCode { get; set; }
 
-        public DateTime ApprenticeshipStartDate { get; set; }
+        public DateTime? ApprenticeshipStartDate { get; set; }
     }
 }
