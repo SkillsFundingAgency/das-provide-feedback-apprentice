@@ -35,9 +35,9 @@
         public string UniqueLearnerNumber { get; set; }
 
         [JsonProperty("standard_code")]
-        public int StandardCode { get; set; }
+        public int? StandardCode { get; set; }
 
         [JsonProperty("apprenticeship_start_date")]
-        public DateTime ApprenticeshipStartDate { get; set; }
+        public DateTime? ApprenticeshipStartDate { get; set; }
     }
 }
