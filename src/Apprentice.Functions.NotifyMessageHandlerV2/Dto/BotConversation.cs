@@ -16,15 +16,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.D
         public string UserId { get; set; }
 
         [JsonProperty("turnId")]
-        public int TurnId { get; set; }
+        public int? TurnId { get; set; }
 
         [JsonProperty("uniqueLearnerNumber")]
         public string UniqueLearnerNumber { get; set; }
 
         [JsonProperty("standardCode")]
-        public int? StandardCode { get; internal set; }
+        public int? StandardCode { get; set; }
 
         [JsonProperty("apprenticeshipStartDate")]
-        public DateTime? ApprenticeshipStartDate { get; internal set; }
+        public DateTime? ApprenticeshipStartDate { get; set; }
     }
 }

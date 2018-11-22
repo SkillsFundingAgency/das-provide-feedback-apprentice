@@ -205,7 +205,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 conversation.ApprenticeshipStartDate = incomingSms.ApprenticeshipStartDate;
 
                 BotConversation newSession = await DocumentClient.UpsertItemAsync(conversation);
-                if (newSession.IsNull())
+                if (newSession == null)
                 {
                     var message = $"Could not create session object for conversation id {conversation.ConversationId}";
                     throw new BotConnectorException(message);
