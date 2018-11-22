@@ -48,6 +48,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
                 Message = "bot_dialog_start ifa-v1",
                 DateReceived = DateTime.UtcNow,
                 UniqueLearnerNumber = "uln_here",
+                ApprenticeshipStartDate = DateTime.Now.AddYears(-1),
+                StandardCode = 23,
             };
 
             var payload = new KeyValuePair<string, SmsConversationTrigger>("bot-manual-trigger", trigger);
