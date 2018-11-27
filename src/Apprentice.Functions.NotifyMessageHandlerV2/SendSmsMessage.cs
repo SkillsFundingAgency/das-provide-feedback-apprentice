@@ -10,11 +10,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 
     using Microsoft.Azure.ServiceBus;
+    using Microsoft.Azure.ServiceBus.InteropExtensions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
+
     using Newtonsoft.Json;
     using Notify.Client;
     using Notify.Models.Responses;
+
+    using MessageLockLostException = Microsoft.Azure.ServiceBus.MessageLockLostException;
 
     public static class SendSmsMessage
     {
@@ -41,27 +45,23 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
             try
             {
-                log.LogInformation($"Response received from bot, sending to {outgoingSms.From.UserId}...");
-
                 string mobileNumber = outgoingSms.From.UserId; // TODO: [security] read mobile number from userId hash
                 string templateId = Configuration.Get("NotifyTemplateId");
                 var personalization = new Dictionary<string, dynamic> { { "message", outgoingSms.Message } };
                 string reference = outgoingSms.Conversation.ConversationId;
                 string smsSenderId = Configuration.Get("NotifySmsSenderId");
 
-                WaitForPreviousSmsSendOrTimeout(reference, log);
+                log.LogInformation($"sending message to {outgoingSms.From.UserId}...");
+
+                await WaitForPreviousSmsSendOrTimeout(reference, log);
                 SmsNotificationResponse sendSmsResponse = await SendSms(
-                  mobileNumber,
-                  templateId,
-                  personalization,
-                  reference,
-                  smsSenderId);
+                    mobileNumber,
+                    templateId,
+                    personalization,
+                    reference,
+                    smsSenderId);
 
                 log.LogInformation($"Sent! Reference: {sendSmsResponse.reference}");
-            }
-            catch (MessageLockLostException e)
-            {
-                log.LogError($"SendSmsMessage MessageLockLostException [{context.FunctionName}|{context.InvocationId}]", e, e.Message);
             }
             catch (Exception e)
             {
@@ -70,30 +70,35 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             }
         }
 
-        private static void WaitForPreviousSmsSendOrTimeout(string notificationReference, ILogger log)
+        private static async Task WaitForPreviousSmsSendOrTimeout(string reference, ILogger log)
         {
-            var timeoutTime = DateTime.Now.AddSeconds(15);
+            int processingDelay = Configuration.GetInt("NotifyQueueProcessingDelayMs");
+            int queueRetryDuration = Configuration.GetInt("NotifyQueueRetryDurationMs");
+            int queueRetriesPerSecond = Configuration.GetInt("NotifyQueueRetriesPerSecond");
 
-            while (SmsNotSent(notificationReference))
+            DateTime timeoutTime = DateTime.Now.AddMilliseconds(queueRetryDuration);
+
+            if (processingDelay > 0)
             {
+                await Task.Delay(processingDelay);
+            }
+
+            while (SmsNotSent(reference))
+            {
+                log.LogInformation($"message blocked, waiting for previous message to send...");
                 if (DateTime.Now > timeoutTime)
                 {
-                    log.LogInformation($"done!");
-                    break;
+                    throw new BotConnectorException("timed out waiting for previous SMS to send. Returning message to the queue");
                 }
-                else
-                {
-                    log.LogInformation($"Waiting for previous message to send...");
-                    Task.Delay(200).Wait();
-                    continue;
-                }
+
+                await Task.Delay(1000 / queueRetriesPerSecond);
             }
         }
 
         private static bool SmsNotSent(string notificationReference)
         {
             var lastNotification = NotifyClient
-                .GetNotifications("sms", "", notificationReference)
+                .GetNotifications("sms", string.Empty, notificationReference)
                 .notifications
                 .OrderByDescending(n => n.createdAt)
                 .FirstOrDefault();

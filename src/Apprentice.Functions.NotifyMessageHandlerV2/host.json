@@ -12,13 +12,6 @@
     "logging": {
         "fileLoggingMode": "debugOnly"
     },
-    "singleton": {
-        "lockPeriod": "00:01:00",
-        "listenerLockPeriod": "00:01:00",
-        "listenerLockRecoveryPollingInterval": "00:01:00",
-        "lockAcquisitionTimeout": "00:01:00",
-        "lockAcquisitionPollingInterval": "00:00:03"
-    },    
     "extensions": {
         "cosmosDB": {
             "connectionMode": "Gateway",

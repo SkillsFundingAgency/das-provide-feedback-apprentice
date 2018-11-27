@@ -56,6 +56,18 @@
                 "ClientApiKey": ""
             }
         },
+        "notifyQueueProcessingDelayMs": {
+            "type": "int",
+            "defaultValue": 0
+        },
+		    "notifyQueueRetryDurationMs": {
+            "type": "int",
+            "defaultValue": 8000
+        },
+        "notifyQueueRetriesPerSecond": {
+            "type": "int",
+            "defaultValue": 4
+        },		
         "loggingRedisConnectionString": {
             "type": "securestring"
         },
@@ -534,6 +546,18 @@
                                 "name": "NotifyClientApiKey",
                                 "value": "[parameters('notifyCredentials').ClientApiKey]"
                             },
+                            {
+                                "name": "NotifyQueueProcessingDelayMs",
+                                "value": "[string(parameters('notifyQueueProcessingDelayMs'))]"
+                            },
+							{
+                                "name": "NotifyQueueRetryDurationMs",
+                                "value": "[string(parameters('notifyQueueRetryDurationMs'))]"
+                            },
+                            {
+                                "name": "NotifyQueueRetriesPerSecond",
+                                "value": "[string(parameters('notifyQueueRetriesPerSecond'))]"
+                            },							
                             {
                                 "name": "ServiceBusConnection",
                                 "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
