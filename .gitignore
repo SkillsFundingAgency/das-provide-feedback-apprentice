@@ -297,3 +297,4 @@ __pycache__/
 src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/appsettings.Development.json
 **/*.settings.json
 **/*settings*.Development.json
+src/Apprentice.Functions.NotifyMessageHandlerV2/local.settings.json
