@@ -122,8 +122,6 @@
             UserProfile userProfile, 
             CancellationToken cancellationToken)
         {
-            var reply = dialog.Context.Activity.CreateReply();
-
             switch (userProfile.SurveyState.Progress)
             {
                 case ProgressState.NotStarted:
@@ -135,14 +133,6 @@
                     return await dialog.ContinueDialogAsync(cancellationToken);
 
                 case ProgressState.Expired:
-                    // Survey window has expired, so let them know
-                    reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
-                        + $"\n"
-                        + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
-
-                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
                 case ProgressState.OptedOut:
                 case ProgressState.Complete:
                 case ProgressState.BlackListed:
@@ -185,6 +175,8 @@
             DialogContext dialog, 
             CancellationToken cancellationToken)
         {
+            var reply = dialog.Context.Activity.CreateReply();
+
             var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
             IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog, userProfile.SurveyState.Progress));
             if (command != null)
@@ -197,6 +189,11 @@
                 {
                     if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
                     {
+                        reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
+                                     + $"\n"
+                                     + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
+
+                        await dialog.Context.SendActivityAsync(reply, cancellationToken);
                         userProfile.SurveyState.Progress = ProgressState.Expired;
                     }
                 }

@@ -289,13 +289,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     string authKey = this.Configuration["Azure:CosmosKey"];
                     string database = this.Configuration["Data:DatabaseName"];
                     string collection = this.Configuration["Data:ConversationLogTable"];
+                    string partitionKey = this.Configuration["Data:ConversationLogPartitionKey"];
 
                     return CosmosConversationRepository
                         .Instance
                         .ConnectTo(endpoint)
                         .WithAuthKeyOrResourceToken(authKey)
                         .UsingDatabase(database)
-                        .UsingCollection(collection);
+                        .UsingCollection(collection)
+                        .WithPartitionKey(partitionKey);
                 });
 
             services.AddSingleton<IFeedbackRepository>(
@@ -305,13 +307,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     string authKey = this.Configuration["Azure:CosmosKey"];
                     string database = this.Configuration["Data:DatabaseName"];
                     string collection = this.Configuration["Data:FeedbackTable"];
+                    string partitionKey = this.Configuration["Data:FeedbackTablePartitionKey"];
 
                     return CosmosFeedbackRepository
                         .Instance
                         .ConnectTo(endpoint)
                         .WithAuthKeyOrResourceToken(authKey)
                         .UsingDatabase(database)
-                        .UsingCollection(collection);
+                        .UsingCollection(collection)
+                        .WithPartitionKey(partitionKey);
                 });
         }
     }
