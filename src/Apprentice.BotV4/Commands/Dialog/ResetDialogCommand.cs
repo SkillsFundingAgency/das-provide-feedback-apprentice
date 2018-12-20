@@ -29,7 +29,7 @@
             await this.state.ConversationState.ClearStateAsync(dc.Context, cancellationToken);
 
             await dc.Context.SendActivityAsync($"OK. Resetting conversation...", cancellationToken: cancellationToken);
-            return await dc.ContinueDialogAsync(cancellationToken);
+            return await dc.CancelAllDialogsAsync(cancellationToken);
         }
     }
 }
