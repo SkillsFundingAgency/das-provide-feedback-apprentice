@@ -195,6 +195,7 @@
 
                         await dialog.Context.SendActivityAsync(reply, cancellationToken);
                         userProfile.SurveyState.Progress = ProgressState.Expired;
+                        await dialog.CancelAllDialogsAsync(cancellationToken);
                     }
                 }
 
