@@ -187,7 +187,8 @@
             {
                 if (userProfile.SurveyState.StartDate != default(DateTime))
                 {
-                    if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7))
+                    if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7) 
+                        && (userProfile.SurveyState.Progress == ProgressState.InProgress || userProfile.SurveyState.Progress == ProgressState.NotStarted))
                     {
                         reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
                                      + $"\n"
