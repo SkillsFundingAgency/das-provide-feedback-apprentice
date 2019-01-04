@@ -31,8 +31,9 @@
 
         private async Task<DialogTurnResult> MenuAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var menu = new List<string> { "start", "stop", "reset", "expire", "status" };
-            return await stepContext.PromptAsync(PromptName, new PromptOptions() { Prompt = MessageFactory.Text("How can I help you?") }, cancellationToken);
+            //var menu = new List<string> { "start", "stop", "reset", "expire", "status" };
+            //return await stepContext.PromptAsync(PromptName, new PromptOptions() { Prompt = MessageFactory.Text("How can I help you?") }, cancellationToken);
+            return new DialogTurnResult(DialogTurnStatus.Waiting);
         }
 
         private async Task<DialogTurnResult> StartAsync(
