@@ -26,6 +26,8 @@
 
     using Newtonsoft.Json;
 
+    using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
+
     public class FeedbackBot : IBot
     {
         private readonly IEnumerable<IBotDialogCommand> commands;
@@ -33,6 +35,8 @@
         private readonly IDialogFactory dialogFactory;
 
         private readonly Features featureToggles;
+
+        private readonly BotSettings botSettings;
 
         private readonly ILogger<FeedbackBot> logger;
 
@@ -46,7 +50,8 @@
             IEnumerable<IBotDialogCommand> commands,
             IEnumerable<ISurveyDefinition> surveys,
             IDialogFactory dialogFactory,
-            IOptions<Features> featureToggles)
+            IOptions<Features> featureToggles,
+            IOptions<BotSettings> botSettings)
         {
             if (loggerFactory == null)
             {
@@ -60,6 +65,7 @@
             this.commands = commands ?? throw new ArgumentNullException(nameof(commands));
             this.surveys = surveys ?? throw new ArgumentNullException(nameof(surveys));
             this.featureToggles = featureToggles.Value ?? throw new ArgumentNullException(nameof(featureToggles));
+            this.botSettings = botSettings.Value ?? throw new ArgumentNullException(nameof(botSettings));
 
             this.Dialogs = this.BuildDialogs();
         }
@@ -187,7 +193,8 @@
             {
                 if (userProfile.SurveyState.StartDate != default(DateTime))
                 {
-                    if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-7) 
+                    var defaultExpiryDays = this.botSettings.DefaultConversationExpiryDays;
+                    if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(defaultExpiryDays) 
                         && (userProfile.SurveyState.Progress == ProgressState.InProgress || userProfile.SurveyState.Progress == ProgressState.NotStarted))
                     {
                         reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."

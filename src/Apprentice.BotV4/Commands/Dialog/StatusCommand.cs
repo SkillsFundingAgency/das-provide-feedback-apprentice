@@ -32,7 +32,7 @@
             DialogState dialogState = await this.state.ConversationDialogState.GetAsync(dc.Context, () => new DialogState(), cancellationToken);
             await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(dialogState, Formatting.Indented)}", cancellationToken: cancellationToken);
 
-            return await dc.ContinueDialogAsync(cancellationToken);
+            return new DialogTurnResult(DialogTurnStatus.Waiting);
         }
     }
 }
