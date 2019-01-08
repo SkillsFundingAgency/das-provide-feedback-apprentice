@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -13,7 +12,6 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Root;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Survey;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
@@ -30,13 +28,13 @@
 
     public class FeedbackBot : IBot
     {
+        private readonly Bot botSettings;
+
         private readonly IEnumerable<IBotDialogCommand> commands;
 
         private readonly IDialogFactory dialogFactory;
 
         private readonly Features featureToggles;
-
-        private readonly BotSettings botSettings;
 
         private readonly ILogger<FeedbackBot> logger;
 
@@ -51,7 +49,7 @@
             IEnumerable<ISurveyDefinition> surveys,
             IDialogFactory dialogFactory,
             IOptions<Features> featureToggles,
-            IOptions<BotSettings> botSettings)
+            IOptions<Bot> botSettings)
         {
             if (loggerFactory == null)
             {
@@ -123,33 +121,6 @@
             }
         }
 
-        private static async Task<DialogTurnResult> ContinueConversationAsync(
-            DialogContext dialog, 
-            UserProfile userProfile, 
-            CancellationToken cancellationToken)
-        {
-            switch (userProfile.SurveyState.Progress)
-            {
-                case ProgressState.NotStarted:
-                    // Not sure how they got here, fix the session!
-                    return await dialog.ContinueDialogAsync(cancellationToken);
-
-                case ProgressState.InProgress:
-                    // Continue as normal
-                    return await dialog.ContinueDialogAsync(cancellationToken);
-
-                case ProgressState.Expired:
-                case ProgressState.OptedOut:
-                case ProgressState.Complete:
-                case ProgressState.BlackListed:
-                    // Do not respond anymore, preventing spam using up sms allowance
-                    return await dialog.CancelAllDialogsAsync(cancellationToken);
-
-                default:
-                    return await dialog.ContinueDialogAsync(cancellationToken);
-            }
-        }
-
         // TODO: add dynamic user-created dialogs from database
         private DialogSet BuildDialogs()
         {
@@ -165,6 +136,36 @@
             return dialogs;
         }
 
+        private async Task<DialogTurnResult> ContinueConversationAsync(
+            DialogContext dialog,
+            UserProfile userProfile,
+            CancellationToken cancellationToken)
+        {
+            await this.EnsureNotExpired(dialog, cancellationToken, userProfile);
+
+            switch (userProfile.SurveyState.Progress)
+            {
+                case ProgressState.NotStarted:
+                    // Not sure how they got here, fix the session!
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+
+                case ProgressState.InProgress:
+                    // Continue as normal
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+
+                case ProgressState.Expired:
+                    return new DialogTurnResult(DialogTurnStatus.Waiting);
+
+                case ProgressState.Complete:
+                case ProgressState.BlackListed:
+                case ProgressState.OptedOut:
+                    return await dialog.CancelAllDialogsAsync(cancellationToken);
+
+                default:
+                    return await dialog.ContinueDialogAsync(cancellationToken);
+            }
+        }
+
         /// <summary>
         /// TODO: Add to middleware intercepts
         /// </summary>
@@ -178,11 +179,9 @@
         /// The <see cref="Task"/>.
         /// </returns>
         private async Task HandleCommandsAsync(
-            DialogContext dialog, 
+            DialogContext dialog,
             CancellationToken cancellationToken)
         {
-            var reply = dialog.Context.Activity.CreateReply();
-
             var userProfile = await this.stateRepository.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
             IBotDialogCommand command = this.commands.FirstOrDefault(c => c.IsTriggered(dialog, userProfile.SurveyState.Progress));
             if (command != null)
@@ -191,23 +190,7 @@
             }
             else
             {
-                if (userProfile.SurveyState.StartDate != default(DateTime))
-                {
-                    var defaultExpiryDays = this.botSettings.DefaultConversationExpiryDays;
-                    if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(defaultExpiryDays) 
-                        && (userProfile.SurveyState.Progress == ProgressState.InProgress || userProfile.SurveyState.Progress == ProgressState.NotStarted))
-                    {
-                        reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
-                                     + $"\n"
-                                     + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
-
-                        await dialog.Context.SendActivityAsync(reply, cancellationToken);
-                        userProfile.SurveyState.Progress = ProgressState.Expired;
-                        await dialog.CancelAllDialogsAsync(cancellationToken);
-                    }
-                }
-
-                await ContinueConversationAsync(dialog, userProfile, cancellationToken).ConfigureAwait(false);
+                await this.ContinueConversationAsync(dialog, userProfile, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -241,6 +224,29 @@
             {
                 await dialog.BeginDialogAsync(nameof(RootDialog), cancellationToken: cancellationToken);
             }
+        }
+
+        private async Task EnsureNotExpired(DialogContext dialog, CancellationToken cancellationToken, UserProfile userProfile)
+        {
+            var reply = dialog.Context.Activity.CreateReply();
+
+            // Check for conversation expiry
+            if (userProfile.SurveyState.StartDate != default(DateTime))
+            {
+                if (userProfile.SurveyState.StartDate <= DateTime.Now.AddDays(-this.botSettings.DefaultConversationExpiryDays)
+                    && (userProfile.SurveyState.Progress == ProgressState.InProgress || userProfile.SurveyState.Progress == ProgressState.NotStarted))
+                {
+                    reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."
+                        + $"\n"
+                        + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
+
+                    await dialog.Context.SendActivityAsync(reply, cancellationToken);
+                    userProfile.SurveyState.Progress = ProgressState.Expired;
+                }
+            }
+
+            // Check for spam
+            // TODO: set Blacklist flag here
         }
     }
 }

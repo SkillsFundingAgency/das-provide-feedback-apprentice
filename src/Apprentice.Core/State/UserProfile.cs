@@ -13,8 +13,6 @@
     [Serializable]
     public class UserProfile
     {
-        public SurveyState SurveyState { get; set; } = new SurveyState();
-
         public string UserId { get; set; }
 
         public string IlrNumber { get; set; }
@@ -22,5 +20,7 @@
         public int? StandardCode { get; set; }
 
         public DateTime? ApprenticeshipStartDate { get; set; }
+
+        public SurveyState SurveyState { get; set; } = new SurveyState();
     }
 }

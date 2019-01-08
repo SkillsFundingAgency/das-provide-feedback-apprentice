@@ -24,13 +24,15 @@
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }
 
-        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dc, CancellationToken cancellationToken)
+        public override async Task<DialogTurnResult> ExecuteAsync(DialogContext dialog, CancellationToken cancellationToken)
         {
-            UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
-            await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(userProfile, Formatting.Indented )}", cancellationToken: cancellationToken);
+            var reply = dialog.Context.Activity.CreateReply();
 
-            DialogState dialogState = await this.state.ConversationDialogState.GetAsync(dc.Context, () => new DialogState(), cancellationToken);
-            await dc.Context.SendActivityAsync($"{JsonConvert.SerializeObject(dialogState, Formatting.Indented)}", cancellationToken: cancellationToken);
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(dialog.Context, () => new UserProfile(), cancellationToken);
+
+            reply.Text = $"{JsonConvert.SerializeObject(userProfile, Formatting.None)}";
+
+            await dialog.Context.SendActivityAsync(reply, cancellationToken: cancellationToken);
 
             return new DialogTurnResult(DialogTurnStatus.Waiting);
         }
