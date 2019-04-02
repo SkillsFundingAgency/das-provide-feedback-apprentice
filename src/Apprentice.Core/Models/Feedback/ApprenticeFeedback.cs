@@ -8,6 +8,8 @@
     [Serializable]
     public class ApprenticeFeedback
     {
+        [JsonProperty("id")]
+        public Guid Id { get; set; }
 
         [JsonProperty("surveyId")]
         public string SurveyId { get; set; }

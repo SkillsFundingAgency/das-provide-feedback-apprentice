@@ -7,15 +7,18 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
 
     public class MultipleChoiceDialogComponentBuilder : ComponentBuilder<BinaryQuestion>
     {
-        public MultipleChoiceDialogComponentBuilder(FeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings)
+        private readonly IFeedbackService feedbackService;
+
+        public MultipleChoiceDialogComponentBuilder(FeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings, IFeedbackService feedbackService)
             : base(state, features, botSettings)
         {
+            this.feedbackService = feedbackService;
         }
 
         public override ComponentDialog Create(ISurveyStepDefinition step)
@@ -24,7 +27,7 @@
             {
                 if (step is BinaryQuestion questionStep)
                 { 
-                    return new MultipleChoiceDialog(questionStep.Id, this.State, this.BotSettings, this.Features)
+                    return new MultipleChoiceDialog(questionStep.Id, this.State, this.BotSettings, this.Features, this.feedbackService)
                         .WithPrompt(questionStep.Prompt)
                         .WithResponses(questionStep.Responses)
                         .WithScore(questionStep.Score)

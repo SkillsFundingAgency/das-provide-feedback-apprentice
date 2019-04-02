@@ -284,6 +284,8 @@ __pycache__/
 /src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/Properties/PublishProfiles/esfa-pf-apprentice-bot - Web Deploy.pubxml
 /src/ESFA.ProvideFeedback.ApprenticePoc/ESFA.ProvideFeedback.Apprentice.Bot/Properties/PublishProfiles/esfa-pf-apprentice-bot - FTP.pubxml
 
+# Azure Functions localsettings file
+/src/Apprentice.Functions.NotifyMessageHandlerV2/local.settings.json
 
 # Telerik's JustMock configuration file
 *.jmconfig

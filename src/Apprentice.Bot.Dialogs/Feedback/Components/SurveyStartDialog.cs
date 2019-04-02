@@ -1,5 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -81,8 +82,8 @@
                 this.features,
                 cancellationToken);
 
+            userInfo.Id = Guid.NewGuid();
             userInfo.UserId = stepContext.Context.Activity.From.Id;
-
             return await stepContext.NextAsync(null, cancellationToken);
         }
 

@@ -3,8 +3,6 @@
     using System;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
 

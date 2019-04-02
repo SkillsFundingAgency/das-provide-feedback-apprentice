@@ -24,8 +24,6 @@
 
         private readonly FeedbackBotStateRepository state;
 
-        private readonly IFeedbackService feedbackService;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SurveyEndDialog"/> class.
         /// A dialog that appears at the end of a survey. Usually collects the responses and feeds back to the user in some way.
@@ -39,13 +37,11 @@
             string dialogId, 
             FeedbackBotStateRepository state, 
             BotSettings botSettings, 
-            FeatureToggles features, 
-            IFeedbackService feedbackService)
+            FeatureToggles features)
             : base(dialogId)
         {
             this.botSettings = botSettings;
             this.features = features;
-            this.feedbackService = feedbackService;
             this.state = state;
         }
 
@@ -109,50 +105,8 @@
             userProfile.SurveyState.Progress = ProgressState.Complete;
             userProfile.SurveyState.EndDate = DateTime.Now;
 
-            ApprenticeFeedback feedback = CreateFeedbackDto(userProfile);
-            await this.feedbackService.SaveFeedbackAsync(feedback);
-
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
-
-        /// <summary>
-        /// Package the FeedbackDTO from the user profile session data
-        /// </summary>
-        /// <param name="userProfile">the user profile from bot state</param>
-        /// <returns>Feedback model</returns>
-        private static ApprenticeFeedback CreateFeedbackDto(UserProfile userProfile) =>
-            new ApprenticeFeedback
-            {
-                Apprentice = new Apprentice
-                {
-
-                    UniqueLearnerNumber = userProfile.IlrNumber,
-                    ApprenticeId = userProfile.UserId,
-                },
-                Apprenticeship = new Apprenticeship
-                {
-                    StandardCode = userProfile.StandardCode.GetValueOrDefault(),
-                    ApprenticeshipStartDate = userProfile.ApprenticeshipStartDate.GetValueOrDefault()
-                },
-                SurveyId = userProfile.SurveyState.SurveyId,
-                StartTime = userProfile.SurveyState.StartDate,
-                FinishTime = userProfile.SurveyState.EndDate.GetValueOrDefault(),
-                Responses = userProfile.SurveyState.Responses.Select(ConvertToResponseData).ToList()
-            };
-
-        /// <summary>
-        /// Package the responses
-        /// </summary>
-        /// <param name="questionResponse"></param>
-        /// <returns></returns>
-        private static ApprenticeResponse ConvertToResponseData(IQuestionResponse questionResponse) =>
-            new ApprenticeResponse
-            {
-                Question = questionResponse.Question,
-                Answer = questionResponse.Answer,
-                Intent = questionResponse.Intent,
-                Score = questionResponse.Score
-            };
 
         private async Task<DialogTurnResult> EndDialogAsync(
             WaterfallStepContext stepContext,
