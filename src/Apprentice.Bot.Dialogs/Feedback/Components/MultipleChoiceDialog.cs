@@ -31,14 +31,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
         private readonly FeatureToggles features;
 
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
         private readonly IFeedbackService feedbackService;
 
         /// <inheritdoc />
         public MultipleChoiceDialog(
             string dialogId,
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             BotSettings botSettings,
             FeatureToggles features,
             IFeedbackService feedbackService)

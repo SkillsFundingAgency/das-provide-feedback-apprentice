@@ -2,14 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     using Microsoft.Bot.Builder.Dialogs;
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;

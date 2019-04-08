@@ -28,7 +28,7 @@
 
     public class FeedbackBot : IBot
     {
-        private readonly Bot botSettings;
+        private readonly BotSettings botSettings;
 
         private readonly IEnumerable<IBotDialogCommand> commands;
 
@@ -49,7 +49,7 @@
             IEnumerable<ISurveyDefinition> surveys,
             IDialogFactory dialogFactory,
             IOptions<Features> featureToggles,
-            IOptions<Bot> botSettings)
+            IOptions<BotSettings> botSettings)
         {
             if (loggerFactory == null)
             {
