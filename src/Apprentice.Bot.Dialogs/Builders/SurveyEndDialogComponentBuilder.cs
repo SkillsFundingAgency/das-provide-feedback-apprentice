@@ -14,7 +14,7 @@
     public class SurveyEndDialogComponentBuilder : ComponentBuilder<EndStepDefinition>
     {
         public SurveyEndDialogComponentBuilder(
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             IOptions<FeatureToggles> features,
             IOptions<BotSettings> botSettings)
             : base(state, features, botSettings)

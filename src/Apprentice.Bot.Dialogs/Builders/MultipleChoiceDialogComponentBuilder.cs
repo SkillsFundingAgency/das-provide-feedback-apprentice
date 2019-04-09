@@ -15,7 +15,7 @@
     {
         private readonly IFeedbackService feedbackService;
 
-        public MultipleChoiceDialogComponentBuilder(FeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings, IFeedbackService feedbackService)
+        public MultipleChoiceDialogComponentBuilder(IFeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings, IFeedbackService feedbackService)
             : base(state, features, botSettings)
         {
             this.feedbackService = feedbackService;

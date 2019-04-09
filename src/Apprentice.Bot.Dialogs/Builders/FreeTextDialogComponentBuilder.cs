@@ -13,7 +13,7 @@
 
     public class FreeTextDialogComponentBuilder : ComponentBuilder<FreeTextQuestion>
     {
-        public FreeTextDialogComponentBuilder(FeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings)
+        public FreeTextDialogComponentBuilder(IFeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings)
             : base(state, features, botSettings)
         {
         }

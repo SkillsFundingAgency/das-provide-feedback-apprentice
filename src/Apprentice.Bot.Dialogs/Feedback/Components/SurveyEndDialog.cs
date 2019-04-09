@@ -19,7 +19,7 @@
 
         private readonly FeatureToggles features;
 
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SurveyEndDialog"/> class.
@@ -32,7 +32,7 @@
         /// <param name="feedbackService">the service used for storing feedback</param>
         public SurveyEndDialog(
             string dialogId, 
-            FeedbackBotStateRepository state, 
+            IFeedbackBotStateRepository state, 
             BotSettings botSettings, 
             FeatureToggles features)
             : base(dialogId)

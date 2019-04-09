@@ -22,10 +22,10 @@
 
         protected readonly FeatureToggles Features;
 
-        protected readonly FeedbackBotStateRepository State;
+        protected readonly IFeedbackBotStateRepository State;
 
         protected ComponentBuilder(
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             IOptions<FeatureToggles> features,
             IOptions<BotSettings> botSettings)
         {

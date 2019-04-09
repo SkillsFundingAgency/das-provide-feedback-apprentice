@@ -24,12 +24,12 @@
 
         private readonly FeatureToggles features;
 
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
         /// <inheritdoc />
         public FreeTextDialog(
             string dialogId,
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             BotSettings botSettings,
             FeatureToggles features)
             : base(dialogId)
