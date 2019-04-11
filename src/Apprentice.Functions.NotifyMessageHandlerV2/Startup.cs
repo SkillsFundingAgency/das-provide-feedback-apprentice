@@ -71,10 +71,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddSingleton<IQueueClient>(new QueueClient(_configuration.GetConnectionStringOrSetting("ServiceBusConnection"), "sms-outgoing-messages"));
 
-            services.AddFunctionSupport(a => a.UseDistributedLockManager(l => new AzureDistributedLockProvider(_configuration.GetConnectionStringOrSetting("AzureWebJobsStorage"), l.GetService<ILoggerFactory>(), "sms-feedback-locks")));
+            services.AddFunctionSupport(a => a.UseDistributedLockManager(l => new AzureDistributedLockProvider(_configuration.GetConnectionStringOrSetting("AzureWebJobsStorage"), l.GetRequiredService<ILoggerFactory>(), "sms-feedback-locks")));
 
             services.AddTransient<ISettingService, SettingsProvider>((provider) => new SettingsProvider(_configuration));
-            services.AddTransient((provider) => new Notify.Client.NotificationClient(provider.GetService<ISettingService>().Get("NotifyClientApiKey")));
+            services.AddTransient((provider) => new Notify.Client.NotificationClient(provider.GetRequiredService<ISettingService>().Get("NotifyClientApiKey")));
             services.AddTransient<INotificationClient, NotificationClient>();
 
             services.AddTransient<ICommandHandlerAsync<SendSmsCommand>, SendSmsCommandHandler>();
