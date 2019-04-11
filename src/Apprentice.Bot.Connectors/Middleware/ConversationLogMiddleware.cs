@@ -78,7 +78,7 @@
                 // Write our log to the database.
                 try
                 {
-                    await this.conversationRepository.SaveConversation(logData);
+                    await this.conversationRepository.Save(logData);
                 }
                 catch (Exception ex)
                 {

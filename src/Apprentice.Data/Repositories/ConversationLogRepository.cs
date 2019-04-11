@@ -6,14 +6,14 @@
 
     public interface IConversationLogRepository
     {
-        Task SaveConversation(ConversationLog conversationLog);
+        Task Save(ConversationLog conversationLog);
     }
 
     public class CosmosConversationRepository : CosmosDbRepositoryBase<CosmosConversationRepository>, IConversationLogRepository
     {
-        public async Task SaveConversation(ConversationLog conversationLog)
+        public Task Save(ConversationLog conversationLog)
         {
-            await this.UpsertItemAsync(conversationLog);
+            return this.UpsertItemAsync(conversationLog);
         }
     }
 }
