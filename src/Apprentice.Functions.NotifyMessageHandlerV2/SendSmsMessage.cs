@@ -7,6 +7,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 
     using Microsoft.Azure.ServiceBus;
@@ -22,14 +23,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     public static class SendSmsMessage
     {
-        private static readonly Lazy<SettingsProvider> LazyConfigProvider = new Lazy<SettingsProvider>(Configure);
-
         private static readonly Lazy<NotificationClient> LazyNotifyClient =
             new Lazy<NotificationClient>(InitializeNotifyClient);
 
         private static ExecutionContext currentContext;
 
-        public static SettingsProvider Configuration => LazyConfigProvider.Value;
+        public static SettingsProvider Configuration;
 
         private static NotificationClient NotifyClient => LazyNotifyClient.Value;
 
@@ -37,9 +36,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task Run(
         [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
+        [Inject] SettingsProvider configuration,
         ILogger log,
         ExecutionContext context)
         {
+            Configuration = configuration;
             currentContext = context;
             OutgoingSms outgoingSms = JsonConvert.DeserializeObject<OutgoingSms>(queueMessage);
 
@@ -106,25 +107,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             return lastNotification != null && lastNotification.status != "delivered";
         }
 
-        private static async Task<SmsNotificationResponse> SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
+        private static Task<SmsNotificationResponse> SendSms(string mobileNumber, string templateId, Dictionary<string, dynamic> personalization, string reference, string smsSenderId)
         {
-            return await Task.Run(
+            return Task.Run(
                 () => NotifyClient.SendSms(
                     mobileNumber,
                     templateId,
                     personalization,
                     reference,
                     smsSenderId));
-        }
-
-        private static SettingsProvider Configure()
-        {
-            if (currentContext == null)
-            {
-                throw new BotConnectorException("Could not initialize the settings provider, ExecutionContext is null");
-            }
-
-            return new SettingsProvider(currentContext);
         }
 
         private static NotificationClient InitializeNotifyClient()

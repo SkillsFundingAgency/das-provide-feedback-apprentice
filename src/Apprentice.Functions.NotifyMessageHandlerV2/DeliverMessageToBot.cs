@@ -9,14 +9,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
-    using Microsoft.Azure.Documents.SystemFunctions;
     using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.ServiceBus.InteropExtensions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
     using Newtonsoft.Json;
@@ -28,19 +25,19 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     /// </summary>
     public static class DeliverMessageToBot
     {
-        private static readonly Lazy<SettingsProvider> LazyConfigProvider = new Lazy<SettingsProvider>(Configure);
-
         private static readonly Lazy<HttpClient> LazyDirectLineClient = new Lazy<HttpClient>(InitializeHttpClient);
 
         private static readonly Lazy<CosmosConversationRepository> LazyDocClient = new Lazy<CosmosConversationRepository>(InitializeDocumentClient);
 
         private static ExecutionContext currentContext;
 
-        public static SettingsProvider Configuration => LazyConfigProvider.Value;
+        public static SettingsProvider Configuration;
 
         private static HttpClient DirectLineClient => LazyDirectLineClient.Value;
 
         private static CosmosConversationRepository DocumentClient => LazyDocClient.Value;
+
+        private static string MessageId;
 
         /// <summary>
         /// Queue based trigger. Delivers incoming SMS messages from a queue to our bot using the DirectLine connector
@@ -53,9 +50,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
+        Int32 deliveryCount,
+        DateTime enqueuedTimeUtc,
+        string messageId,
+        [Inject] SettingsProvider configuration,
         ILogger log,
         ExecutionContext context)
         {
+            MessageId = messageId;
+            log.LogInformation(deliveryCount.ToString());
+            log.LogInformation(enqueuedTimeUtc.ToLongDateString());
+            log.LogInformation(messageId);
+            Configuration = configuration;
             currentContext = context;
             IncomingSms incomingSms = JsonConvert.DeserializeObject<IncomingSms>(queueMessage);
 
@@ -93,16 +99,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             await DocumentClient.GetDocumentCollectionAsync();
             BotConversation conversation = await DocumentClient.GetItemAsync<BotConversation>(c => c.UserId == userId);
             return conversation;
-        }
-
-        private static SettingsProvider Configure()
-        {
-            if (currentContext == null)
-            {
-                throw new BotConnectorException("Could not initialize the settings provider, ExecutionContext is null");
-            }
-
-            return new SettingsProvider(currentContext);
         }
 
         private static CosmosConversationRepository InitializeDocumentClient()
@@ -144,24 +140,23 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             channelData.UniqueLearnerNumber = conversation.UniqueLearnerNumber;
             channelData.StandardCode = conversation.StandardCode;
             channelData.ApprenticeshipStartDate = conversation.ApprenticeshipStartDate;
-            channelData.NotifyMessage = new NotifyMessage()
-                                             {
-                                                 Id = incomingSms.Id,
-                                                 DateReceived = incomingSms.DateReceived.ToString(CultureInfo.InvariantCulture),
-                                                 DestinationNumber =
-                                                     incomingSms.DestinationNumber,
-                                                 SourceNumber = incomingSms.SourceNumber,
-                                                 Message = incomingSms.Message,
-                                                 Type = "callback",
-                                             };
+            channelData.NotifyMessage = new NotifyMessage
+            {
+                Id = incomingSms.Id,
+                DateReceived = incomingSms.DateReceived.ToString(CultureInfo.InvariantCulture),
+                DestinationNumber = incomingSms.DestinationNumber,
+                SourceNumber = incomingSms.SourceNumber,
+                Message = incomingSms.Message,
+                Type = "callback",
+            };
 
-            var messageContent = new BotConversationMessage()
-                                     {
-                                         Type = "message",
-                                         From = from,
-                                         Text = incomingSms.Message,
-                                         ChannelData = channelData
-                                     };
+            var messageContent = new BotConversationMessage
+            {
+                Type = "message",
+                From = from,
+                Text = incomingSms.Message,
+                ChannelData = channelData
+            };
 
             var json = JsonConvert.SerializeObject(messageContent);
             HttpContent content = new StringContent(json);

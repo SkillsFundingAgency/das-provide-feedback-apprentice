@@ -130,6 +130,13 @@
         "botAdminCommands": {
             "type": "string",
             "defaultValue": "bot_state_expire, bot_state_reset, bot_state_view, bot_dialog_start"
+        },
+        "apprenticeBatchSize": {
+            "type": "int",
+            "defaultValue": 5
+        },
+        "dailySurveyTriggerSchedule": {
+            "type": "string"
         }
     },
     "variables": {
@@ -561,6 +568,14 @@
                             {
                                 "name": "ServiceBusConnection",
                                 "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
+                            },
+                            {
+                                "name": "DailySurveyTriggerSchedule",
+                                "value": "[string(parameters('dailySurveyTriggerSchedule'))]"
+                            },
+                            {
+                                "name": "ApprenticeBatchSize",
+                                "value": "[string(parameters('apprenticeBatchSize'))]"
                             }
                         ]
                     },

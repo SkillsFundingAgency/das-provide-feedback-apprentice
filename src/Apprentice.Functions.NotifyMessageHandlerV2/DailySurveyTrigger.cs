@@ -1,15 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 public static class DailySurveyTrigger
@@ -17,12 +12,13 @@ public static class DailySurveyTrigger
     private static IStoreApprenticeSurveyDetails _surveyDetailsRepo;
 
     [FunctionName("DailySurveyTrigger")]
-    public static async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)]HttpRequest req,
+    public static async Task Run(
+        [TimerTrigger("%DailySurveyTriggerSchedule%")]TimerInfo myTimer,
         [Inject]IStoreApprenticeSurveyDetails surveyDetailsRepo,
         ILogger log,
         [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
         IAsyncCollector<IncomingSms> outputSbQueue,
+        [Inject] SettingsProvider settingsProvider,
         ExecutionContext executionContext)
     {
         try
@@ -30,8 +26,8 @@ public static class DailySurveyTrigger
             _surveyDetailsRepo = surveyDetailsRepo;
             log.LogInformation($"Daily survey trigger started");
 
-            var batchSize = 200;
-            var apprenticeDetails = await GetApprenticeDetailsToSendSurvey(batchSize);
+            var batchSize = settingsProvider.GetInt("ApprenticeBatchSize");
+            var apprenticeDetails = await _surveyDetailsRepo.GetApprenticeSurveyInvitesAsync(batchSize);
 
             foreach (var apprenticeDetail in apprenticeDetails)
             {
@@ -49,9 +45,14 @@ public static class DailySurveyTrigger
                     ApprenticeshipStartDate = apprenticeDetail.ApprenticeshipStartDate
                 };
 
-                await outputSbQueue.AddAsync(trigger);
+                // TODO: try catch here to allow subsequent messages to be sent if one fails
+                // TODO: implement some sort of transaction here
 
+                //Poly used within here in case of transient failure.
                 await _surveyDetailsRepo.SetApprenticeSurveySentAsync(apprenticeDetail.UniqueLearnerNumber, apprenticeDetail.SurveyCode);
+
+                // TODO: investigate any retry policy AddAsync implements
+                await outputSbQueue.AddAsync(trigger);
                 await Task.Delay(250);
             }            
         }
@@ -60,12 +61,5 @@ public static class DailySurveyTrigger
             log.LogError(ex, ex.Message);
             throw ex;
         }
-
-        return new OkResult();
-    }
-
-    private static Task<IEnumerable<ApprenticeSurveyInvite>> GetApprenticeDetailsToSendSurvey(int batchSize)
-    {
-        return _surveyDetailsRepo.GetApprenticeSurveyInvitesAsync(batchSize);
     }
 }

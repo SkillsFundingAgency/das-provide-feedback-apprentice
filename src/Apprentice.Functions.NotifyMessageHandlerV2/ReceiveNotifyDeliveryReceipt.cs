@@ -4,9 +4,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.IO;
     using System.Threading.Tasks;
     using System.Web.Http;
-
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.ServiceBus;
@@ -29,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         {
             try
             {
-                string requestBody = new StreamReader(req.Body).ReadToEnd();
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 SmsDeliveryReceipt deliveryReceipt = JsonConvert.DeserializeObject<SmsDeliveryReceipt>(requestBody);
 
                 log.LogInformation($"{deliveryReceipt.Status}: (to: {deliveryReceipt.To} uuid: {deliveryReceipt.Reference}");

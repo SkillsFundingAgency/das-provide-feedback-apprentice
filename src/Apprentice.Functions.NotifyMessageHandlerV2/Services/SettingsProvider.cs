@@ -1,9 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services
 {
     using System;
-    using System.IO;
-
-    using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Configuration;
 
     public class SettingsProvider : ISettingService
@@ -13,15 +10,10 @@
         /// <summary>
         ///     Initializes a new instance of the <see cref="SettingsProvider"/> class.
         /// </summary>
-        /// <param name="ctx"> The <see cref="ExecutionContext"/>. </param>
-        public SettingsProvider(ExecutionContext ctx)
+        /// <param name="ctx"> The <see cref="IConfigurationRoot"/>. </param>
+        public SettingsProvider(IConfigurationRoot configRoot)
         {
-            this.configuration = new ConfigurationBuilder()
-                .SetBasePath(ctx.FunctionAppDirectory)
-                .AddJsonFile("local.settings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
+            this.configuration = configRoot;
         }
 
         public string Get(string parameterName)

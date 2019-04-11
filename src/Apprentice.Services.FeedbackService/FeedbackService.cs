@@ -17,14 +17,14 @@
             this.saveFeedbackCommandHandler = saveFeedbackCommandHandler;
         }
 
-        public async Task SaveFeedbackAsync(ApprenticeFeedback feedback)
+        public Task SaveFeedbackAsync(ApprenticeFeedback feedback)
         {
             SaveFeedbackCommand command = new SaveFeedbackCommand()
             {
                 Feedback = feedback
             };
 
-            await this.saveFeedbackCommandHandler.HandleAsync(command);
+            return this.saveFeedbackCommandHandler.HandleAsync(command);
         }
 
         public Task UpdateFeedbackAsync(ApprenticeFeedback feedback)
