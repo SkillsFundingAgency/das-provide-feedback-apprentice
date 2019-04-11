@@ -1,7 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services
 {
     using System;
-    using System.IO;
 
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Configuration;
@@ -14,6 +13,16 @@
         ///     Initializes a new instance of the <see cref="SettingsProvider"/> class.
         /// </summary>
         /// <param name="ctx"> The <see cref="ExecutionContext"/>. </param>
+        public SettingsProvider(IConfigurationRoot configuration)
+        {
+            this.configuration = configuration;
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="SettingsProvider"/> class.
+        /// </summary>
+        /// <param name="ctx"> The <see cref="ExecutionContext"/>. </param>
+        [Obsolete("Initialise with IConfigurationRoot if possible")]
         public SettingsProvider(ExecutionContext ctx)
         {
             this.configuration = new ConfigurationBuilder()

@@ -6,7 +6,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.Web.Http;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.ServiceBus;

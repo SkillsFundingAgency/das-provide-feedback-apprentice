@@ -30,10 +30,11 @@
         "serviceBus": {
             "autoRenewTimeout" : "00:05:00",
             "prefetchCount": 25,
-            "messageHandlerOptions": {
-                "maxConcurrentCalls": 1,
-                "maxAutoRenewDuration": "00:55:00"
-            }
+          "messageHandlerOptions": {
+            "maxConcurrentCalls": 1,
+            "maxAutoRenewDuration": "00:55:00",
+            "autoComplete": true
+          }
         }
     }
 }

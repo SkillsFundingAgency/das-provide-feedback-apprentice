@@ -3,5 +3,7 @@
     public interface ISettingService
     {
         string Get(string parameterName);
+
+        int GetInt(string parameterName);
     }
 }

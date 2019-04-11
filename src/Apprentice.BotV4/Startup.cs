@@ -12,7 +12,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
@@ -163,6 +162,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
+                    options.Middleware.Add<ActivityIdMiddleware>(services);
+                    options.Middleware.Add<TurnIdMiddleware>(services);
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
                 });
 
@@ -246,7 +247,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         }
 
         private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
-        {
+        {            
             AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
                 configuration["ConnectionStrings:StorageAccount"],
                 configuration["Data:SessionStateTable"]);
@@ -273,6 +274,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         {
             services.AddSingleton<IDialogFactory, DialogFactory>();
             services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
+            //services.AddSingleton<ISmsQueueProvider, AzureStorageQueueClient>();
             services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
 
             services.AddSingleton<IFeedbackService, FeedbackService>();
@@ -281,8 +283,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
             services.AddTransient<ChannelConfigurationMiddleware>();
             services.AddTransient<ConversationLogMiddleware>();
+            services.AddTransient<ActivityIdMiddleware>();
+            services.AddTransient<TurnIdMiddleware>();
 
-            services.AddSingleton<IConversationRepository>(
+            services.AddSingleton<IConversationLogRepository>(
                 (svc) =>
                 {
                     string endpoint = this.Configuration["Azure:CosmosEndpoint"];

@@ -7,6 +7,7 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
@@ -20,20 +21,25 @@
     {
         private readonly ISmsQueueProvider smsQueueProvider;
         private readonly Notify notifyConfig;
+        private readonly FeedbackBotStateRepository feedbackBotStateRepository;
 
-        public SmsMessageQueue(ISmsQueueProvider smsQueueProvider, IOptions<Notify> notifyConfigOptions)
+        public SmsMessageQueue(ISmsQueueProvider smsQueueProvider, IOptions<Notify> notifyConfigOptions, FeedbackBotStateRepository feedbackBotStateRepository)
         {
             this.notifyConfig = notifyConfigOptions.Value;
             this.smsQueueProvider = smsQueueProvider;
+            this.feedbackBotStateRepository = feedbackBotStateRepository;
         }
 
         public async Task EnqueueMessageAsync(ITurnContext context, Activity activity)
         {
+            var turnProperty = feedbackBotStateRepository.ConversationState.CreateProperty<long>("turnId");
+            var turnId = await turnProperty.GetAsync(context, () => -1);
+
             OutgoingSms sms = new OutgoingSms
                 {
                     From = new Participant { UserId = context.Activity.From.Id },
                     Recipient = new Participant { UserId = context.Activity.Recipient.Id },
-                    Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id },
+                    Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id, UserId = context.Activity.From.Id, ActivityId = activity.Id, TurnId = turnId },
                     ChannelData = context.Activity.ChannelData,
                     ChannelId = context.Activity.ChannelId,
                     Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),
@@ -62,6 +68,7 @@
                             {
                                 return await activityNext();
                             }
+                            
                             foreach (Activity activity in activityList)
                             {
                                 if (activity.Type != ActivityTypes.Message || !activity.HasContent())

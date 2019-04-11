@@ -5,9 +5,6 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using Microsoft.Bot.Builder;
@@ -16,13 +13,13 @@
     /// <inheritdoc />
     public class ConversationLogMiddleware : IMiddleware
     {        
-        private readonly IConversationRepository conversationRepository;
+        private readonly IConversationLogRepository conversationRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConversationLogMiddleware"/> class. 
         /// </summary>
         /// <param name="conversationRepository">Conversation storage</param>
-        public ConversationLogMiddleware(IConversationRepository conversationRepository)
+        public ConversationLogMiddleware(IConversationLogRepository conversationRepository)
         {
             this.conversationRepository = conversationRepository;
         }

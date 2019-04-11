@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="ApprenticeSurveyInvites.sql" />
+    <Build Include="Conversations.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="ESFA.DAS.ProvideFeedback.Apprentice.Database.refactorlog" />
