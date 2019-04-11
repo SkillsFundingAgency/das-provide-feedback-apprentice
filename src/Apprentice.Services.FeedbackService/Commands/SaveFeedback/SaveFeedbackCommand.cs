@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SaveFeedback
 {
     using System;
     using System.Collections.Generic;

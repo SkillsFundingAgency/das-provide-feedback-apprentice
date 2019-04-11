@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Xunit;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 using Microsoft.Extensions.Options;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
+
 using Newtonsoft.Json;
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 
@@ -19,7 +19,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
     {
         private SmsMessageQueue _sut;
         private readonly Mock<ISmsQueueProvider> _mockSmsQueueProvider;
-        private readonly Mock<IOptions<Notify>> _mockNotifyOptions;
+        private readonly Mock<IOptions<Core.Configuration.Notify>> _mockNotifyOptions;
 
         private FeedbackBotStateRepository _feedbackBotStateRepository;
         private readonly ConversationState _conversationState;
@@ -38,10 +38,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
         {
             _testStorage = new TestStorage();
             _mockSmsQueueProvider = new Mock<ISmsQueueProvider>();
-            _mockNotifyOptions = new Mock<IOptions<Notify>>();
+            _mockNotifyOptions = new Mock<IOptions<Core.Configuration.Notify>>();
 
             _testOutgoingQueueName = Guid.NewGuid().ToString();
-            Notify testNotify = new Notify { OutgoingMessageQueueName = _testOutgoingQueueName };            
+            var testNotify = new Core.Configuration.Notify { OutgoingMessageQueueName = _testOutgoingQueueName };            
             _mockNotifyOptions.Setup(m => m.Value).Returns(testNotify);
 
             _mockNext = new Mock<NextDelegate>();

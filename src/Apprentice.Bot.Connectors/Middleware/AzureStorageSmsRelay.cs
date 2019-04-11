@@ -8,7 +8,7 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;

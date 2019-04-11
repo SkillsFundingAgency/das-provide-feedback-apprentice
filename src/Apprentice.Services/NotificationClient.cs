@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Notify.Models;
 using Notify.Models.Responses;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
 {
     public class NotificationClient : INotificationClient
     {

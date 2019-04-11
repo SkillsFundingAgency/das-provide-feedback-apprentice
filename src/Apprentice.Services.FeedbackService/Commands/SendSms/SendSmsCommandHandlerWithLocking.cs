@@ -1,11 +1,9 @@
 ﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.Commands;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.CommandHandlers
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms
 {
     public class SendSmsCommandHandlerWithLocking : ICommandHandlerAsync<SendSmsCommand>
     {

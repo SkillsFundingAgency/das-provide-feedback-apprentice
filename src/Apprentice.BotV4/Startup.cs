@@ -21,7 +21,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SaveFeedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands;
 
     using Microsoft.AspNetCore.Builder;

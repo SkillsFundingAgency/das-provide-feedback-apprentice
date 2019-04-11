@@ -1,7 +1,7 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services
 {
     using System;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Configuration;
 

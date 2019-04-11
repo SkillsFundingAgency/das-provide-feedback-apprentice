@@ -9,6 +9,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs
     using System.Net.Http;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 
     internal static class FakeDirectLineApi
     {

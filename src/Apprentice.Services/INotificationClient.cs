@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
 {
     public interface INotificationClient
     {

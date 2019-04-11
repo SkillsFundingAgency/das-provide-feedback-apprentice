@@ -1,7 +1,7 @@
 ﻿using System;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
 {
     public static class ConversationExtensions
     {
