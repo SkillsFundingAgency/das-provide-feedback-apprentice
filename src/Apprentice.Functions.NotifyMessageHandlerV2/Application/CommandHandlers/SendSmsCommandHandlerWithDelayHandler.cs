@@ -1,6 +1,7 @@
 ﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.Commands;
+using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Logging;
 using System;
@@ -18,15 +19,18 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.A
         private readonly ICommandHandlerAsync<SendSmsCommand> _handler;
         private readonly IQueueClient _queueClient;
         private readonly ILogger _log;
+        private readonly ISettingService _settingService;
 
         public SendSmsCommandHandlerWithDelayHandler(
             ICommandHandlerAsync<SendSmsCommand> handler, 
             IQueueClient queueClient,
-            ILoggerFactory logFactory)
+            ILoggerFactory logFactory,
+            ISettingService settingService)
         {
             _handler = handler;
             _queueClient = queueClient;
             _log = logFactory.CreateLogger<SendSmsCommandHandlerWithDelayHandler>();
+            _settingService = settingService;
         }
 
         public void Handle(SendSmsCommand command)
@@ -56,11 +60,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.A
 
         private async Task HandleDelay(Message queueMessage, string retryKey, Func<Exception> throwOnExpiry)
         {
+            int maxRetryAttempts = _settingService.GetInt("maxRetryAttempts");
+            int processingDelay = _settingService.GetInt("retryDelayMs");
+
             int resubmitCount = queueMessage.UserProperties.ContainsKey(retryKey) ? (int)queueMessage.UserProperties[retryKey] : 0;
 
             var delayedMessage = queueMessage.Clone();
 
-            if (resubmitCount > 2)
+            if (resubmitCount >= maxRetryAttempts)
             {
                 // have delayed long enough so now follow the default processing which will eventually put the message in the dead letter queue.
                 throw throwOnExpiry.Invoke();
@@ -68,7 +75,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.A
             else
             {
                 ClearExisitingProperties(delayedMessage);
-                delayedMessage.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddMinutes(1);
+                delayedMessage.ScheduledEnqueueTimeUtc = DateTime.UtcNow.AddMilliseconds(processingDelay);
                 delayedMessage.UserProperties[retryKey] = resubmitCount + 1;
 
                 await _queueClient.SendAsync(delayedMessage);

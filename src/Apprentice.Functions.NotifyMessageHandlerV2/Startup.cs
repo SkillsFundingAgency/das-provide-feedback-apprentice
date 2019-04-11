@@ -56,7 +56,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>, SendSmsCommandHandlerWithWaitForPreviousSms>();
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithOrderCheck(inner, provider.GetRequiredService<IConversationRepository>()));
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithLocking(inner, provider.GetRequiredService<IDistributedLockProvider>()));
-            services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithDelayHandler(inner, provider.GetRequiredService<IQueueClient>(), provider.GetRequiredService<ILoggerFactory>()));
+            services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithDelayHandler(inner, provider.GetRequiredService<IQueueClient>(), provider.GetRequiredService<ILoggerFactory>(), provider.GetRequiredService<ISettingService>()));
         }
     }
 }
