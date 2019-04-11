@@ -166,7 +166,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
                 });
 
-            services.AddSingleton<FeedbackBotStateRepository>(
+            services.AddSingleton<IFeedbackBotStateRepository, FeedbackBotStateRepository>(
                 sp =>
                 {
                     // We need to grab the conversationState we added on the options in the previous step

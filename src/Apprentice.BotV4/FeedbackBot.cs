@@ -38,12 +38,12 @@
 
         private readonly ILogger<FeedbackBot> logger;
 
-        private readonly FeedbackBotStateRepository stateRepository;
+        private readonly IFeedbackBotStateRepository stateRepository;
 
         private readonly IEnumerable<ISurveyDefinition> surveys;
 
         public FeedbackBot(
-            FeedbackBotStateRepository stateRepository,
+            IFeedbackBotStateRepository stateRepository,
             ILoggerFactory loggerFactory,
             IEnumerable<IBotDialogCommand> commands,
             IEnumerable<ISurveyDefinition> surveys,
