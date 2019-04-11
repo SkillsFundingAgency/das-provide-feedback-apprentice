@@ -30,7 +30,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         {
             try
             {
-                string requestBody = new StreamReader(req.Body).ReadToEnd();
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 IncomingSms receivedSms = JsonConvert.DeserializeObject<IncomingSms>(requestBody);
                 receivedSms.Type = SmsType.NotifySms;
 
