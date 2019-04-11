@@ -1,39 +1,39 @@
 {
-    "version": "2.0",
-    "watchDirectories": [ "Shared", "Test" ],
-    "healthMonitor": {
-        "enabled": true,
-        "healthCheckInterval": "00:00:10",
-        "healthCheckWindow": "00:02:00",
-        "healthCheckThreshold": 6,
-        "counterThreshold": 0.80
+  "version": "2.0",
+  "watchDirectories": [ "Shared", "Test" ],
+  "healthMonitor": {
+    "enabled": true,
+    "healthCheckInterval": "00:00:10",
+    "healthCheckWindow": "00:02:00",
+    "healthCheckThreshold": 6,
+    "counterThreshold": 0.80
+  },
+  "functionTimeout": "00:05:00",
+  "logging": {
+    "fileLoggingMode": "debugOnly"
+  },
+  "extensions": {
+    "cosmosDB": {
+      "connectionMode": "Gateway",
+      "protocol": "Https",
+      "leaseOptions": {
+        "leasePrefix": "prefix1"
+      }
     },
-    "functionTimeout": "00:05:00",
-    "logging": {
-        "fileLoggingMode": "debugOnly"
+    "queues": {
+      "maxPollingInterval": 1000,
+      "visibilityTimeout": "00:00:10",
+      "batchSize": 1,
+      "maxDequeueCount": 3,
+      "newBatchThreshold": 1
     },
-    "extensions": {
-        "cosmosDB": {
-            "connectionMode": "Gateway",
-            "protocol": "Https",
-            "leaseOptions": {
-                "leasePrefix": "prefix1"
-            }
-        },
-        "queues": {
-            "maxPollingInterval": 1000,
-            "visibilityTimeout": "00:00:10",
-            "batchSize": 1,
-            "maxDequeueCount": 3,
-            "newBatchThreshold": 1
-        },
-        "serviceBus": {            
-            "prefetchCount": 25,
-          "messageHandlerOptions": {
-            "maxConcurrentCalls": 1,
-            "maxAutoRenewDuration": "00:55:00",
-            "autoComplete": true
-          }
-        }
+    "serviceBus": {
+      "prefetchCount": 25,
+      "messageHandlerOptions": {
+        "maxConcurrentCalls": 1,
+        "maxAutoRenewDuration": "00:55:00",
+        "autoComplete": true
+      }
     }
+  }
 }
