@@ -11,6 +11,8 @@ using System.Threading;
 using System;
 using FluentAssertions;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+using System.Linq;
+using Microsoft.Extensions.Logging.Internal;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService.SendSms
 {
@@ -131,7 +133,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             public async Task WhenTheInnerHandlerThrowsAHandledException_ThenADelayedMessageHasItsRetryCountIncremented(Type exceptionType, string retryKey, int initialValue, int finalValue)
             {
                 // arrange
-                // arrange
                 var errorMessage = Guid.NewGuid().ToString();
                 var testException = (Exception)Activator.CreateInstance(exceptionType, errorMessage);
 
@@ -150,45 +151,92 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 _mockQueueClient.Verify(m => m.SendAsync(It.Is<Message>((qm) => ((int)qm.UserProperties[retryKey]) == finalValue)), Times.Once);
             }
 
-            [Fact]
-            public async Task WhenTheInnerHandlerThrowsAHandledException_ThenADelayedMessageHasItsExistingRetryPropertiesClearedBeforeSettingTheRetryCount()
+            [Theory]
+            [InlineData(typeof(ConversationLockedException), "ConversationLockedRetryCount")]
+            [InlineData(typeof(OutOfOrderException), "OutOfOrderRetryCount")]
+            [InlineData(typeof(PreviousMessageNotSentException), "PreviousMessageNotSentCount")]
+
+            public async Task WhenTheInnerHandlerThrowsAHandledException_ThenADelayedMessageHasItsExistingRetryPropertiesClearedBeforeSettingTheRetryCount(Type exceptionType, string retryKey)
             {
                 // arrange
+                var errorMessage = Guid.NewGuid().ToString();
+                var testException = (Exception)Activator.CreateInstance(exceptionType, errorMessage);
+
+                _maxRetryAttempts = 3;
+                _testQueueMessage.UserProperties["ConversationLockedRetryCount"] = _maxRetryAttempts - 1;
+                _testQueueMessage.UserProperties["OutOfOrderRetryCount"] = _maxRetryAttempts - 1;
+                _testQueueMessage.UserProperties["PreviousMessageNotSentCount"] = _maxRetryAttempts - 1;
+
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
+
+                _mockHandler
+                    .Setup(m => m.HandleAsync(command, It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(testException);
 
                 // act
                 await _sut.HandleAsync(command);
 
                 //assert
-
+                var existingProperties = _testQueueMessage.UserProperties.ToList().Where(i => !i.Key.Equals(retryKey));
+                existingProperties.Count().Should().Be(0);
             }
 
-            [Fact]
-            public async Task WhenTheInnerHandlerThrowsAHandledException_ThenTheDelayIsLogged()
+            [Theory]
+            [InlineData(typeof(ConversationLockedException))]
+            [InlineData(typeof(OutOfOrderException))]
+            [InlineData(typeof(PreviousMessageNotSentException))]
+
+            public async Task WhenTheInnerHandlerThrowsAHandledException_ThenTheDelayIsLogged(Type exceptionType)
             {
                 // arrange
+                var errorMessage = Guid.NewGuid().ToString();
+                var testException = (Exception)Activator.CreateInstance(exceptionType, errorMessage);
+
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
+
+                _mockHandler
+                    .Setup(m => m.HandleAsync(command, It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(testException);
 
                 // act
                 await _sut.HandleAsync(command);
 
-                //assert
-
+                //assert                
+                _mockLogger.Verify(m => m.Log(LogLevel.Information, 0, It.Is<FormattedLogValues>(l => l[0].Value.Equals($"{testException.Message} Delaying the processing for this message.")), null, It.IsAny<Func<object, Exception, string>>()), Times.Once);
             }
 
-            [Fact]
-            public async Task WhenTheInnerHandlerThrowsAHandledExceptionAndTheNumberOfretriesIsExceeded_ThenTheOriginalExceptionIsRethrown()
+            [Theory]
+            [InlineData(typeof(ConversationLockedException), "ConversationLockedRetryCount")]
+            [InlineData(typeof(OutOfOrderException), "OutOfOrderRetryCount")]
+            [InlineData(typeof(PreviousMessageNotSentException), "PreviousMessageNotSentCount")]
+
+            public async Task WhenTheInnerHandlerThrowsAHandledExceptionAndTheNumberOfretriesIsExceeded_ThenTheOriginalExceptionIsRethrown(Type exceptionType, string retryKey)
             {
                 // arrange
+                var errorMessage = exceptionType.ToString();
+                var testException = (Exception)Activator.CreateInstance(exceptionType, errorMessage);
+                Exception caughtException = null;
+
+                _testQueueMessage.UserProperties[retryKey] = _maxRetryAttempts;
+
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
 
+                _mockHandler
+                    .Setup(m => m.HandleAsync(command, It.IsAny<CancellationToken>()))
+                    .ThrowsAsync(testException);
+
                 // act
-                await _sut.HandleAsync(command);
+                try
+                {
+                    await _sut.HandleAsync(command);
+                }
+                catch (Exception ex)
+                {
+                    caughtException = ex;
+                }
 
-                //assert
-
+                caughtException.Should().BeOfType(exceptionType);
             }
-
         }
     }
 }
