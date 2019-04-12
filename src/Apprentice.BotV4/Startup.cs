@@ -162,7 +162,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     // options.Middleware.Add<AzureStorageSmsRelay>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
-                    options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
                 });
 
