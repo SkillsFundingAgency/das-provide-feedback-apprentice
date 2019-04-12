@@ -79,7 +79,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             }
 
             [Fact]
-            public async Task WhenCalled_ThenTheConversationIsSavedTotheConversationRepository()
+            public async Task WhenCalled_ThenTheConversationIsSavedToTheConversationRepository()
             {
                 // arrange
                 Conversation testConversation = null;
@@ -109,7 +109,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             }
 
             [Fact]
-            public void WhenCalledAnTheNotificationClientTHrowsAnException_ThenTheConversationIsNotSavedTotheConverssationRepository()
+            public void WhenCalledAndTheNotificationClientThrowsAnException_ThenTheConversationIsNotSavedTotheConverssationRepository()
             {
                 // arrange
                 _mockNotificationClient.Setup(m =>
