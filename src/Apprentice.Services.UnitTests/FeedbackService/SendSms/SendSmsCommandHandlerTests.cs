@@ -109,7 +109,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             }
 
             [Fact]
-            public void WhenCalledAndTheNotificationClientThrowsAnException_ThenTheConversationIsNotSavedTotheConverssationRepository()
+            public void WhenTheNotificationClientThrowsAnException_ThenTheConversationIsNotSavedTotheConverssationRepository()
             {
                 // arrange
                 _mockNotificationClient.Setup(m =>
