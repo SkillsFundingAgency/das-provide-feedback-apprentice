@@ -4,10 +4,10 @@ using System.IO;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.CommandHandlers;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.Commands;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection.Config;
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
+using ESFA.DAS.ProvideFeedback.Apprentice.Services;
+using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
@@ -71,10 +71,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddSingleton<IQueueClient>(new QueueClient(_configuration.GetConnectionStringOrSetting("ServiceBusConnection"), "sms-outgoing-messages"));
 
-            services.AddFunctionSupport(a => a.UseDistributedLockManager(l => new AzureDistributedLockProvider(_configuration.GetConnectionStringOrSetting("AzureWebJobsStorage"), l.GetService<ILoggerFactory>(), "sms-feedback-locks")));
+            services.AddFunctionSupport(a => a.UseDistributedLockManager(l => new AzureDistributedLockProvider(_configuration.GetConnectionStringOrSetting("AzureWebJobsStorage"), l.GetRequiredService<ILoggerFactory>(), "sms-feedback-locks")));
 
             services.AddTransient<ISettingService, SettingsProvider>((provider) => new SettingsProvider(_configuration));
-            services.AddTransient((provider) => new Notify.Client.NotificationClient(provider.GetService<ISettingService>().Get("NotifyClientApiKey")));
+            services.AddTransient((provider) => new Notify.Client.NotificationClient(provider.GetRequiredService<ISettingService>().Get("NotifyClientApiKey")));
             services.AddTransient<INotificationClient, NotificationClient>();
 
             services.AddTransient<ICommandHandlerAsync<TriggerSurveyInvitesCommand>, TriggerSurveyInvitesCommandHandler>();

@@ -3,7 +3,7 @@ using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
 using Microsoft.Azure.ServiceBus;
 using System;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.Commands
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms
 {
     public class SendSmsCommand : ICommand
     {

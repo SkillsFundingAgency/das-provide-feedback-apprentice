@@ -9,8 +9,7 @@
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
 {
-    using System.Collections.Generic;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using Newtonsoft.Json;
 
     /// <summary>

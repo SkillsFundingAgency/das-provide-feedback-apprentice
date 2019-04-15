@@ -4,9 +4,7 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
-
-    using ApprenticeFeedbackDto = ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto.ApprenticeFeedback;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SaveFeedback;
 
     public class FeedbackService : IFeedbackService
     {

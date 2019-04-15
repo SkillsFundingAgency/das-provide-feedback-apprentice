@@ -3,14 +3,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SaveFeedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Stubs;
 
     using Microsoft.Extensions.Options;
@@ -42,7 +39,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests
             this.feedbackRepo = Substitute.For<IFeedbackRepository>();
             this.saveFeedbackCommandHandler = new SaveFeedbackCommandHandler(this.feedbackRepo);
 
-            this.sut = new FeedbackService(this.saveFeedbackCommandHandler);
+            sut = new Services.FeedbackService.FeedbackService(saveFeedbackCommandHandler);
         }
 
         public class SaveFeedbackTest : FeedbackServiceTests
