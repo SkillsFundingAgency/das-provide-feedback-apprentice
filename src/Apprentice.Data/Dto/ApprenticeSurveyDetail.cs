@@ -4,6 +4,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto
 {
     public class ApprenticeSurveyInvite
     {
+        public Guid Id { get; set; }
+
         public string UniqueLearnerNumber { get; set; }
 
         public long MobileNumber { get; set; }

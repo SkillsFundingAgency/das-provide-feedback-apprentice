@@ -77,6 +77,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.AddTransient((provider) => new Notify.Client.NotificationClient(provider.GetService<ISettingService>().Get("NotifyClientApiKey")));
             services.AddTransient<INotificationClient, NotificationClient>();
 
+            services.AddTransient<ICommandHandlerAsync<TriggerSurveyInvitesCommand>, TriggerSurveyInvitesCommandHandler>();
             services.AddTransient<ICommandHandlerAsync<SendSmsCommand>, SendSmsCommandHandler>();
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>, SendSmsCommandHandlerWithWaitForPreviousSms>();
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithOrderCheck(inner, provider.GetRequiredService<IConversationRepository>()));

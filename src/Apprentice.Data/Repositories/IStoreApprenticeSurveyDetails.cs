@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 
@@ -8,6 +9,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
     {
         Task<IEnumerable<ApprenticeSurveyInvite>> GetApprenticeSurveyInvitesAsync(int batchSize);
 
-        Task SetApprenticeSurveySentAsync(string uniqueLearnerNumber, string surveyCode);
+        Task SetApprenticeSurveySentAsync(Guid apprenticeSurveyId);
+
+        Task SetApprenticeSurveyNotSentAsync(Guid apprenticeSurveyId);
     }
 }
