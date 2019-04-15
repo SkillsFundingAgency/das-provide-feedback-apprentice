@@ -17,7 +17,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     {        
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
-        [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
+        [ServiceBusTrigger("%OutgoingMessageQueueName%", Connection = "ServiceBusConnection")]
         Message queueMessage,
         ILogger log,
         [Inject]ICommandHandlerAsync<SendSmsCommand> commandHandler)

@@ -572,6 +572,18 @@
                             {
                                 "name": "ApprenticeBatchSize",
                                 "value": "[string(parameters('apprenticeBatchSize'))]"
+                            },
+                            {
+                                "name": "OutgoingMessageQueueName",
+                                "value": "[variables('queues').OutgoingMessageQueueName]"
+                            },
+                            {
+                                "name": "IncomingMessageQueueName",
+                                "value": "[variables('queues').IncomingMessageQueueName]"
+                            },
+                            {
+                                "name": "DeliveryReceiptQueueName",
+                                "value": "[variables('queues').DeliveryReceiptQueueName]"
                             }
                         ]
                     },

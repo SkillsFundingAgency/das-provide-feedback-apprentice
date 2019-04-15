@@ -6,7 +6,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.Web.Http;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
@@ -23,7 +22,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
-            [ServiceBus("sms-incoming-messages", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            [ServiceBus("%IncomingMessageQueueName%", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
             IAsyncCollector<IncomingSms> queue,
             ILogger log,
             ExecutionContext context)

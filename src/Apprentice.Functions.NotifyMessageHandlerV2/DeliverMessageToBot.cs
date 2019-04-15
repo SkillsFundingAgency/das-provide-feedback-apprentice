@@ -48,7 +48,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         /// <returns> the <see cref="Task"/> </returns>
         [FunctionName("DeliverMessageToBot")]
         public static async Task Run(
-        [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
+        [ServiceBusTrigger("%IncomingMessageQueueName%", Connection = "ServiceBusConnection")]
         string queueMessage,
         [Inject] SettingsProvider configuration,
         ILogger log,

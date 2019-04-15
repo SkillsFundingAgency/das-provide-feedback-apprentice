@@ -20,7 +20,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
-            [ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            [ServiceBus("%DeliveryLogMessageQueueName%", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
             IAsyncCollector<SmsDeliveryReceipt> queue,
             ILogger log,
             ExecutionContext context)
