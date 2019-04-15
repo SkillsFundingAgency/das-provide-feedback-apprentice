@@ -8,7 +8,7 @@ using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Depen
 using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
-using Microsoft.Azure.ServiceBus;
+using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.TriggerSurveyInvites;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -69,7 +69,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.AddTransient<IDbConnection>(c => new SqlConnection(_configuration.GetConnectionStringOrSetting("SqlConnectionString")));
             services.AddScoped<IStoreApprenticeSurveyDetails, ApprenticeSurveyInvitesRepository>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
-            services.AddSingleton<IQueueClient>(new QueueClient(_configuration.GetConnectionStringOrSetting("ServiceBusConnection"), "sms-outgoing-messages"));
+            services.AddSingleton<IQueueClientFactory, QueueClientFactory>();
 
             services.AddFunctionSupport(a => a.UseDistributedLockManager(l => new AzureDistributedLockProvider(_configuration.GetConnectionStringOrSetting("AzureWebJobsStorage"), l.GetRequiredService<ILoggerFactory>(), "sms-feedback-locks")));
 
@@ -82,7 +82,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>, SendSmsCommandHandlerWithWaitForPreviousSms>();
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithOrderCheck(inner, provider.GetRequiredService<IConversationRepository>()));
             services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithLocking(inner, provider.GetRequiredService<IDistributedLockProvider>()));
-            services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithDelayHandler(inner, provider.GetRequiredService<IQueueClient>(), provider.GetRequiredService<ILoggerFactory>(), provider.GetRequiredService<ISettingService>()));
+            services.Decorate<ICommandHandlerAsync<SendSmsCommand>>((inner, provider) => new SendSmsCommandHandlerWithDelayHandler(inner, provider.GetRequiredService<IQueueClientFactory>(), provider.GetRequiredService<ILoggerFactory>(), provider.GetRequiredService<ISettingService>()));
         }
 
         private void ConfigureNLog()

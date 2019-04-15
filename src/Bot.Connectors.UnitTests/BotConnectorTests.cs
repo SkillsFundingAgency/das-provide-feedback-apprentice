@@ -59,14 +59,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
             }
 
             [Fact]
-            public async Task ShouldThrowExceptionIfApiResponseIsWonky()
+            public Task ShouldThrowExceptionIfApiResponseIsWonky()
             {
                 // arrange
                 this.botClient.StartConversationAsync()
                     .Returns(FakeDirectLineApi.FakeWonkyResponseAsync());
 
                 // assert
-                await Assert.ThrowsAsync<Exception>(() => this.connector.StartConversationAsync());
+                return Assert.ThrowsAsync<Exception>(() => this.connector.StartConversationAsync());
             }
         }
 

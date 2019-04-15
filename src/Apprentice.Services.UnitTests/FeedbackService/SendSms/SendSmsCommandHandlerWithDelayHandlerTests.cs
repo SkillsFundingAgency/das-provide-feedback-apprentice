@@ -32,6 +32,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
 
         public SendSmsCommandHandlerWithDelayHandlerTests()
         {
+            var mockQueueClientFactory = new Mock<IQueueClientFactory>();
+
             _mockHandler = new Mock<ICommandHandlerAsync<SendSmsCommand>>();
             _mockQueueClient = new Mock<IQueueClient>();
             _mockLogger = new Mock<ILogger>();
@@ -55,9 +57,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 .Setup(m => m.CreateLogger(It.IsAny<string>()))                
                 .Returns(_mockLogger.Object);
 
+            mockQueueClientFactory.Setup(mock => mock.CreateOutgoingSmsQueueClient()).Returns(_mockQueueClient.Object);
+
             _sut = new SendSmsCommandHandlerWithDelayHandler(
                 _mockHandler.Object,
-                _mockQueueClient.Object,
+                mockQueueClientFactory.Object,
                 _mockLoggerFactory.Object,
                 _mockSettingService.Object);
         }

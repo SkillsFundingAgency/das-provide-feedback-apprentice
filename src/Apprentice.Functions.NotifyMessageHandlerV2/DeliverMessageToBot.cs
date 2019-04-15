@@ -50,17 +50,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task Run(
         [ServiceBusTrigger("sms-incoming-messages", Connection = "ServiceBusConnection")]
         string queueMessage,
-        Int32 deliveryCount,
-        DateTime enqueuedTimeUtc,
-        string messageId,
         [Inject] SettingsProvider configuration,
         ILogger log,
         ExecutionContext context)
         {
-            MessageId = messageId;
-            log.LogInformation(deliveryCount.ToString());
-            log.LogInformation(enqueuedTimeUtc.ToLongDateString());
-            log.LogInformation(messageId);
             Configuration = configuration;
             currentContext = context;
             IncomingSms incomingSms = JsonConvert.DeserializeObject<IncomingSms>(queueMessage);

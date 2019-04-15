@@ -21,12 +21,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
 
         public SendSmsCommandHandlerWithDelayHandler(
             ICommandHandlerAsync<SendSmsCommand> handler, 
-            IQueueClient queueClient,
+            IQueueClientFactory queueClientFactory,
             ILoggerFactory logFactory,
             ISettingService settingService)
         {
             _handler = handler;
-            _queueClient = queueClient;
+            _queueClient = queueClientFactory.CreateOutgoingSmsQueueClient();
             _log = logFactory.CreateLogger<SendSmsCommandHandlerWithDelayHandler>();
             _settingService = settingService;
         }

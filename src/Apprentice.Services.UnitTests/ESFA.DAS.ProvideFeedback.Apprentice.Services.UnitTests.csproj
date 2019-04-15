@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bogus" Version="26.0.2" />
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
@@ -24,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Apprentice.Data\ESFA.DAS.ProvideFeedback.Apprentice.Data.csproj" />
+    <ProjectReference Include="..\Apprentice.Functions.NotifyMessageHandlerV2\ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.csproj" />
     <ProjectReference Include="..\Apprentice.Services.FeedbackService\ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.csproj" />
     <ProjectReference Include="..\Apprentice.Services\ESFA.DAS.ProvideFeedback.Apprentice.Services.csproj" />
   </ItemGroup>

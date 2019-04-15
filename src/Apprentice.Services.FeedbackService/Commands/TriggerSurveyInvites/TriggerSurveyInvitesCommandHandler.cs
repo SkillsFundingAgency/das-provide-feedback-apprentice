@@ -1,29 +1,32 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.Commands;
-using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Application.CommandHandlers
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.TriggerSurveyInvites
 {
     public class TriggerSurveyInvitesCommandHandler : ICommandHandlerAsync<TriggerSurveyInvitesCommand>
     {
         private readonly IStoreApprenticeSurveyDetails _surveyDetailsRepo;
         private readonly ISettingService _settingService;
+        private readonly IQueueClient _queueClient;
         private readonly ILogger<TriggerSurveyInvitesCommandHandler> _logger;
 
         public TriggerSurveyInvitesCommandHandler(
             IStoreApprenticeSurveyDetails surveyDetailsRepo,
             ISettingService settingService,
+            IQueueClientFactory  queueClientFactory,
             ILogger<TriggerSurveyInvitesCommandHandler> logger)
         {
             _surveyDetailsRepo = surveyDetailsRepo;
             _settingService = settingService;
+            _queueClient = queueClientFactory.CreateIncomingSmsQueueClient();
             _logger = logger;
         }
 
@@ -57,7 +60,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.A
 
                 try
                 {
-                   await command.OutputSbQueue.AddAsync(trigger);
+                    Message serviceBusMessage = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(trigger)));
+                    await _queueClient.SendAsync(serviceBusMessage);
                 }
                 catch(Exception ex)
                 {
