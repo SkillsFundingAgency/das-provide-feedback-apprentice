@@ -1,140 +1,140 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-  "parameters": {
-    "appServiceName": {
-      "type": "string"
-    },
-    "appServicePlanName": {
-      "type": "string"
-    },
-    "botServiceName": {
-      "type": "string"
-    },
-    "botServiceSku": {
-      "type": "string",
-      "allowedValues": [
-        "Free",
-        "Standard"
-      ]
-    },
-    "microsoftAppCredentials": {
-      "type": "secureObject",
-      "defaultValue": {
-        "Id": "",
-        "Password": ""
+    "parameters": {
+      "appServiceName": {
+        "type": "string"
+      },
+      "appServicePlanName": {
+        "type": "string"
+      },
+      "botServiceName": {
+        "type": "string"
+      },
+      "botServiceSku": {
+        "type": "string",
+        "allowedValues": [
+          "Free",
+          "Standard"
+        ]
+      },
+      "microsoftAppCredentials": {
+        "type": "secureObject",
+        "defaultValue": {
+          "Id": "",
+          "Password": ""
+        }
+      },
+      "functionAppName": {
+        "type": "string"
+      },
+      "storageAccountName": {
+        "type": "string"
+      },
+      "serviceBusNamespaceName": {
+        "type": "string"
+      },
+      "cosmosDbName": {
+        "type": "string"
+      },
+      "cosmosDbThroughput": {
+        "type": "int"
+      },
+      "botClientCredentials": {
+        "type": "secureObject",
+        "defaultValue": {
+          "BaseAddress": "",
+          "AuthToken": "",
+          "DirectLineAddress": ""
+        }
+      },
+      "notifyCredentials": {
+        "type": "secureObject",
+        "defaultValue": {
+          "TemplateId": "",
+          "SmsSenderId": "",
+          "ClientApiKey": ""
+        }
+      },
+      "maxRetryAttempts": {
+        "type": "int",
+        "defaultValue": 5
+      },
+      "retryDelayMs": {
+        "type": "int",
+        "defaultValue": 60000
+      },
+      "loggingRedisConnectionString": {
+        "type": "securestring"
+      },
+      "environmentName": {
+        "type": "string"
+      },
+      "databaseName": {
+        "type": "string"
+      },
+      "sqlServerName": {
+        "type": "string"
+      },
+      "sqlServerResourceGroupName": {
+        "type": "string"
+      },
+      "elasticPoolName": {
+        "type": "string"
+      },
+      "botEndpoint": {
+        "type": "string"
+      },
+      "logAnalyticsSubscriptionId": {
+        "type": "string",
+        "defaultValue": "[subscription().subscriptionId]"
+      },
+      "logAnalyticsResourceGroup": {
+        "type": "string"
+      },
+      "logAnalyticsWorkspaceName": {
+        "type": "string"
+      },
+      "functionCustomHostname": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "functionCertificateName": {
+        "type": "string"
+      },
+      "botCustomHostname": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "botCertificateName": {
+        "type": "string"
+      },
+      "aseHostingEnvironmentName": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "aseResourceGroup": {
+        "type": "string",
+        "defaultValue": ""
+      },
+      "certificateKeyVaultName": {
+        "type": "string"
+      },
+      "certificateKeyVaultResourceGroupName": {
+        "type": "string"
+      },
+      "botAdminCommands": {
+        "type": "string",
+        "defaultValue": "bot_state_expire, bot_state_reset, bot_state_view, bot_dialog_start"
+      },
+      "apprenticeBatchSize": {
+        "type": "int",
+        "defaultValue": 5
+      },
+      "dailySurveyTriggerSchedule": {
+        "type": "string"
       }
     },
-    "functionAppName": {
-      "type": "string"
-    },
-    "storageAccountName": {
-      "type": "string"
-    },
-    "serviceBusNamespaceName": {
-      "type": "string"
-    },
-    "cosmosDbName": {
-      "type": "string"
-    },
-    "cosmosDbThroughput": {
-      "type": "int"
-    },
-    "botClientCredentials": {
-      "type": "secureObject",
-      "defaultValue": {
-        "BaseAddress": "",
-        "AuthToken": "",
-        "DirectLineAddress": ""
-      }
-    },
-    "notifyCredentials": {
-      "type": "secureObject",
-      "defaultValue": {
-        "TemplateId": "",
-        "SmsSenderId": "",
-        "ClientApiKey": ""
-      }
-    },
-    "maxRetryAttempts": {
-      "type": "int",
-      "defaultValue": 5
-    },
-    "retryDelayMs": {
-      "type": "int",
-      "defaultValue": 60000
-    },
-    "loggingRedisConnectionString": {
-      "type": "securestring"
-    },
-    "environmentName": {
-      "type": "string"
-    },
-    "databaseName": {
-      "type": "string"
-    },
-    "sqlServerName": {
-      "type": "string"
-    },
-    "sqlServerResourceGroupName": {
-      "type": "string"
-    },
-    "elasticPoolName": {
-      "type": "string"
-    },
-    "botEndpoint": {
-      "type": "string"
-    },
-    "logAnalyticsSubscriptionId": {
-      "type": "string",
-      "defaultValue": "[subscription().subscriptionId]"
-    },
-    "logAnalyticsResourceGroup": {
-      "type": "string"
-    },
-    "logAnalyticsWorkspaceName": {
-      "type": "string"
-    },
-    "functionCustomHostname": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "functionCertificateName": {
-      "type": "string"
-    },
-    "botCustomHostname": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "botCertificateName": {
-      "type": "string"
-    },
-    "aseHostingEnvironmentName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "aseResourceGroup": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "certificateKeyVaultName": {
-      "type": "string"
-    },
-    "certificateKeyVaultResourceGroupName": {
-      "type": "string"
-    },
-    "botAdminCommands": {
-      "type": "string",
-      "defaultValue": "bot_state_expire, bot_state_reset, bot_state_view, bot_dialog_start"
-    },
-    "apprenticeBatchSize": {
-      "type": "int",
-      "defaultValue": 5
-    },
-    "dailySurveyTriggerSchedule": {
-      "type": "string"
-    }
-  },
     "variables": {
         "azureCosmosEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]",
         "data": {
