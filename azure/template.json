@@ -510,14 +510,6 @@
                                 "value": "[variables('data').SessionStateTable]"
                             },
                             {
-                                "name": "OutgoingMessageQueueName",
-                                "value": "[variables('queues').OutgoingMessageQueueName]"
-                            },
-                            {
-                                "name": "IncomingMessageQueueName",
-                                "value": "[variables('queues').IncomingMessageQueueName]"
-                            },
-                            {
                                 "name": "BotClientAuthToken",
                                 "value": "[parameters('botClientCredentials').AuthToken]"
                             },
