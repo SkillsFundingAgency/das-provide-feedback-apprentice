@@ -54,10 +54,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
             {
                 await HandleDelay(command.QueueMessage, PreviousMessageNotSentCount, () => notSentEx);
             }
-            catch(AggregateException ex)
-            {
-                var test = ex;
-            }
         }
 
         private async Task HandleDelay(Message queueMessage, string retryKey, Func<Exception> throwOnExpiry)
