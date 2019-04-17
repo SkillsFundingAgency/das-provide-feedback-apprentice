@@ -8,17 +8,12 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
-
-    using Microsoft.Azure.ServiceBus;
-    using Microsoft.Azure.ServiceBus.InteropExtensions;
     using Microsoft.Azure.WebJobs;
     using Microsoft.Extensions.Logging;
 
     using Newtonsoft.Json;
     using Notify.Client;
     using Notify.Models.Responses;
-
-    using MessageLockLostException = Microsoft.Azure.ServiceBus.MessageLockLostException;
 
     public static class SendSmsMessage
     {
@@ -35,7 +30,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         [FunctionName("SendSmsMessage")]
         public static async Task Run(
-        [ServiceBusTrigger("sms-outgoing-messages", Connection = "ServiceBusConnection")]
+        [ServiceBusTrigger("sms-outgoing-messages", Connection="ServiceBusConnection")]
         string queueMessage,
         ILogger log,
         ExecutionContext context)

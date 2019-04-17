@@ -5,9 +5,6 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Data;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using Microsoft.Bot.Builder;

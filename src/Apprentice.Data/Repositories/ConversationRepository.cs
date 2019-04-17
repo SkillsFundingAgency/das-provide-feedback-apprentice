@@ -11,9 +11,9 @@
 
     public class CosmosConversationRepository : CosmosDbRepositoryBase<CosmosConversationRepository>, IConversationRepository
     {
-        public async Task SaveConversation(ConversationLog conversationLog)
+        public Task SaveConversation(ConversationLog conversationLog)
         {
-            await this.UpsertItemAsync(conversationLog);
+            return this.UpsertItemAsync(conversationLog);
         }
     }
 }

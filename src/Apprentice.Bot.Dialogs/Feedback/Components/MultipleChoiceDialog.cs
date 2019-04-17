@@ -1,14 +1,16 @@
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 {
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Helpers;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Builder.Dialogs.Choices;
@@ -29,19 +31,23 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
         private readonly FeatureToggles features;
 
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
+
+        private readonly IFeedbackService feedbackService;
 
         /// <inheritdoc />
         public MultipleChoiceDialog(
             string dialogId,
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             BotSettings botSettings,
-            FeatureToggles features)
+            FeatureToggles features,
+            IFeedbackService feedbackService)
             : base(dialogId)
         {
             this.botSettings = botSettings;
             this.features = features;
             this.state = state;
+            this.feedbackService = feedbackService;
         }
 
         public int PointsAvailable { get; private set; } = 1;
@@ -55,7 +61,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             var steps = new WaterfallStep[]
                 {
                     this.AskQuestionAsync,
-                    this.SendResponseAsync,
+                    this.SendResponseToUserAsync,
                     this.EndDialogAsync,
                 };
 
@@ -110,7 +116,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return await stepContext.PromptAsync(ChoicePrompt, promptOptions, cancellationToken);
         }
 
-        private MultipleChoiceQuestionResponse HandleResponse(WaterfallStepContext stepContext)
+        private MultipleChoiceQuestionResponse HandleUserResponse(WaterfallStepContext stepContext)
         {
             string utterance = stepContext.Context.Activity.Text; // What did they say?
             string intent = (stepContext.Result as FoundChoice)?.Value; // What did they mean?
@@ -128,7 +134,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return feedbackResponse;
         }
 
-        private async Task<DialogTurnResult> SendResponseAsync(
+        private async Task<DialogTurnResult> SendResponseToUserAsync(
             WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
@@ -138,10 +144,13 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
                                           cancellationToken);
 
             userProfile.SurveyState.Progress = ProgressState.InProgress;
-
-            MultipleChoiceQuestionResponse feedbackResponse = this.HandleResponse(stepContext);
+            MultipleChoiceQuestionResponse feedbackResponse = this.HandleUserResponse(stepContext);
 
             userProfile.SurveyState.Responses.Add(feedbackResponse);
+
+            ApprenticeFeedback feedback = CreateFeedbackDto(userProfile);
+            
+            await this.feedbackService.SaveFeedbackAsync(feedback);
 
             await this.Responses.Create(
                 stepContext.Context,
@@ -154,12 +163,52 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
 
-        private async Task<DialogTurnResult> EndDialogAsync(
+        private Task<DialogTurnResult> EndDialogAsync(
             WaterfallStepContext stepContext,
             CancellationToken cancellationToken)
         {
-            return await stepContext.EndDialogAsync(cancellationToken: cancellationToken);
+            return stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
+
+        /// <summary>
+        /// Package the FeedbackDTO from the user profile session data
+        /// </summary>
+        /// <param name="userProfile">the user profile from bot state</param>
+        /// <returns>Feedback model</returns>
+        private static ApprenticeFeedback CreateFeedbackDto(UserProfile userProfile) =>
+            new ApprenticeFeedback
+            {
+                Id = userProfile.Id,
+                Apprentice = new Apprentice
+                {
+
+                    UniqueLearnerNumber = userProfile.IlrNumber,
+                    ApprenticeId = userProfile.UserId,
+                },
+                Apprenticeship = new Apprenticeship
+                {
+                    StandardCode = userProfile.StandardCode.GetValueOrDefault(),
+                    ApprenticeshipStartDate = userProfile.ApprenticeshipStartDate.GetValueOrDefault()
+                },
+                SurveyId = userProfile.SurveyState.SurveyId,
+                StartTime = userProfile.SurveyState.StartDate,
+                FinishTime = userProfile.SurveyState.EndDate.GetValueOrDefault(),
+                Responses = userProfile.SurveyState.Responses.Select(ConvertToResponseData).ToList()
+            };
+
+        /// <summary>
+        /// Package the responses
+        /// </summary>
+        /// <param name="questionResponse"></param>
+        /// <returns></returns>
+        private static ApprenticeResponse ConvertToResponseData(IQuestionResponse questionResponse) =>
+            new ApprenticeResponse
+            {
+                Question = questionResponse.Question,
+                Answer = questionResponse.Answer,
+                Intent = questionResponse.Intent,
+                Score = questionResponse.Score
+            };
 
         /// <summary>
         /// TODO: pull this out into a configuration object injected at bot start </summary>

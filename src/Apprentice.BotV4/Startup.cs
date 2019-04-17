@@ -162,11 +162,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     // options.Middleware.Add<AzureStorageSmsRelay>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
-                    options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
                 });
 
-            services.AddSingleton<FeedbackBotStateRepository>(
+            services.AddSingleton<IFeedbackBotStateRepository, FeedbackBotStateRepository>(
                 sp =>
                 {
                     // We need to grab the conversationState we added on the options in the previous step

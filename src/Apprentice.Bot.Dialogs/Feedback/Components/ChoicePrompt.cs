@@ -16,7 +16,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
     /// </summary>
     public class ChoicePrompt : Microsoft.Bot.Builder.Dialogs.ChoicePrompt
     {
-        private readonly FeedbackBotStateRepository stateRepository;
+        private readonly IFeedbackBotStateRepository stateRepository;
 
         public override Task<DialogTurnResult> BeginDialogAsync(DialogContext dc, object options, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -116,7 +116,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
             return base.OnRecognizeAsync(turnContext, state, options, cancellationToken);
         }
 
-        public ChoicePrompt(string dialogId, FeedbackBotStateRepository stateRepository, PromptValidator<FoundChoice> validator = null, string defaultLocale = null)
+        public ChoicePrompt(string dialogId, IFeedbackBotStateRepository stateRepository, PromptValidator<FoundChoice> validator = null, string defaultLocale = null)
             : base(dialogId, validator, defaultLocale)
         {
             this.stateRepository = stateRepository;

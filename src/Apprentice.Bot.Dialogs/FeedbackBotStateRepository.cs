@@ -13,7 +13,7 @@
     ///  - See the Startup.cs file for more details on creating the Singleton that gets
     ///    injected into the constructor.
     /// </summary>
-    public class FeedbackBotStateRepository
+    public class FeedbackBotStateRepository : IFeedbackBotStateRepository
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FeedbackBotStateRepository"/> class.
