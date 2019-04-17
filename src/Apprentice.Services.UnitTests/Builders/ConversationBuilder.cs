@@ -16,7 +16,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders
             return new Conversation
             {
                 Id = _id,
-                UserId = _userId,
                 ActivityId = _activityId,
                 TurnId = _turnId
             };

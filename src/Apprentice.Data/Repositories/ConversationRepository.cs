@@ -18,7 +18,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
         public Task<Conversation> Get(string id)
         {
             return _dbConnection.QueryFirstOrDefaultAsync<Conversation>(sql: $@"
-                                        SELECT Id, UserId, ActivityId, TurnId 
+                                        SELECT Id, ActivityId, TurnId 
                                         FROM Conversations
                                         WHERE Id = @{nameof(id)}", param: new { id }, commandTimeout: _commandTimeoutSeconds);
         }
@@ -30,7 +30,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
                         USING (
                         SELECT 
                             @{nameof(conversation.Id)} AS Id, 
-                            @{nameof(conversation.UserId)} AS UserId, 
                             @{nameof(conversation.ActivityId)} AS ActivityId, 
                             @{nameof(conversation.TurnId)} AS TurnId
                             ) AS [Source] 
@@ -38,9 +37,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
                         WHEN MATCHED THEN 
                             UPDATE SET [Target].ActivityId = [Source].ActivityId, [Target].TurnId = [Source].TurnId
                         WHEN NOT MATCHED THEN 
-                            INSERT (Id, UserId, ActivityId, TurnId ) VALUES ([Source].Id, [Source].UserId, [Source].ActivityId, [Source].TurnId);";
+                            INSERT (Id, ActivityId, TurnId ) VALUES ([Source].Id, [Source].ActivityId, [Source].TurnId);";
 
-            return _dbConnection.ExecuteAsync(sql, param: new { conversation.Id, conversation.UserId, conversation.ActivityId, conversation.TurnId });
+            return _dbConnection.ExecuteAsync(sql, param: new { conversation.Id, conversation.ActivityId, conversation.TurnId });
         }
     }
 }

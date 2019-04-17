@@ -91,7 +91,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 {
 
                     c.Id.Should().Be(message.Conversation.ConversationId);
-                    c.UserId.Should().Be(message.Conversation.UserId);
                     c.ActivityId.Should().Be(message.Conversation.ActivityId);
                     c.TurnId.Should().Be(message.Conversation.TurnId);
 

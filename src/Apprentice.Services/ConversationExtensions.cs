@@ -1,5 +1,4 @@
-﻿using System;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
 {
@@ -10,7 +9,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
             return new Conversation
             {
                 Id = botConversation.ConversationId,
-                UserId = Guid.Parse(botConversation.UserId),
                 ActivityId = botConversation.ActivityId,
                 TurnId = botConversation.TurnId
             };

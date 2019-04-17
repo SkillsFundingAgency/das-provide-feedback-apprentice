@@ -30,6 +30,11 @@
                 UserProfile userProfile = await this.state.UserProfile.GetAsync(dc.Context, () => new UserProfile(), cancellationToken);
                 userProfile.SurveyState = new SurveyState();
 
+                var turnProperty = this.state.ConversationState.CreateProperty<long>("turnId");
+                var turnId = await turnProperty.GetAsync(dc.Context, () => -1);
+                await turnProperty.SetAsync(dc.Context, ++turnId, cancellationToken);
+                await this.state.ConversationState.SaveChangesAsync(dc.Context, cancellationToken: cancellationToken);
+
                 if (userProfile.SurveyState.Progress == ProgressState.NotStarted)
                 {
                     string message = dc.Context.Activity.Text.ToLowerInvariant();
