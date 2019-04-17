@@ -3,9 +3,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System;
     using System.Text;
     using System.Threading.Tasks;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
     using Microsoft.Azure.ServiceBus;

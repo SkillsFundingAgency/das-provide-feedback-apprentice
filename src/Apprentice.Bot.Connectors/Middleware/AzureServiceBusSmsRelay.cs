@@ -5,21 +5,16 @@
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using Microsoft.Azure.ServiceBus;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;
 
     using Newtonsoft.Json;
-
-    using AzureConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Azure;
-    using DataConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Data;
-    using NotifyConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Notify;
 
     public class AzureServiceBusSmsRelay : IMessageQueueMiddleware
     {
@@ -54,21 +49,21 @@
             queueClient.CloseAsync();
         }
 
-        public async Task EnqueueMessageAsync(ITurnContext context, Activity activity)
+        public Task EnqueueMessageAsync(ITurnContext context, Activity activity)
         {
             OutgoingSms sms = new OutgoingSms
                 {
                     From = new Participant { UserId = context.Activity.From.Id },
                     Recipient = new Participant { UserId = context.Activity.Recipient.Id },
-                    Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id },
-                    ChannelData = context.Activity.ChannelData,
+                Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id },
+                ChannelData = context.Activity.ChannelData,
                     ChannelId = context.Activity.ChannelId,
                     Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),
                     Message = activity.Text,
                 };
 
             var message = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(sms)));
-            await queueClient.SendAsync(message);
+            return queueClient.SendAsync(message);
         }
 
         /// <inheritdoc />

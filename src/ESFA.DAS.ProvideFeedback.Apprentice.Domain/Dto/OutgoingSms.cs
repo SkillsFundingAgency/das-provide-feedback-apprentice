@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
+namespace ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto
 {
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
     using Newtonsoft.Json;

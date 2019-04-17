@@ -1,10 +1,11 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Logging;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms
 {
@@ -26,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
             ISettingService settingService)
         {
             _handler = handler;
-            _queueClient = queueClientFactory.CreateOutgoingSmsQueueClient();
+            _queueClient = queueClientFactory.Create<SmsOutgoingMessage>();
             _log = logFactory.CreateLogger<SendSmsCommandHandlerWithDelayHandler>();
             _settingService = settingService;
         }
@@ -58,8 +59,8 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
 
         private async Task HandleDelay(Message queueMessage, string retryKey, Func<Exception> throwOnExpiry)
         {
-            int maxRetryAttempts = _settingService.GetInt("maxRetryAttempts");
-            int processingDelay = _settingService.GetInt("retryDelayMs");
+            int maxRetryAttempts = _settingService.GetInt("MaxRetryAttempts");
+            int processingDelay = _settingService.GetInt("RetryDelayMs");
 
             int resubmitCount = queueMessage.UserProperties.ContainsKey(retryKey) ? (int)queueMessage.UserProperties[retryKey] : 0;
 

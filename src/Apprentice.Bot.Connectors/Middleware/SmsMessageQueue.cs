@@ -4,12 +4,12 @@
     using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     using Microsoft.Bot.Builder;
@@ -37,17 +37,17 @@
             var turnId = await turnProperty.GetAsync(context, () => -1);
 
             OutgoingSms sms = new OutgoingSms
-                {
-                    From = new Participant { UserId = context.Activity.From.Id },
-                    Recipient = new Participant { UserId = context.Activity.Recipient.Id },
-                    Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id, UserId = context.Activity.From.Id, ActivityId = activity.Id, TurnId = turnId },
-                    ChannelData = context.Activity.ChannelData,
-                    ChannelId = context.Activity.ChannelId,
-                    Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),
-                    Message = activity.Text,
-                };
+            {
+                From = new Participant { UserId = context.Activity.From.Id },
+                Recipient = new Participant { UserId = context.Activity.Recipient.Id },
+                Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id, UserId = context.Activity.From.Id, ActivityId = activity.Id, TurnId = turnId },
+                ChannelData = context.Activity.ChannelData,
+                ChannelId = context.Activity.ChannelId,
+                Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),
+                Message = activity.Text,
+            };
 
-            var message = JsonConvert.SerializeObject(sms);
+            var message = new SmsOutgoingMessage(sms);
 
             await this.smsQueueProvider.SendAsync(activity.Conversation.Id, message, this.notifyConfig.OutgoingMessageQueueName);
         }
@@ -69,7 +69,7 @@
                             {
                                 return await activityNext();
                             }
-                            
+
                             foreach (Activity activity in activityList)
                             {
                                 if (activity.Type != ActivityTypes.Message || !activity.HasContent())

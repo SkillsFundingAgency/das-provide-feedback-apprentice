@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.TriggerSurveyInvites
 {
@@ -26,7 +25,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
         {
             _surveyDetailsRepo = surveyDetailsRepo;
             _settingService = settingService;
-            _queueClient = queueClientFactory.CreateIncomingSmsQueueClient();
+            _queueClient = queueClientFactory.Create<SmsIncomingMessage>();
             _logger = logger;
         }
 
@@ -60,7 +59,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
 
                 try
                 {
-                    Message serviceBusMessage = new Message(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(trigger)));
+                    var serviceBusMessage = new SmsIncomingMessage(trigger);
                     await _queueClient.SendAsync(serviceBusMessage);
                 }
                 catch(Exception ex)

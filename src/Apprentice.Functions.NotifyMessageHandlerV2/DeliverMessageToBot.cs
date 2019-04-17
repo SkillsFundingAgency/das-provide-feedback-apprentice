@@ -6,10 +6,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.DependecyInjection;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;

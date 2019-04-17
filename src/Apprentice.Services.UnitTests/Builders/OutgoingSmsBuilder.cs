@@ -1,6 +1,6 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+﻿using System;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
-using System;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders
 {

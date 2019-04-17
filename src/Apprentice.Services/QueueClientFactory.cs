@@ -1,4 +1,6 @@
-﻿using Microsoft.Azure.ServiceBus;
+﻿using System;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
+using Microsoft.Azure.ServiceBus;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
 {
@@ -15,14 +17,28 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
             _outgoingMessagesQueueName = settingService.Get("OutgoingMessageQueueName");
         }
 
-        public IQueueClient CreateIncomingSmsQueueClient()
+        public IQueueClient Create<T>() where T : Message
         {
-            return new QueueClient(_servicebusConnection, _incomingMessagesQueueName);
+            var type = typeof(T);
+
+            if (type.IsAssignableFrom(typeof(SmsIncomingMessage)))
+            {
+                return CreateQueueClient(_incomingMessagesQueueName);
+            }
+
+            if (type.IsAssignableFrom(typeof(SmsOutgoingMessage)))
+            {
+                return CreateQueueClient(_outgoingMessagesQueueName);
+            }
+            else
+            {
+                throw new NotImplementedException($"Creating a queue client for type {nameof(type)} is not implemented");
+            }
         }
 
-        public IQueueClient CreateOutgoingSmsQueueClient()
+        private IQueueClient CreateQueueClient(string queueName)
         {
-            return new QueueClient(_servicebusConnection, _outgoingMessagesQueueName);
+            return new QueueClient(_servicebusConnection, queueName);
         }
     }
 }

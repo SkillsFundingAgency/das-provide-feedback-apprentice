@@ -1,15 +1,15 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
-using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
-using ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders;
-using Microsoft.Azure.ServiceBus;
-using Moq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xunit;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
+using ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders;
 using FluentAssertions;
+using Microsoft.Azure.ServiceBus;
+using Moq;
+using Xunit;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService.SendSms
 {

@@ -1,18 +1,19 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders;
-using Microsoft.Azure.ServiceBus;
-using Moq;
-using System.Threading.Tasks;
-using Xunit;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-using Microsoft.Extensions.Logging;
-using System.Threading;
-using System;
 using FluentAssertions;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
-using System.Linq;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Internal;
+using Moq;
+using Xunit;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService.SendSms
 {
@@ -57,7 +58,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 .Setup(m => m.CreateLogger(It.IsAny<string>()))                
                 .Returns(_mockLogger.Object);
 
-            mockQueueClientFactory.Setup(mock => mock.CreateOutgoingSmsQueueClient()).Returns(_mockQueueClient.Object);
+            mockQueueClientFactory.Setup(mock => mock.Create<SmsOutgoingMessage>()).Returns(_mockQueueClient.Object);
 
             _sut = new SendSmsCommandHandlerWithDelayHandler(
                 _mockHandler.Object,

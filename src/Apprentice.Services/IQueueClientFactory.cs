@@ -4,7 +4,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
 {
     public interface IQueueClientFactory
     {
-        IQueueClient CreateIncomingSmsQueueClient();
-        IQueueClient CreateOutgoingSmsQueueClient();
+        IQueueClient Create<T>() where T : Message;
     }
 }

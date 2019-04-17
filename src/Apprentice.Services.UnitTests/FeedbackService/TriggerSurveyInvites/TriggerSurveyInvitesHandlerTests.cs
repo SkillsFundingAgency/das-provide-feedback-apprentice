@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Bogus;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.TriggerSurveyInvites;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Extensions.Logging;
@@ -28,7 +29,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             _mockQueueClientFactory = new Mock<IQueueClientFactory>();
             _mockQueueClient = new Mock<IQueueClient>();
 
-            _mockQueueClientFactory.Setup(mock => mock.CreateIncomingSmsQueueClient()).Returns(_mockQueueClient.Object);
+            _mockQueueClientFactory.Setup(mock => mock.Create<SmsIncomingMessage>()).Returns(_mockQueueClient.Object);
             _mockSettingService.Setup(mock => mock.GetInt("ApprenticeBatchSize")).Returns(5);
 
             _sut = new TriggerSurveyInvitesCommandHandler(_mockSurveyDetailsRepo.Object, _mockSettingService.Object, _mockQueueClientFactory.Object, Mock.Of<ILogger<TriggerSurveyInvitesCommandHandler>>());

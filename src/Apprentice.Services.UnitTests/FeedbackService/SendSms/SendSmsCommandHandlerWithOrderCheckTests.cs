@@ -1,17 +1,17 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders;
+using FluentAssertions;
 using Microsoft.Azure.ServiceBus;
 using Moq;
-using System.Threading.Tasks;
 using Xunit;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
-using System.Threading;
-using System;
-using FluentAssertions;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
-using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService.SendSms
 {

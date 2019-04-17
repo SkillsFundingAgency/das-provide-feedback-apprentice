@@ -32,7 +32,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
 
             if (!isSent)
             {
-                throw new PreviousMessageNotSentException("Previous SMS message for conversation {reference} has not yet been sent.");
+                throw new PreviousMessageNotSentException($"Previous SMS message for conversation {reference} has not yet been sent.");
             }
 
             await _handler.HandleAsync(command, cancellationToken);

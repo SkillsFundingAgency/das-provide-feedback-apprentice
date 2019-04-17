@@ -1,17 +1,18 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware;
 using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
+using ESFA.DAS.ProvideFeedback.Apprentice.Services;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Xunit;
-using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 using Microsoft.Extensions.Options;
-
+using Moq;
 using Newtonsoft.Json;
-using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+using Xunit;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middleware
 {
@@ -63,6 +64,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
             // set up the test activity with some random text and known ChannelId and ConversationId
             _testActivity = new Activity
             {
+                Id = Guid.NewGuid().ToString(),
                 Type = ActivityTypes.Message,
                 Text = Guid.NewGuid().ToString(),
                 ChannelId = "Test",
@@ -98,7 +100,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
                 await _sut.EnqueueMessageAsync(_mockTurnContext.Object, _testActivity);
 
                 //assert
-                _mockSmsQueueProvider.Verify(m => m.SendAsync(_testActivity.Conversation.Id, It.IsAny<string>(), _testOutgoingQueueName), times: Times.Once);
+                _mockSmsQueueProvider.Verify(m => m.SendAsync(_testActivity.Conversation.Id, It.IsAny<Message>(), _testOutgoingQueueName), times: Times.Once);
             }
 
             [Fact]
@@ -107,10 +109,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
                 // arrange
                 OutgoingSms sentSms = null;
                 _mockSmsQueueProvider
-                    .Setup(m => m.SendAsync(_testActivity.Conversation.Id, It.IsAny<string>(), _testOutgoingQueueName))
-                    .Callback<string, string, string>((conversationId, message, queueName) =>
+                    .Setup(m => m.SendAsync(_testActivity.Conversation.Id, It.IsAny<Message>(), _testOutgoingQueueName))
+                    .Callback<string, Message, string>((conversationId, message, queueName) =>
                    {
-                       sentSms = JsonConvert.DeserializeObject<OutgoingSms>(message);
+                       sentSms = JsonConvert.DeserializeObject<OutgoingSms>(Encoding.UTF8.GetString(message.Body));
                    })
                    .Returns(Task.CompletedTask);
 
@@ -122,9 +124,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
             }
         }
 
-        private async Task InitialiseTurnIdInTestStorage(long value)
+        private Task InitialiseTurnIdInTestStorage(long value)
         {
-            await _testStorage.WriteAsync(new Dictionary<string, object>
+            return _testStorage.WriteAsync(new Dictionary<string, object>
             {
                 { $"{_testActivity.ChannelId}/conversations/{_testActivity.Conversation.Id}",
                     new Dictionary<string, object>

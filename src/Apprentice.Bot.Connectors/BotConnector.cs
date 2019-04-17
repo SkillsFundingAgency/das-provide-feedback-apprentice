@@ -3,11 +3,9 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;
 

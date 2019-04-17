@@ -1,7 +1,7 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+﻿using System;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
+using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
 using Microsoft.Azure.ServiceBus;
-using System;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms
 {

@@ -33,7 +33,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Apprentice.Bot.Connectors\ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.csproj" />
     <ProjectReference Include="..\Apprentice.Core\ESFA.DAS.ProvideFeedback.Apprentice.Core.csproj" />
     <ProjectReference Include="..\Apprentice.Data\ESFA.DAS.ProvideFeedback.Apprentice.Data.csproj" />
     <ProjectReference Include="..\Apprentice.Services.FeedbackService\ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.csproj" />
