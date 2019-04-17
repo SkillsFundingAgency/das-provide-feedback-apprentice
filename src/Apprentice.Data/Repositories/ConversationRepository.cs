@@ -1,8 +1,7 @@
-﻿using Dapper;
-using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
-using System;
-using System.Data;
+﻿using System.Data;
 using System.Threading.Tasks;
+using Dapper;
+using ESFA.DAS.ProvideFeedback.Apprentice.Data.Dto;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
 {
@@ -16,15 +15,15 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
             _dbConnection = dbConnection;
         }
 
-        public async Task<Conversation> Get(Guid id)
+        public Task<Conversation> Get(string id)
         {
-            return await _dbConnection.QueryFirstOrDefaultAsync<Conversation>(sql: $@"
+            return _dbConnection.QueryFirstOrDefaultAsync<Conversation>(sql: $@"
                                         SELECT Id, UserId, ActivityId, TurnId 
                                         FROM Conversations
                                         WHERE Id = @{nameof(id)}", param: new { id }, commandTimeout: _commandTimeoutSeconds);
         }
 
-        public async Task Save(Conversation conversation)
+        public Task Save(Conversation conversation)
         {
             var sql = $@"
                         MERGE Conversations AS [Target]
@@ -41,7 +40,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
                         WHEN NOT MATCHED THEN 
                             INSERT (Id, UserId, ActivityId, TurnId ) VALUES ([Source].Id, [Source].UserId, [Source].ActivityId, [Source].TurnId);";
 
-            await _dbConnection.ExecuteAsync(sql, param: new { conversation.Id, conversation.UserId, conversation.ActivityId, conversation.TurnId });
+            return _dbConnection.ExecuteAsync(sql, param: new { conversation.Id, conversation.UserId, conversation.ActivityId, conversation.TurnId });
         }
     }
 }

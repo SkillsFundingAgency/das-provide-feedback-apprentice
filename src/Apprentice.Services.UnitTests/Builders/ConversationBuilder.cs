@@ -6,7 +6,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders
 {
     public class ConversationBuilder
     {
-        private Guid _id = Guid.NewGuid();
+        private string _id = Guid.NewGuid().ToString();
         private Guid _userId = Guid.NewGuid();
         private string _activityId = Guid.NewGuid().ToString();
         private long _turnId = 1;
@@ -21,7 +21,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.Builders
                 TurnId = _turnId
             };
         }
-        public ConversationBuilder WithId(Guid id)
+        public ConversationBuilder WithId(string id)
         {
             _id = id;
             return this;

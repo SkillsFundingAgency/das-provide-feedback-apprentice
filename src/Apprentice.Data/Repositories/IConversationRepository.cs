@@ -6,7 +6,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories
 {
     public interface IConversationRepository
     {
-        Task<Conversation> Get(Guid id);
+        Task<Conversation> Get(string id);
         Task Save(Conversation conversation);
     }
 }

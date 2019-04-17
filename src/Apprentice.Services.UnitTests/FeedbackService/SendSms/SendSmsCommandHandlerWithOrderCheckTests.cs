@@ -82,7 +82,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 await _sut.HandleAsync(command);
 
                 //assert
-                _mockConversationRepository.Verify(m => m.Get(new Guid(_testOutgoingSms.Conversation.ConversationId)), Times.Once);
+                _mockConversationRepository.Verify(m => m.Get(_testOutgoingSms.Conversation.ConversationId), Times.Once);
             }
 
             [Fact]
@@ -90,7 +90,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             {
                 // arrange
                 Conversation lastConversation = new ConversationBuilder()
-                    .WithId(new Guid(_testOutgoingSms.Conversation.ConversationId))
+                    .WithId(_testOutgoingSms.Conversation.ConversationId)
                     .WithTurnId(2);
 
                 _testOutgoingSms.Conversation.TurnId = lastConversation.TurnId + 1;
@@ -98,7 +98,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);                
 
                 _mockConversationRepository
-                    .Setup(m => m.Get(new Guid(_testOutgoingSms.Conversation.ConversationId)))
+                    .Setup(m => m.Get(_testOutgoingSms.Conversation.ConversationId))
                     .ReturnsAsync(lastConversation);
 
                 // act
@@ -113,7 +113,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             {
                 // arrange
                 Conversation lastConversation = new ConversationBuilder()
-                    .WithId(new Guid(_testOutgoingSms.Conversation.ConversationId))
+                    .WithId(_testOutgoingSms.Conversation.ConversationId)
                     .WithTurnId(2);
 
                 _testOutgoingSms.Conversation.TurnId = lastConversation.TurnId - 1;
@@ -121,7 +121,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
 
                 _mockConversationRepository
-                    .Setup(m => m.Get(new Guid(_testOutgoingSms.Conversation.ConversationId)))
+                    .Setup(m => m.Get(_testOutgoingSms.Conversation.ConversationId))
                     .ReturnsAsync(lastConversation);
 
                 // act
@@ -136,7 +136,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             {
                 // arrange
                 Conversation lastConversation = new ConversationBuilder()
-                    .WithId(new Guid(_testOutgoingSms.Conversation.ConversationId))
+                    .WithId(_testOutgoingSms.Conversation.ConversationId)
                     .WithTurnId(2);
 
                 _testOutgoingSms.Conversation.TurnId = lastConversation.TurnId;
@@ -144,7 +144,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
 
                 _mockConversationRepository
-                    .Setup(m => m.Get(new Guid(_testOutgoingSms.Conversation.ConversationId)))
+                    .Setup(m => m.Get(_testOutgoingSms.Conversation.ConversationId))
                     .ReturnsAsync(lastConversation);
 
                 // act
@@ -159,7 +159,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             {
                 // arrange
                 Conversation lastConversation = new ConversationBuilder()
-                    .WithId(new Guid(_testOutgoingSms.Conversation.ConversationId))
+                    .WithId(_testOutgoingSms.Conversation.ConversationId)
                     .WithTurnId(3);
 
                 _testOutgoingSms.Conversation.TurnId = lastConversation.TurnId + 2;
@@ -167,7 +167,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
 
                 _mockConversationRepository
-                    .Setup(m => m.Get(new Guid(_testOutgoingSms.Conversation.ConversationId)))
+                    .Setup(m => m.Get(_testOutgoingSms.Conversation.ConversationId))
                     .ReturnsAsync(lastConversation);
 
                 // act
@@ -182,7 +182,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             {
                 // arrange
                 Conversation lastConversation = new ConversationBuilder()
-                    .WithId(new Guid(_testOutgoingSms.Conversation.ConversationId))
+                    .WithId(_testOutgoingSms.Conversation.ConversationId)
                     .WithTurnId(3);
 
                 _testOutgoingSms.Conversation.TurnId = lastConversation.TurnId + 2;
@@ -190,7 +190,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
                 var command = new SendSmsCommand(_testOutgoingSms, _testQueueMessage);
 
                 _mockConversationRepository
-                    .Setup(m => m.Get(new Guid(_testOutgoingSms.Conversation.ConversationId)))
+                    .Setup(m => m.Get(_testOutgoingSms.Conversation.ConversationId))
                     .ReturnsAsync(lastConversation);
 
                 // act

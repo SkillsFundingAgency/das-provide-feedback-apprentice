@@ -9,7 +9,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services
         {
             return new Conversation
             {
-                Id = Guid.Parse(botConversation.ConversationId.Substring(0, 36)),
+                Id = botConversation.ConversationId,
                 UserId = Guid.Parse(botConversation.UserId),
                 ActivityId = botConversation.ActivityId,
                 TurnId = botConversation.TurnId
