@@ -10,7 +10,7 @@ public static class DailySurveyTrigger
 {
     [FunctionName("DailySurveyTrigger")]
     public static async Task Run(
-        [TimerTrigger("%DailySurveyTriggerSchedule%", RunOnStartup = true)]TimerInfo myTimer,
+        [TimerTrigger("%DailySurveyTriggerSchedule%")]TimerInfo myTimer,
         [Inject]ICommandHandlerAsync<TriggerSurveyInvitesCommand> commandHandler,
         ILogger log,
         ExecutionContext executionContext)
