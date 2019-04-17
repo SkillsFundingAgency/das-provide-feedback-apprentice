@@ -10,7 +10,7 @@
 
     public class SurveyStartDialogComponentBuilder : ComponentBuilder<StartStepDefinition>
     {
-        public SurveyStartDialogComponentBuilder(FeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings)
+        public SurveyStartDialogComponentBuilder(IFeedbackBotStateRepository state, IOptions<Features> features, IOptions<Bot> botSettings)
             : base(state, features, botSettings)
         {
         }

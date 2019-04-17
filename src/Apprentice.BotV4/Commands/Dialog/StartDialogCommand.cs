@@ -15,9 +15,9 @@
 
     public sealed class StartDialogCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
-        public StartDialogCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+        public StartDialogCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
             : base("bot_dialog_start", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));

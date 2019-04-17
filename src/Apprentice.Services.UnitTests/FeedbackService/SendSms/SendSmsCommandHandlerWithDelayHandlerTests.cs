@@ -47,11 +47,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.UnitTests.FeedbackService
             _retryDelayMs = 1000;
             
             _mockSettingService
-                .Setup(m => m.GetInt("maxRetryAttempts"))
+                .Setup(m => m.GetInt("MaxRetryAttempts"))
                 .Returns(_maxRetryAttempts);
 
             _mockSettingService
-                .Setup(m => m.GetInt("retryDelayMs"))
+                .Setup(m => m.GetInt("RetryDelayMs"))
                 .Returns(_retryDelayMs);
 
             _mockLoggerFactory

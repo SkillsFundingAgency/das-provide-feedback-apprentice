@@ -155,10 +155,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
                     var userState = new UserState(dataStore);
                     options.State.Add(userState);
-
-                    // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-                    // options.Middleware.Add(new UserState<UserProfile>(dataStore));
-                    // options.Middleware.Add<AzureStorageSmsRelay>(services);
+                    
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
@@ -167,7 +164,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
                 });
 
-            services.AddSingleton<FeedbackBotStateRepository>(
+            services.AddSingleton<IFeedbackBotStateRepository, FeedbackBotStateRepository>(
                 sp =>
                 {
                     // We need to grab the conversationState we added on the options in the previous step
@@ -274,7 +271,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         {
             services.AddSingleton<IDialogFactory, DialogFactory>();
             services.AddSingleton<ISmsQueueProvider, AzureServiceBusClient>();
-            //services.AddSingleton<ISmsQueueProvider, AzureStorageQueueClient>();
             services.AddSingleton<IMessageQueueMiddleware, SmsMessageQueue>();
 
             services.AddSingleton<IFeedbackService, FeedbackService>();

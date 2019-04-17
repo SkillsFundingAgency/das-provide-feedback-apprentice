@@ -47,7 +47,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
                 Id = Guid.NewGuid().ToString(),
                 SourceNumber = mobileNumber,
                 DestinationNumber = null,
-                Message = "bot_dialog_start ifa-v1",
+                Message = "bot_dialog_start afb-v5",
                 DateReceived = DateTime.UtcNow,
                 UniqueLearnerNumber = "uln_here",
                 ApprenticeshipStartDate = DateTime.Now.AddYears(-1),

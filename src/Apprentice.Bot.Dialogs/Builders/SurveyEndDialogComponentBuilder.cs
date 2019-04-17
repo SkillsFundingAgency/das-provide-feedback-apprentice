@@ -1,11 +1,9 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Builders
 {
-    using System;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
@@ -15,21 +13,17 @@
 
     public class SurveyEndDialogComponentBuilder : ComponentBuilder<EndStepDefinition>
     {
-        private readonly IFeedbackService feedbackService;
-
         public SurveyEndDialogComponentBuilder(
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             IOptions<FeatureToggles> features,
-            IOptions<BotSettings> botSettings,
-            IFeedbackService feedbackService)
+            IOptions<BotSettings> botSettings)
             : base(state, features, botSettings)
         {
-            this.feedbackService = feedbackService ?? throw new ArgumentNullException(nameof(state));
         }
 
         public override ComponentDialog Create(ISurveyStepDefinition stepDefinition)
         {
-            return new SurveyEndDialog(stepDefinition.Id, this.State, this.BotSettings, this.Features, this.feedbackService)
+            return new SurveyEndDialog(stepDefinition.Id, this.State, this.BotSettings, this.Features)
                 .WithResponses(stepDefinition.Responses)
                 .Build();
         }

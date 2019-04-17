@@ -1,11 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.State
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
 
     /// <summary>
     /// User state information.
@@ -13,6 +8,8 @@
     [Serializable]
     public class UserProfile
     {
+        public Guid Id { get; set; }
+
         public string UserId { get; set; }
 
         public string IlrNumber { get; set; }
