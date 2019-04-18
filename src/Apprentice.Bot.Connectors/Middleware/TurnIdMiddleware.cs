@@ -1,6 +1,5 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
-    using System;
     using System.Threading;
     using System.Threading.Tasks;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
@@ -9,9 +8,9 @@
 
     public class TurnIdMiddleware : IMiddleware
     {
-        private readonly FeedbackBotStateRepository feedbackBotStateRepository;
+        private readonly IFeedbackBotStateRepository feedbackBotStateRepository;
 
-        public TurnIdMiddleware(FeedbackBotStateRepository feedbackBotStateRepository)
+        public TurnIdMiddleware(IFeedbackBotStateRepository feedbackBotStateRepository)
         {
             this.feedbackBotStateRepository = feedbackBotStateRepository;
         }

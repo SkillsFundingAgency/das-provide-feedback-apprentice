@@ -1,18 +1,18 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using Microsoft.Bot.Builder;
-    using Microsoft.Bot.Schema;
-    using System.Linq;
     using Microsoft.Bot.Builder.Dialogs;
+    using Microsoft.Bot.Schema;
 
     public class ActivityIdMiddleware : IMiddleware
     {
-        private readonly FeedbackBotStateRepository feedbackBotStateRepository;
+        private readonly IFeedbackBotStateRepository feedbackBotStateRepository;
 
-        public ActivityIdMiddleware(FeedbackBotStateRepository feedbackBotStateRepository)
+        public ActivityIdMiddleware(IFeedbackBotStateRepository feedbackBotStateRepository)
         {
             this.feedbackBotStateRepository = feedbackBotStateRepository;
         }

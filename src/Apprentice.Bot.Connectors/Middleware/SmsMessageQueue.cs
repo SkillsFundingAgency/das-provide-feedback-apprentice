@@ -11,20 +11,17 @@
     using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Messages;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
-
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;
-
-    using Newtonsoft.Json;
 
     public class SmsMessageQueue : IMessageQueueMiddleware
     {
         private readonly ISmsQueueProvider smsQueueProvider;
         private readonly Notify notifyConfig;
-        private readonly FeedbackBotStateRepository feedbackBotStateRepository;
+        private readonly IFeedbackBotStateRepository feedbackBotStateRepository;
 
-        public SmsMessageQueue(ISmsQueueProvider smsQueueProvider, IOptions<Notify> notifyConfigOptions, FeedbackBotStateRepository feedbackBotStateRepository)
+        public SmsMessageQueue(ISmsQueueProvider smsQueueProvider, IOptions<Notify> notifyConfigOptions, IFeedbackBotStateRepository feedbackBotStateRepository)
         {
             this.notifyConfig = notifyConfigOptions.Value;
             this.smsQueueProvider = smsQueueProvider;
