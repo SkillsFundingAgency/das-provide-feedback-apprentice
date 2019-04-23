@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
@@ -47,18 +46,13 @@
             throw new NotImplementedException();
         }
 
-        public async Task SendAsync(string conversationId, string message, string queueName)
+        public async Task SendAsync(string conversationId, Message message, string queueName)
         {
             try
             {
                 IQueueClient client = this.queueClients.First(q => q.QueueName == queueName);
 
-                Message serviceBusMessage = new Message(Encoding.UTF8.GetBytes(message))
-                {
-                    SessionId = conversationId
-                };
-
-                await client.SendAsync(serviceBusMessage);
+                await client.SendAsync(message);
             }
             catch (InvalidOperationException e)
             {

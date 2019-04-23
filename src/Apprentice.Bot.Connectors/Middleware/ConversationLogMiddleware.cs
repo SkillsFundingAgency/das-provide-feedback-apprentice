@@ -13,13 +13,13 @@
     /// <inheritdoc />
     public class ConversationLogMiddleware : IMiddleware
     {        
-        private readonly IConversationRepository conversationRepository;
+        private readonly IConversationLogRepository conversationRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConversationLogMiddleware"/> class. 
         /// </summary>
         /// <param name="conversationRepository">Conversation storage</param>
-        public ConversationLogMiddleware(IConversationRepository conversationRepository)
+        public ConversationLogMiddleware(IConversationLogRepository conversationRepository)
         {
             this.conversationRepository = conversationRepository;
         }
@@ -78,7 +78,7 @@
                 // Write our log to the database.
                 try
                 {
-                    await this.conversationRepository.SaveConversation(logData);
+                    await this.conversationRepository.Save(logData);
                 }
                 catch (Exception ex)
                 {

@@ -106,7 +106,14 @@
                     botSettings.Typing.ThinkingTimeDelay);
             }
 
-            await context.SendActivityAsync(response, InputHints.IgnoringInput, cancellationToken: cancellationToken);
+            var activity = new Activity() {
+                Id = context.Activity.Id,
+                Type = ActivityTypes.Message,
+                InputHint = InputHints.IgnoringInput,
+                Text = response
+            };
+
+            await context.SendActivityAsync(activity, cancellationToken: cancellationToken);
         }
     }
 }

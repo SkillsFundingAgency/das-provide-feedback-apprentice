@@ -4,11 +4,9 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
     using System.Linq;
     using System.Net.Http;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using Microsoft.Extensions.Options;
 
     using NSubstitute;
@@ -59,14 +57,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
             }
 
             [Fact]
-            public async Task ShouldThrowExceptionIfApiResponseIsWonky()
+            public Task ShouldThrowExceptionIfApiResponseIsWonky()
             {
                 // arrange
                 this.botClient.StartConversationAsync()
                     .Returns(FakeDirectLineApi.FakeWonkyResponseAsync());
 
                 // assert
-                await Assert.ThrowsAsync<Exception>(() => this.connector.StartConversationAsync());
+                return Assert.ThrowsAsync<Exception>(() => this.connector.StartConversationAsync());
             }
         }
 
@@ -101,7 +99,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
             }
 
             [Fact]
-            public async Task ShouldThrowExceptionIfConversationIdNotFound()
+            public Task ShouldThrowExceptionIfConversationIdNotFound()
             {
                 // arrange
                 const string INVALID_MOBILE = "07709393939";
@@ -114,11 +112,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
                     .Returns(FakeDirectLineApi.FakePostToConversationAsync(conversationId, msg));
 
                 // assert
-                await Assert.ThrowsAsync<HttpRequestException>(() => this.connector.PostToBotAsync(INVALID_CONVERSATION_ID, msg));
+                return Assert.ThrowsAsync<HttpRequestException>(() => this.connector.PostToBotAsync(INVALID_CONVERSATION_ID, msg));
             }
 
             [Fact]
-            public async Task ShouldThrowExceptionIfApiResponseIsWonky()
+            public Task ShouldThrowExceptionIfApiResponseIsWonky()
             {
                 // arrange
                 const string VALID_MOBILE = "01234567890";
@@ -130,7 +128,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests
                     .Returns(FakeDirectLineApi.FakeWonkyResponseAsync());
 
                 // assert
-                await Assert.ThrowsAsync<Exception>(() => this.connector.PostToBotAsync(VALID_CONVERSATION_ID, msg));
+                return Assert.ThrowsAsync<Exception>(() => this.connector.PostToBotAsync(VALID_CONVERSATION_ID, msg));
             }
 
         }

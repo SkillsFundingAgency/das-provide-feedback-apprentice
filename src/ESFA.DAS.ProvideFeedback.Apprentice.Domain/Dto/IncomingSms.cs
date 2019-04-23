@@ -1,7 +1,6 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto
 {
     using System;
-
     using Newtonsoft.Json;
 
     public enum SmsType

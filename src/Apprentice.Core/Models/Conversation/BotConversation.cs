@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation
 {
     using System;
 
@@ -13,7 +13,10 @@
         [JsonProperty("userId")]
         public string UserId { get; set; }
 
+         [JsonProperty("activityId")]
+        public string ActivityId { get; set; }
+
         [JsonProperty("turnId")]
-        public int TurnId { get; set; }
+        public long TurnId { get; set; }
     }
 }

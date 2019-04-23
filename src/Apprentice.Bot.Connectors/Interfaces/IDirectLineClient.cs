@@ -3,8 +3,7 @@
     using System;
     using System.Net.Http;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
 
     public interface IDirectLineClient : IDisposable
     {
