@@ -127,12 +127,10 @@
       "type": "string"
     },
     "maxRetryAttempts": {
-      "type": "int",
-      "defaultValue": 5
+      "type": "int"
     },
     "retryDelayMs": {
-      "type": "int",
-      "defaultValue": 60000
+      "type": "int"
     }
   },
     "variables": {
