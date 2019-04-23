@@ -62,6 +62,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
                 log.LogInformation($"Response received from {incomingSms.SourceNumber}, sending to bot...");
 
                 string userId = incomingSms.SourceNumber; // TODO: [security] hash me please!
+                // If we key this on unique survey to user then we can have different conversationId's per survey run for the same number
                 BotConversation conversation = await GetConversationByUserId(userId);
 
                 if (conversation == null)
