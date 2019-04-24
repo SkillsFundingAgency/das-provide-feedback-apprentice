@@ -29,7 +29,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
 
         private const string QuestionsGettingSupport = "Next question, are you getting the support you need?";
 
-        private const string QuestionsHelpingWithJob = "Is your apprenticeship helping you with your job?";
+        private const string QuestionsHelpingWithJob = "Is your apprenticeship training helping you with your job?";
 
         private const string QuestionsOverallSatisfaction = "Overall, are you satisfied with your apprenticeship?";
 
