@@ -25,9 +25,32 @@
                 new AuthenticationHeaderValue("Bearer", authToken);
         }
 
-        public Task<HttpResponseMessage> StartConversationAsync()
+        public async Task<HttpResponseMessage> StartConversationAsync()
         {
-            return this.client.GetAsync("/v3/directline/conversations");
+            var newToken = await GenerateToken();
+
+            this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", newToken);
+            return await this.client.GetAsync("/v3/directline/conversations");
+        }
+
+        private async Task<string> GenerateToken()
+        {
+            var content = new StringContent("");
+            content.Headers.ContentType.MediaType = "application/json";
+
+            var result = await this.client.PostAsync($"/v3/directline/tokens/generate", content);
+
+            result.EnsureSuccessStatusCode();
+
+            dynamic json = await result.Content.ReadAsStringAsync();
+            GenerateTokenResponse tokenResult = JsonConvert.DeserializeObject<GenerateTokenResponse>(json);
+
+            if (tokenResult.Token == null)
+            {
+                throw new Exception($"Could not convert JSON object to {nameof(GenerateTokenResponse)}");
+            }
+
+            return tokenResult.Token;
         }
 
         public Task<HttpResponseMessage> PostToConversationAsync(string conversationId, BotMessage message)
@@ -43,5 +66,6 @@
             this.client.CancelPendingRequests();
             this.client?.Dispose();
         }
+        
     }
 }
