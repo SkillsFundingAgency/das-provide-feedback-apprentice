@@ -32,6 +32,20 @@
             return await this.client.GetAsync("/v3/directline/conversations");
         }
 
+        public Task<HttpResponseMessage> PostToConversationAsync(string conversationId, BotMessage message)
+        {
+            HttpContent content = new StringContent(JsonConvert.SerializeObject(message));
+            content.Headers.ContentType.MediaType = "application/json";
+
+            return this.client.PostAsync($"/v3/directline/conversations/{conversationId}/activities", content);
+        }
+
+        public void Dispose()
+        {
+            this.client.CancelPendingRequests();
+            this.client?.Dispose();
+        }
+
         private async Task<string> GenerateToken()
         {
             var content = new StringContent("");
@@ -59,21 +73,6 @@
                 var error = await response.Content.ReadAsStringAsync();
                 throw new Exception($"Response code {response.StatusCode} returned from call to 'directline' with error {error}");
             }
-        }
-
-        public Task<HttpResponseMessage> PostToConversationAsync(string conversationId, BotMessage message)
-        {
-            HttpContent content = new StringContent(JsonConvert.SerializeObject(message));
-            content.Headers.ContentType.MediaType = "application/json";
-
-            return this.client.PostAsync($"/v3/directline/conversations/{conversationId}/activities", content);
-        }
-
-        public void Dispose()
-        {
-            this.client.CancelPendingRequests();
-            this.client?.Dispose();
-        }
-        
+        }        
     }
 }
