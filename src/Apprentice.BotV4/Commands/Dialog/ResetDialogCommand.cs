@@ -13,9 +13,9 @@
 
     public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
-        public ResetDialogCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+        public ResetDialogCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
             : base("bot_state_reset", botConfiguration)
         {
             this.state = state;

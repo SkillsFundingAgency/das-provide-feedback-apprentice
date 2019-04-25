@@ -1,10 +1,11 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
     using System;
+    using System.Text;
     using System.Threading.Tasks;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
-
+    using Microsoft.Azure.ServiceBus;
     using Microsoft.Extensions.Options;
     using Microsoft.WindowsAzure.Storage;
     using Microsoft.WindowsAzure.Storage.Queue;
@@ -40,12 +41,12 @@
             throw new NotImplementedException();
         }
 
-        public async Task SendAsync(string conversationId, string message, string queueName)
+        public async Task SendAsync(string conversationId, Message message, string queueName)
         {
             CloudQueue messageQueue = this.queueClient.GetQueueReference(queueName);
             await messageQueue.CreateIfNotExistsAsync();
 
-            CloudQueueMessage queueMessage = new CloudQueueMessage(message);
+            CloudQueueMessage queueMessage = new CloudQueueMessage(Encoding.UTF8.GetString(message.Body));
             await messageQueue.AddMessageAsync(queueMessage);
         }
     }

@@ -4,9 +4,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     using System.IO;
     using System.Threading.Tasks;
     using System.Web.Http;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Services;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Azure.ServiceBus;
@@ -22,14 +20,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         public static async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)]
             HttpRequest req,
-            [ServiceBus("sms-delivery-log", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
+            [ServiceBus("%DeliveryReceiptQueueName%", Connection = "ServiceBusConnection", EntityType = Microsoft.Azure.WebJobs.ServiceBus.EntityType.Queue)]
             IAsyncCollector<SmsDeliveryReceipt> queue,
             ILogger log,
             ExecutionContext context)
         {
             try
             {
-                string requestBody = new StreamReader(req.Body).ReadToEnd();
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 SmsDeliveryReceipt deliveryReceipt = JsonConvert.DeserializeObject<SmsDeliveryReceipt>(requestBody);
 
                 log.LogInformation($"{deliveryReceipt.Status}: (to: {deliveryReceipt.To} uuid: {deliveryReceipt.Reference}");

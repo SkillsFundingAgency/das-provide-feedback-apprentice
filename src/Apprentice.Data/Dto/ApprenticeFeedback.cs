@@ -9,7 +9,6 @@
     [Serializable]
     public class ApprenticeFeedback : TypedDocument<ApprenticeFeedback>
     {
-
         [JsonProperty("surveyId")]
         public string SurveyId { get; set; }
 

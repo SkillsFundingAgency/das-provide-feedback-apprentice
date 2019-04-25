@@ -29,7 +29,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
 
         private const string QuestionsGettingSupport = "Next question, are you getting the support you need?";
 
-        private const string QuestionsHelpingWithJob = "Is your apprenticeship helping you with your job?";
+        private const string QuestionsHelpingWithJob = "Is your apprenticeship training helping you with your job?";
 
         private const string QuestionsOverallSatisfaction = "Overall, are you satisfied with your apprenticeship?";
 
@@ -91,14 +91,14 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Surveys
                         },
                     new PredicateBotResponse
                         {
-                            Id = nameof(FinishSpeakToYourEmployer),
-                            Predicate = u => u.Score < 300 && u.Score >= 200,
+                            Id = nameof(FinishWeWillBeInTouch),
+                            Predicate = u => u.Score < 300 && u.Score > 0,
                             Prompt = FinishWeWillBeInTouch,
                         },
                     new PredicateBotResponse
                         {
                             Id = nameof(FinishSpeakToYourEmployer),
-                            Predicate = u => u.Score < 200,
+                            Predicate = u => u.Score <= 0,
                             Prompt = FinishSpeakToYourEmployer,
                         },
                 };

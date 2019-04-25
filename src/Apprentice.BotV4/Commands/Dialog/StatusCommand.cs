@@ -16,9 +16,9 @@
 
     public sealed class StatusCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
-        public StatusCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+        public StatusCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
             : base("bot_state_view", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));

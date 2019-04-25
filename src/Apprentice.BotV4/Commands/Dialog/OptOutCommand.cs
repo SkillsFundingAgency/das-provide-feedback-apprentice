@@ -13,9 +13,9 @@
 
     public sealed class OptOutCommand : UserCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
-        public OptOutCommand(FeedbackBotStateRepository state)
+        public OptOutCommand(IFeedbackBotStateRepository state)
             : base("stop")
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));

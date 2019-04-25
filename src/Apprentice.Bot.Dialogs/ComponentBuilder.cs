@@ -3,8 +3,6 @@
     using System;
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
-
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Extensions.Options;
 
@@ -24,10 +22,10 @@
 
         protected readonly FeatureToggles Features;
 
-        protected readonly FeedbackBotStateRepository State;
+        protected readonly IFeedbackBotStateRepository State;
 
         protected ComponentBuilder(
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             IOptions<FeatureToggles> features,
             IOptions<BotSettings> botSettings)
         {

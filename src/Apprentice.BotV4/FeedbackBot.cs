@@ -28,7 +28,7 @@
 
     public class FeedbackBot : IBot
     {
-        private readonly Bot botSettings;
+        private readonly BotSettings botSettings;
 
         private readonly IEnumerable<IBotDialogCommand> commands;
 
@@ -38,18 +38,18 @@
 
         private readonly ILogger<FeedbackBot> logger;
 
-        private readonly FeedbackBotStateRepository stateRepository;
+        private readonly IFeedbackBotStateRepository stateRepository;
 
         private readonly IEnumerable<ISurveyDefinition> surveys;
 
         public FeedbackBot(
-            FeedbackBotStateRepository stateRepository,
+            IFeedbackBotStateRepository stateRepository,
             ILoggerFactory loggerFactory,
             IEnumerable<IBotDialogCommand> commands,
             IEnumerable<ISurveyDefinition> surveys,
             IDialogFactory dialogFactory,
             IOptions<Features> featureToggles,
-            IOptions<Bot> botSettings)
+            IOptions<BotSettings> botSettings)
         {
             if (loggerFactory == null)
             {

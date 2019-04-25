@@ -14,9 +14,9 @@
 
     public sealed class ExtendCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
-        public ExtendCommand(FeedbackBotStateRepository state, Bot botConfiguration)
+        public ExtendCommand(IFeedbackBotStateRepository state, Bot botConfiguration)
             : base("bot_state_extend", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));

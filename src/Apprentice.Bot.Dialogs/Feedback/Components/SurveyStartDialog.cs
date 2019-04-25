@@ -1,5 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -18,12 +19,12 @@
 
         private readonly FeatureToggles features;
 
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
         /// <inheritdoc />
         public SurveyStartDialog(
             string dialogId,
-            FeedbackBotStateRepository state,
+            IFeedbackBotStateRepository state,
             BotSettings botSettings,
             FeatureToggles features)
             : base(dialogId)
@@ -81,8 +82,8 @@
                 this.features,
                 cancellationToken);
 
+            userInfo.Id = Guid.NewGuid();
             userInfo.UserId = stepContext.Context.Activity.From.Id;
-
             return await stepContext.NextAsync(null, cancellationToken);
         }
 

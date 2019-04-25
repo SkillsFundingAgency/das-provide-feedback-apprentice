@@ -3,12 +3,11 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Stubs
     using System;
     using System.Collections.Generic;
     using System.Dynamic;
-    using System.Globalization;
     using System.Linq;
     using System.Net;
     using System.Net.Http;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
 
     internal static class FakeDirectLineApi
     {

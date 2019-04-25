@@ -12,7 +12,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Interfaces;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Configuration;
     using ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Middleware;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
@@ -22,7 +21,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService;
-    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SaveFeedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Services.NotifySmsService.Commands;
 
     using Microsoft.AspNetCore.Builder;
@@ -156,17 +155,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
                     var userState = new UserState(dataStore);
                     options.State.Add(userState);
-
-                    // options.Middleware.Add(new ConversationState<ConversationInfo>(dataStore));
-                    // options.Middleware.Add(new UserState<UserProfile>(dataStore));
-                    // options.Middleware.Add<AzureStorageSmsRelay>(services);
+                    
                     options.Middleware.Add<ConversationLogMiddleware>(services);
                     options.Middleware.Add<ChannelConfigurationMiddleware>(services);
                     options.Middleware.Add<ConversationLogMiddleware>(services);
+                    options.Middleware.Add<ActivityIdMiddleware>(services);
+                    options.Middleware.Add<TurnIdMiddleware>(services);
                     options.Middleware.Add<IMessageQueueMiddleware>(services);
                 });
 
-            services.AddSingleton<FeedbackBotStateRepository>(
+            services.AddSingleton<IFeedbackBotStateRepository, FeedbackBotStateRepository>(
                 sp =>
                 {
                     // We need to grab the conversationState we added on the options in the previous step
@@ -246,7 +244,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
         }
 
         private AzureBlobStorage ConfigureStateDataStore(IConfiguration configuration)
-        {
+        {            
             AzureBlobStorage azureBlobStorage = new AzureBlobStorage(
                 configuration["ConnectionStrings:StorageAccount"],
                 configuration["Data:SessionStateTable"]);
@@ -281,8 +279,10 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
             services.AddTransient<ChannelConfigurationMiddleware>();
             services.AddTransient<ConversationLogMiddleware>();
+            services.AddTransient<ActivityIdMiddleware>();
+            services.AddTransient<TurnIdMiddleware>();
 
-            services.AddSingleton<IConversationRepository>(
+            services.AddSingleton<IConversationLogRepository>(
                 (svc) =>
                 {
                     string endpoint = this.Configuration["Azure:CosmosEndpoint"];

@@ -4,11 +4,10 @@
     using System.Globalization;
     using System.Threading;
     using System.Threading.Tasks;
-
-    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Dto;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Interfaces;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration;
-
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Domain.Dto;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Schema;
     using Microsoft.Extensions.Options;
@@ -76,15 +75,15 @@
             await messageQueue.CreateIfNotExistsAsync();
 
             OutgoingSms sms = new OutgoingSms
-                {
-                    From = new Participant { UserId = context.Activity.From.Id },
-                    Recipient = new Participant { UserId = context.Activity.Recipient.Id },
-                    Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id },
-                    ChannelData = context.Activity.ChannelData,
-                    ChannelId = context.Activity.ChannelId,
-                    Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),
-                    Message = activity.Text,
-                };
+            {
+                From = new Participant { UserId = context.Activity.From.Id },
+                Recipient = new Participant { UserId = context.Activity.Recipient.Id },
+                Conversation = new BotConversation { ConversationId = context.Activity.Conversation.Id },
+                ChannelData = context.Activity.ChannelData,
+                ChannelId = context.Activity.ChannelId,
+                Time = DateTime.Now.ToString(CultureInfo.InvariantCulture),
+                Message = activity.Text,
+            };
 
             CloudQueueMessage message = new CloudQueueMessage(JsonConvert.SerializeObject(sms));
             await messageQueue.AddMessageAsync(message);

@@ -14,9 +14,9 @@
 
     public sealed class ExpireCommand : AdminCommand, IBotDialogCommand
     {
-        private readonly FeedbackBotStateRepository state;
+        private readonly IFeedbackBotStateRepository state;
 
-        public ExpireCommand(FeedbackBotStateRepository state, BotConfiguration botConfiguration)
+        public ExpireCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
             : base("bot_state_expire", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));

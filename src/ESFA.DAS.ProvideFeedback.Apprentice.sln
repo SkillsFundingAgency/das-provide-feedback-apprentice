@@ -50,6 +50,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ESFA.DAS.ProvideFeedback.Ap
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "ESFA.DAS.ProvideFeedback.Apprentice.Database", "ESFA.DAS.ProvideFeedback.Apprentice.Database\ESFA.DAS.ProvideFeedback.Apprentice.Database.sqlproj", "{895B81E4-21B5-4015-9F57-9015B7FDA74D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ESFA.DAS.ProvideFeedback.Apprentice.Domain", "ESFA.DAS.ProvideFeedback.Apprentice.Domain\ESFA.DAS.ProvideFeedback.Apprentice.Domain.csproj", "{D80FDF13-BDE4-467C-A16C-C7CA5BD62B46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +116,10 @@ Global
 		{895B81E4-21B5-4015-9F57-9015B7FDA74D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{895B81E4-21B5-4015-9F57-9015B7FDA74D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{895B81E4-21B5-4015-9F57-9015B7FDA74D}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{D80FDF13-BDE4-467C-A16C-C7CA5BD62B46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D80FDF13-BDE4-467C-A16C-C7CA5BD62B46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D80FDF13-BDE4-467C-A16C-C7CA5BD62B46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D80FDF13-BDE4-467C-A16C-C7CA5BD62B46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

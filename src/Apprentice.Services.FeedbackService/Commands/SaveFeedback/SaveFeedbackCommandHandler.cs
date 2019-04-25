@@ -1,4 +1,4 @@
-﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands
+﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SaveFeedback
 {
     using System;
     using System.Threading;
@@ -23,7 +23,7 @@
             throw new System.NotImplementedException();
         }
 
-        public async Task HandleAsync(SaveFeedbackCommand command, CancellationToken cancellationToken = new CancellationToken())
+        public Task HandleAsync(SaveFeedbackCommand command, CancellationToken cancellationToken = new CancellationToken())
         {
             if (this.repository == null)
             {
@@ -33,6 +33,7 @@
             // TODO: Automapper
             var feedbackDto = new ApprenticeFeedbackDto()
             {
+                Id = command.Feedback.Id.ToString(),
                 StartTime = command.Feedback.StartTime,
                 FinishTime = command.Feedback.FinishTime,
                 SurveyId = command.Feedback.SurveyId,
@@ -42,7 +43,7 @@
                 PartitionKey = command.Feedback.Apprentice.ApprenticeId
             };
 
-            await this.repository.SaveFeedback(feedbackDto);
+            return this.repository.SaveFeedback(feedbackDto);
         }
     }
 }
