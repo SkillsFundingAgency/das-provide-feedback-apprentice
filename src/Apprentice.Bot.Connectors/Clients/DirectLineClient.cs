@@ -39,17 +39,26 @@
 
             var result = await this.client.PostAsync($"/v3/directline/tokens/generate", content);
 
-            result.EnsureSuccessStatusCode();
+            await EnsureSuccessStatusCode(result);
 
-            dynamic json = await result.Content.ReadAsStringAsync();
-            GenerateTokenResponse tokenResult = JsonConvert.DeserializeObject<GenerateTokenResponse>(json);
+            var json = await result.Content.ReadAsStringAsync();
+            var tokenResult = JsonConvert.DeserializeObject<GenerateTokenResponse>(json);
 
-            if (tokenResult.Token == null)
+            if (tokenResult?.Token == null)
             {
                 throw new Exception($"Could not convert JSON object to {nameof(GenerateTokenResponse)}");
             }
 
             return tokenResult.Token;
+        }
+
+        private async Task EnsureSuccessStatusCode(HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Response code {response.StatusCode} returned from call to 'directline' with error {error}");
+            }
         }
 
         public Task<HttpResponseMessage> PostToConversationAsync(string conversationId, BotMessage message)
