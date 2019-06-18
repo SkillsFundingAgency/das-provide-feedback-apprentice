@@ -24,7 +24,7 @@ namespace Apprentice.Bot.Dialogs.Test
 {
     public class SurveyTests
     {
-        const string SurveyCode = "afb-v5";
+        const string SurveyCode = "afb-v6";
         private ComponentDialog _dialog;
         private Mock<IFeedbackBotStateRepository> _feedbackBotStateMock;
         private Mock<IFeedbackService> _feedbackServiceMock;
@@ -50,7 +50,7 @@ namespace Apprentice.Bot.Dialogs.Test
                 new SurveyEndDialogComponentBuilder(_feedbackBotStateMock.Object, Options.Create(_features), Options.Create(botSettings))
             });
 
-            _dialog = dialogFactory.Create<SurveyDialog>(new InMemoryApprenticeFeedbackSurveyV5());
+            _dialog = dialogFactory.Create<SurveyDialog>(new InMemoryApprenticeFeedbackSurveyV6());
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Apprentice.Bot.Dialogs.Test
             return GetTestFlow()
             .Send("Say something to start test")
             .AssertReply("Here’s your apprenticeship survey from the Department for Education.")
-            .AssertReply("It's just 3 questions and it'll really help us improve apprenticeships.")
+            .AssertReply("It's just 4 questions and it'll really help us improve apprenticeships.")
             .AssertReply("Normal SMS charges apply. To stop receiving these messages, please type ‘Stop’")
             .StartTestAsync();
         }
@@ -74,7 +74,7 @@ namespace Apprentice.Bot.Dialogs.Test
             // Arrange
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("Here’s your apprenticeship survey from the Department for Education.");
-            sb.AppendLine("It's just 3 questions and it'll really help us improve apprenticeships.");
+            sb.AppendLine("It's just 4 questions and it'll really help us improve apprenticeships.");
             sb.AppendLine("Normal SMS charges apply. To stop receiving these messages, please type ‘Stop’");
 
             // Act
@@ -95,10 +95,11 @@ namespace Apprentice.Bot.Dialogs.Test
             .Send("Yes")
             .Send("Yes")
             .Send("Yes")
+            .Send("Yes")
             .StartTestAsync();
 
             // Assert
-            _feedbackServiceMock.Verify(mock => mock.SaveFeedbackAsync(It.Is<ApprenticeFeedback>(x => x.Responses.Count == 3)), Times.Once);
+            _feedbackServiceMock.Verify(mock => mock.SaveFeedbackAsync(It.Is<ApprenticeFeedback>(x => x.Responses.Count == 4)), Times.Once);
         }
 
         [Fact]
