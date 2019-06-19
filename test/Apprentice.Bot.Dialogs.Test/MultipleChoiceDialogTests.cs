@@ -47,7 +47,7 @@ namespace Apprentice.Bot.Dialogs.Test
                 new FreeTextDialogComponentBuilder(_feedbackBotStateMock.Object, Options.Create(_features), Options.Create(botSettings)),
                 new MultipleChoiceDialogComponentBuilder(_feedbackBotStateMock.Object, Options.Create(_features), Options.Create(botSettings), _feedbackServiceMock.Object),
                 new SurveyStartDialogComponentBuilder(_feedbackBotStateMock.Object, Options.Create(_features), Options.Create(botSettings)),
-                new SurveyEndDialogComponentBuilder(_feedbackBotStateMock.Object, Options.Create(_features), Options.Create(botSettings))
+                new SurveyEndDialogComponentBuilder(_feedbackBotStateMock.Object, Options.Create(_features), Options.Create(botSettings), _feedbackServiceMock.Object)
             });
 
             _dialog = dialogFactory.Create<SurveyDialog>(new InMemoryApprenticeFeedbackSurveyV6());
@@ -99,7 +99,7 @@ namespace Apprentice.Bot.Dialogs.Test
             .StartTestAsync();
 
             // Assert
-            _feedbackServiceMock.Verify(mock => mock.SaveFeedbackAsync(It.Is<ApprenticeFeedback>(x => x.Responses.Count == 4)), Times.Once);
+            _feedbackServiceMock.Verify(mock => mock.SaveFeedbackAsync(It.Is<ApprenticeFeedback>(x => x.Responses.Count == 4 && x.FinishTime != DateTime.MinValue)), Times.Once);
         }
 
         [Fact]

@@ -157,6 +157,7 @@
                     return new DialogTurnResult(DialogTurnStatus.Waiting);
 
                 case ProgressState.Complete:
+                    return await dialog.EndDialogAsync(cancellationToken);
                 case ProgressState.BlackListed:
                 case ProgressState.OptedOut:
                     return await dialog.CancelAllDialogsAsync(cancellationToken);

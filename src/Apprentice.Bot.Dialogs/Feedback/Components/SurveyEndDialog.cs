@@ -2,24 +2,27 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Models;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Conversation;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core.Models.Feedback;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder.Dialogs;
     using BotSettings = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
     using FeatureToggles = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Features;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Helpers;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 
     /// <inheritdoc />
     public sealed class SurveyEndDialog : ComponentDialog, ICustomComponent<SurveyEndDialog>
     {
         private readonly BotSettings botSettings;
-
         private readonly FeatureToggles features;
-
         private readonly IFeedbackBotStateRepository state;
+        private readonly IFeedbackService feedbackService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SurveyEndDialog"/> class.
@@ -34,12 +37,14 @@
             string dialogId, 
             IFeedbackBotStateRepository state, 
             BotSettings botSettings, 
-            FeatureToggles features)
+            FeatureToggles features,
+            IFeedbackService feedbackService)
             : base(dialogId)
         {
             this.botSettings = botSettings;
             this.features = features;
             this.state = state;
+            this.feedbackService = feedbackService;
         }
 
         /// <summary>
@@ -78,6 +83,7 @@
             var steps = new WaterfallStep[]
             {
                 this.StepAsync,
+                this.SaveFeedbackAsync,
                 this.EndDialogAsync,
             };
 
@@ -100,7 +106,23 @@
                 cancellationToken);
 
             userProfile.SurveyState.Progress = ProgressState.Complete;
-            userProfile.SurveyState.EndDate = DateTime.Now;
+             userProfile.SurveyState.EndDate = DateTime.Now;
+
+            return await stepContext.NextAsync(cancellationToken: cancellationToken);
+        }
+
+        private async Task<DialogTurnResult> SaveFeedbackAsync(
+            WaterfallStepContext stepContext,
+            CancellationToken cancellationToken)
+        {
+            UserProfile userProfile = await this.state.UserProfile.GetAsync(
+                                          stepContext.Context,
+                                          () => new UserProfile(),
+                                          cancellationToken);
+
+            ApprenticeFeedback feedback = userProfile.ToApprenticeFeedback();
+
+            await this.feedbackService.SaveFeedbackAsync(feedback);
 
             return await stepContext.NextAsync(cancellationToken: cancellationToken);
         }
