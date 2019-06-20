@@ -45,12 +45,11 @@
 
                             if (activity.Id == null)
                             {
-                                var dialogState = await feedbackBotStateRepository.ConversationDialogState.GetAsync(context);
+                                    var dialogState = await feedbackBotStateRepository.ConversationDialogState.GetAsync(context);
 
-                                var dialogInstance = dialogState.DialogStack?.FirstOrDefault()?.State.First().Value as DialogState;
-                                activity.Id = dialogInstance?.DialogStack?.FirstOrDefault()?.Id;
+                                    var dialogInstance = dialogState.DialogStack?.FirstOrDefault()?.State.First().Value as DialogState;
+                                    activity.Id = dialogInstance?.DialogStack?.FirstOrDefault()?.Id;
                             }
-
                         }
                         return await activityNext();
                     });
