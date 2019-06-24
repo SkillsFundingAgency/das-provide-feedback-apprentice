@@ -1,7 +1,6 @@
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 {
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -148,7 +147,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
 
             userProfile.SurveyState.Responses.Add(feedbackResponse);
 
-            ApprenticeFeedback feedback = CreateFeedbackDto(userProfile);
+            ApprenticeFeedback feedback = userProfile.ToApprenticeFeedback();
             
             await this.feedbackService.SaveFeedbackAsync(feedback);
 
@@ -169,46 +168,6 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Feedback.Components
         {
             return stepContext.EndDialogAsync(cancellationToken: cancellationToken);
         }
-
-        /// <summary>
-        /// Package the FeedbackDTO from the user profile session data
-        /// </summary>
-        /// <param name="userProfile">the user profile from bot state</param>
-        /// <returns>Feedback model</returns>
-        private static ApprenticeFeedback CreateFeedbackDto(UserProfile userProfile) =>
-            new ApprenticeFeedback
-            {
-                Id = userProfile.Id,
-                Apprentice = new Apprentice
-                {
-
-                    UniqueLearnerNumber = userProfile.IlrNumber,
-                    ApprenticeId = userProfile.UserId,
-                },
-                Apprenticeship = new Apprenticeship
-                {
-                    StandardCode = userProfile.StandardCode.GetValueOrDefault(),
-                    ApprenticeshipStartDate = userProfile.ApprenticeshipStartDate.GetValueOrDefault()
-                },
-                SurveyId = userProfile.SurveyState.SurveyId,
-                StartTime = userProfile.SurveyState.StartDate,
-                FinishTime = userProfile.SurveyState.EndDate.GetValueOrDefault(),
-                Responses = userProfile.SurveyState.Responses.Select(ConvertToResponseData).ToList()
-            };
-
-        /// <summary>
-        /// Package the responses
-        /// </summary>
-        /// <param name="questionResponse"></param>
-        /// <returns></returns>
-        private static ApprenticeResponse ConvertToResponseData(IQuestionResponse questionResponse) =>
-            new ApprenticeResponse
-            {
-                Question = questionResponse.Question,
-                Answer = questionResponse.Answer,
-                Intent = questionResponse.Intent,
-                Score = questionResponse.Score
-            };
 
         /// <summary>
         /// TODO: pull this out into a configuration object injected at bot start </summary>
