@@ -27,7 +27,7 @@
             userProfile.SurveyState = new SurveyState();
 
             await this.state.ConversationState.ClearStateAsync(dc.Context, cancellationToken);
-            var activity = new Activity { Id = "Reset", Text = "OK. Resetting conversation...", Type = ActivityTypes.Message };
+            var activity = new Activity { Id = "Reset", Text = "OK. Resetting conversation...", Type = ActivityTypes.Message, ChannelData = dc.Context.Activity.ChannelData };
             await dc.Context.SendActivityAsync(activity, cancellationToken: cancellationToken);
             return await dc.CancelAllDialogsAsync(cancellationToken);
         }
