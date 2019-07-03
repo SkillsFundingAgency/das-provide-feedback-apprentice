@@ -43,7 +43,7 @@
                                 continue;
                             }
 
-                            if (activity.Id == null)
+                            if (activity.Text != "OK. Resetting conversation...")
                             {
                                     var dialogState = await feedbackBotStateRepository.ConversationDialogState.GetAsync(context);
 
