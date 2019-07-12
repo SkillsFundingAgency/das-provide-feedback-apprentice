@@ -1,5 +1,6 @@
 ﻿namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.Middleware
 {
+    using System;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -45,10 +46,17 @@
 
                             if (activity.Id == null)
                             {
-                                var dialogState = await feedbackBotStateRepository.ConversationDialogState.GetAsync(context);
+                                try
+                                {
+                                    var dialogState = await feedbackBotStateRepository.ConversationDialogState.GetAsync(context);
 
-                                var dialogInstance = dialogState.DialogStack?.FirstOrDefault()?.State.First().Value as DialogState;
-                                activity.Id = dialogInstance?.DialogStack?.FirstOrDefault()?.Id;
+                                    var dialogInstance = dialogState.DialogStack?.FirstOrDefault()?.State.First().Value as DialogState;
+                                    activity.Id = dialogInstance?.DialogStack?.FirstOrDefault()?.Id;
+                                }
+                                catch(Exception ex)
+                                {
+                                    
+                                }
                             }
 
                         }
