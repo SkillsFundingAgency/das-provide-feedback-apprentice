@@ -131,6 +131,10 @@
     },
     "retryDelayMs": {
       "type": "int"
+    },
+    "cosmosDbIpRangeFilter" : {
+      "type": "string",
+      "defaultValue": ""
     }
   },
     "variables": {
@@ -625,7 +629,10 @@
                     },
                     "defaultConsistencyLevel": {
                         "value": "Strong"
-                    }
+                    },
+                    "ipRangeFilter": {
+                      "value": "[parameters('cosmosDbIpRangeFilter')]"
+                  }
                 }
             }
         },
