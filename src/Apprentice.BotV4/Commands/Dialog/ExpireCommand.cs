@@ -33,7 +33,7 @@
             }
 
             await dc.Context.SendActivityAsync($"OK. Setting the conversation progress to 'expired' ", cancellationToken: cancellationToken);
-            return new DialogTurnResult(DialogTurnStatus.Waiting);
+            return await dc.CancelAllDialogsAsync(cancellationToken);
         }
     }
 }
