@@ -136,9 +136,8 @@
       "type": "string",
       "defaultValue": ""
     },
-    "conversationExpiryDays": {
-      "type": "int",
-      "defaultValue": 7
+    "conversationExpiryHours": {
+      "type": "int"
     }
   },
     "variables": {
@@ -374,8 +373,8 @@
                           "value": "[string(parameters('botAdminCommands'))]"
                         },
                         {
-                          "name": "Bot:ConversationExpiryDays",
-                          "value": "[string(parameters('conversationExpiryDays'))]"
+                          "name": "Bot:ConversationExpiryHours",
+                          "value": "[string(parameters('conversationExpiryHours'))]"
                         },
                         {
                           "name": "Notify:OutgoingMessageQueueName",

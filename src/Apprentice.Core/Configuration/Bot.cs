@@ -20,7 +20,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration
         public string AdminCommands { get; set; }
         public List<string> AdminCommandsSplit => AdminCommands.Replace(" ", string.Empty).Split(',').ToList();
 
-        public int ConversationExpiryDays { get; set; } = 7;
+        public int ConversationExpiryHours { get; set; } = 24;
 
         /// <summary>
         /// Gets or sets the typing configuration.
