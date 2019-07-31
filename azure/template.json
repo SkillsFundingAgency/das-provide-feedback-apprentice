@@ -132,9 +132,13 @@
     "retryDelayMs": {
       "type": "int"
     },
-    "cosmosDbIpRangeFilter" : {
+    "cosmosDbIpRangeFilter": {
       "type": "string",
       "defaultValue": ""
+    },
+    "conversationExpiryDays": {
+      "type": "int",
+      "defaultValue": 7
     }
   },
     "variables": {
@@ -316,68 +320,72 @@
                         "value": "[resourceGroup().name]"
                     },
                     "appServiceAppSettings": {
-                        "value": [
-                            {
-                                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                                "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
-                            },
-                            {
-                                "name": "ASPNETCORE_ENVIRONMENT",
-                                "value": "[parameters('environmentName')]"
-                            },
-                            {
-                                "name": "MicrosoftAppId",
-                                "value": "[parameters('microsoftAppCredentials').Id]"
-                            },
-                            {
-                                "name": "MicrosoftAppPassword",
-                                "value": "[parameters('microsoftAppCredentials').Password]"
-                            },
-                            {
-                                "name": "Azure:CosmosEndpoint",
-                                "value": "[variables('azureCosmosEndpoint')]"
-                            },
-                            {
-                                "name": "Azure:CosmosKey",
-                                "value": "[reference('CosmosDb').outputs.PrimaryMasterKey.value]"
-                            },
-                            {
-                                "name": "Azure:CosmosDefaultThroughput",
-                                "value": "[string(parameters('cosmosDbThroughput'))]"
-                            },
-                            {
-                                "name": "Data:DatabaseName",
-                                "value": "[variables('data').DatabaseName]"
-                            },
-                            {
-                                "name": "Data:FeedbackTable",
-                                "value": "[variables('data').FeedbackTable]"
-                            },
-                            {
-                                "name": "Data:ConversationLogTable",
-                                "value": "[variables('data').ConversationLogTable]"
-                            },
-                            {
-                                "name": "Data:ConversationLogPartitionKey",
-                                "value": "[variables('data').ConversationLogPartitionKey]"
-                            },
-                            {
-                                "name": "Data:SessionStateTable",
-                                "value": "[variables('data').SessionStateTable]"
-                            },
-                            {
-                                "name": "Bot:AdminCommands",
-                                "value": "[string(parameters('botAdminCommands'))]"
-                            },
-                            {
-                                "name": "Notify:OutgoingMessageQueueName",
-                                "value": "[variables('queues').OutgoingMessageQueueName]"
-                            },
-                            {
-                                "name": "Notify:IncomingMessageQueueName",
-                                "value": "[variables('queues').IncomingMessageQueueName]"
-                            }
-                        ]
+                      "value": [
+                        {
+                          "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                          "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
+                        },
+                        {
+                          "name": "ASPNETCORE_ENVIRONMENT",
+                          "value": "[parameters('environmentName')]"
+                        },
+                        {
+                          "name": "MicrosoftAppId",
+                          "value": "[parameters('microsoftAppCredentials').Id]"
+                        },
+                        {
+                          "name": "MicrosoftAppPassword",
+                          "value": "[parameters('microsoftAppCredentials').Password]"
+                        },
+                        {
+                          "name": "Azure:CosmosEndpoint",
+                          "value": "[variables('azureCosmosEndpoint')]"
+                        },
+                        {
+                          "name": "Azure:CosmosKey",
+                          "value": "[reference('CosmosDb').outputs.PrimaryMasterKey.value]"
+                        },
+                        {
+                          "name": "Azure:CosmosDefaultThroughput",
+                          "value": "[string(parameters('cosmosDbThroughput'))]"
+                        },
+                        {
+                          "name": "Data:DatabaseName",
+                          "value": "[variables('data').DatabaseName]"
+                        },
+                        {
+                          "name": "Data:FeedbackTable",
+                          "value": "[variables('data').FeedbackTable]"
+                        },
+                        {
+                          "name": "Data:ConversationLogTable",
+                          "value": "[variables('data').ConversationLogTable]"
+                        },
+                        {
+                          "name": "Data:ConversationLogPartitionKey",
+                          "value": "[variables('data').ConversationLogPartitionKey]"
+                        },
+                        {
+                          "name": "Data:SessionStateTable",
+                          "value": "[variables('data').SessionStateTable]"
+                        },
+                        {
+                          "name": "Bot:AdminCommands",
+                          "value": "[string(parameters('botAdminCommands'))]"
+                        },
+                        {
+                          "name": "Bot:ConversationExpiryDays",
+                          "value": "[string(parameters('conversationExpiryDays'))]"
+                        },
+                        {
+                          "name": "Notify:OutgoingMessageQueueName",
+                          "value": "[variables('queues').OutgoingMessageQueueName]"
+                        },
+                        {
+                          "name": "Notify:IncomingMessageQueueName",
+                          "value": "[variables('queues').IncomingMessageQueueName]"
+                        }
+                      ]
                     },
                     "appServiceConnectionStrings": {
                         "value": [

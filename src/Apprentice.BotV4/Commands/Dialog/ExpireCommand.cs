@@ -29,7 +29,7 @@
             if (userProfile.SurveyState.StartDate != default(DateTime))
             {
                 userProfile.SurveyState.StartDate =
-                    userProfile.SurveyState.StartDate.AddDays(this.BotConfiguration.DefaultConversationExpiryDays * -1);
+                    userProfile.SurveyState.StartDate.AddDays(this.BotConfiguration.ConversationExpiryDays * -1);
             }
 
             await dc.Context.SendActivityAsync($"OK. Setting the conversation progress to 'expired' ", cancellationToken: cancellationToken);
