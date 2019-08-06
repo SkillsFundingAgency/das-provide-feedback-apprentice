@@ -16,7 +16,7 @@
         private readonly IFeedbackBotStateRepository state;
 
         public ResetDialogCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("bot_state_reset", botConfiguration)
+            : base("bot--state--reset", botConfiguration)
         {
             this.state = state;
         }
