@@ -27,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4.Commands.Dialog
         private readonly Notify notifyConfig;
 
         public SendToMobileTrigger(ISmsQueueProvider queue, IOptions<Notify> notifyConfig, BotConfiguration botConfiguration)
-            : base("^bot_invite_mobile (44)(7)\\d{9}$", botConfiguration)
+            : base("^bot--invite--mobile (44)(7)\\d{9}$", botConfiguration)
         {
             this.queue = queue;
             this.notifyConfig = notifyConfig.Value;
