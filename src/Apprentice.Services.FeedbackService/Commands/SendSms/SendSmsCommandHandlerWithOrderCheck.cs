@@ -1,4 +1,5 @@
-﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
+﻿using ESFA.DAS.ProvideFeedback.Apprentice.Core;
+using ESFA.DAS.ProvideFeedback.Apprentice.Core.Exceptions;
 using ESFA.DAS.ProvideFeedback.Apprentice.Core.Interfaces;
 using ESFA.DAS.ProvideFeedback.Apprentice.Data.Repositories;
 using System.Threading;
@@ -27,7 +28,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
 
             var lastConversation = await _conversationRepository.Get(conversation.Id);
 
-            if (lastConversation != null && (command.Message.Conversation.ActivityId != "Reset" && command.Message.Conversation.TurnId != lastConversation.TurnId + 1))
+            if (lastConversation != null && (command.Message.Conversation.ActivityId != ActivityIdConstants.Reset && command.Message.Conversation.TurnId != lastConversation.TurnId + 1))
             {
                 if(command.Message.Conversation.TurnId <= lastConversation.TurnId)
                 {

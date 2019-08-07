@@ -5,6 +5,7 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder.Dialogs;
@@ -30,7 +31,7 @@
             var activity = new Activity
             {
                 Type = ActivityTypes.Message,
-                Id = "Reset",
+                Id = ActivityIdConstants.Reset,
                 Text = $"OK. Resetting conversation...",
                 ChannelData = dc.Context.Activity.ChannelData
             };
