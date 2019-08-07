@@ -27,7 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
 
             var lastConversation = await _conversationRepository.Get(conversation.Id);
 
-            if (lastConversation != null && command.Message.Conversation.TurnId != lastConversation.TurnId + 1)
+            if (lastConversation != null && (command.Message.Conversation.ActivityId != "Reset" && command.Message.Conversation.TurnId != lastConversation.TurnId + 1))
             {
                 if(command.Message.Conversation.TurnId <= lastConversation.TurnId)
                 {
