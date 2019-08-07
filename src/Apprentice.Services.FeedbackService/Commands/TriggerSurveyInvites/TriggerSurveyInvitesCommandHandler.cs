@@ -48,7 +48,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.
                     Id = Guid.NewGuid().ToString(),
                     SourceNumber = apprenticeDetail.MobileNumber.ToString(),
                     DestinationNumber = null,
-                    Message = $"bot_dialog_start {apprenticeDetail.SurveyCode}",
+                    Message = $"bot--dialog--start {apprenticeDetail.SurveyCode}",
                     DateReceived = now,
                     UniqueLearnerNumber = apprenticeDetail.UniqueLearnerNumber,
                     StandardCode = apprenticeDetail.StandardCode,
