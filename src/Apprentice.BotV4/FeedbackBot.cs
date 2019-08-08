@@ -234,7 +234,7 @@
             // Check for conversation expiry
             if (userProfile.SurveyState.StartDate != default(DateTime))
             {
-                if (userProfile.SurveyState.StartDate <= DateTime.Now.AddHours(-this.botSettings.ConversationExpiryHours)
+                if (userProfile.SurveyState.StartDate <= DateTime.Now.AddSeconds(-30) //-this.botSettings.ConversationExpiryHours)
                     && (userProfile.SurveyState.Progress == ProgressState.InProgress || userProfile.SurveyState.Progress == ProgressState.NotStarted))
                 {
                     reply.Text = $"Thanks for that - but I'm afraid you've missed the deadline this time."

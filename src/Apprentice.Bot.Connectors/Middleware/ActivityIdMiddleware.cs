@@ -7,14 +7,17 @@
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Schema;
+    using Microsoft.Extensions.Logging;
 
     public class ActivityIdMiddleware : IMiddleware
     {
         private readonly IFeedbackBotStateRepository feedbackBotStateRepository;
+        private readonly ILogger<ActivityIdMiddleware> logger;
 
-        public ActivityIdMiddleware(IFeedbackBotStateRepository feedbackBotStateRepository)
+        public ActivityIdMiddleware(IFeedbackBotStateRepository feedbackBotStateRepository, ILogger<ActivityIdMiddleware> logger)
         {
             this.feedbackBotStateRepository = feedbackBotStateRepository;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -49,6 +52,7 @@
 
                                 var dialogInstance = dialogState.DialogStack?.FirstOrDefault()?.State.First().Value as DialogState;
                                 activity.Id = dialogInstance?.DialogStack?.FirstOrDefault()?.Id;
+                                this.logger.LogInformation(activity.Id ?? "null");
                             }
 
                         }
