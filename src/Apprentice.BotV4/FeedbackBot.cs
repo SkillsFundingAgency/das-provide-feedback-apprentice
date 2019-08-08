@@ -241,6 +241,7 @@
                         + $"\n"
                         + $"I'll get in touch when it's time to give feedback again. Thanks for your help so far";
 
+                    dialog.Context.Activity.Id = "Expired";
                     await dialog.Context.SendActivityAsync(reply, cancellationToken);
                     userProfile.SurveyState.Progress = ProgressState.Expired;
                 }
