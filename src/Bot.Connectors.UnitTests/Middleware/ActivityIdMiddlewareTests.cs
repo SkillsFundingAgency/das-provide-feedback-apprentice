@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Extensions.Logging;
 
 namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middleware
 {
@@ -95,7 +96,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Bot.Connectors.UnitTests.Middlewar
                 });
 
 
-            _sut = new ActivityIdMiddleware(_feedbackBotStateRepository);
+            _sut = new ActivityIdMiddleware(_feedbackBotStateRepository, Mock.Of<ILogger<ActivityIdMiddleware>>());
         }
 
         public class OnTurnAsync : ActivityIdMiddlewareTests
