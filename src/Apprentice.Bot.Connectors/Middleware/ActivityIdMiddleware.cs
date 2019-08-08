@@ -52,6 +52,7 @@
 
                                 var dialogInstance = dialogState.DialogStack?.FirstOrDefault()?.State.First().Value as DialogState;
                                 activity.Id = dialogInstance?.DialogStack?.FirstOrDefault()?.Id;
+                                this.logger.LogInformation(dialogState.DialogStack?.FirstOrDefault()?.Id ?? "null");
                                 this.logger.LogInformation(activity.Id ?? "null");
                             }
 
