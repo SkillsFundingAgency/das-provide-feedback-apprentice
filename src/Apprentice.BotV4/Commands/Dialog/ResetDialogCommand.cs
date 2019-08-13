@@ -5,10 +5,11 @@
 
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs;
     using ESFA.DAS.ProvideFeedback.Apprentice.Bot.Dialogs.Commands.Dialog;
+    using ESFA.DAS.ProvideFeedback.Apprentice.Core;
     using ESFA.DAS.ProvideFeedback.Apprentice.Core.State;
 
     using Microsoft.Bot.Builder.Dialogs;
-
+    using Microsoft.Bot.Schema;
     using BotConfiguration = ESFA.DAS.ProvideFeedback.Apprentice.Core.Configuration.Bot;
 
     public sealed class ResetDialogCommand : AdminCommand, IBotDialogCommand
@@ -16,7 +17,7 @@
         private readonly IFeedbackBotStateRepository state;
 
         public ResetDialogCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("bot_state_reset", botConfiguration)
+            : base("bot--state--reset", botConfiguration)
         {
             this.state = state;
         }
@@ -27,8 +28,15 @@
             userProfile.SurveyState = new SurveyState();
 
             await this.state.ConversationState.ClearStateAsync(dc.Context, cancellationToken);
+            var activity = new Activity
+            {
+                Type = ActivityTypes.Message,
+                Id = ActivityIdConstants.Reset,
+                Text = $"OK. Resetting conversation...",
+                ChannelData = dc.Context.Activity.ChannelData
+            };
 
-            await dc.Context.SendActivityAsync($"OK. Resetting conversation...", cancellationToken: cancellationToken);
+            await dc.Context.SendActivityAsync(activity, cancellationToken: cancellationToken);
             return await dc.CancelAllDialogsAsync(cancellationToken);
         }
     }

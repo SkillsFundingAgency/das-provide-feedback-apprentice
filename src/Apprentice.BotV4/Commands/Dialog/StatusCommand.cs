@@ -19,7 +19,7 @@
         private readonly IFeedbackBotStateRepository state;
 
         public StatusCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("bot_state_view", botConfiguration)
+            : base("bot--state--view", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }

@@ -18,7 +18,7 @@
         private readonly IFeedbackBotStateRepository state;
 
         public StartDialogCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("bot_dialog_start", botConfiguration)
+            : base("bot--dialog--start", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }

@@ -17,7 +17,7 @@
         private readonly IFeedbackBotStateRepository state;
 
         public ExtendCommand(IFeedbackBotStateRepository state, Bot botConfiguration)
-            : base("bot_state_extend", botConfiguration)
+            : base("bot--state--extend", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }

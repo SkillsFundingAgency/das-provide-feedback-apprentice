@@ -12,7 +12,7 @@
     public sealed class DisplayVersionCommand : AdminCommand, IBotDialogCommand
     {
         public DisplayVersionCommand(Bot botConfiguration)
-            : base("bot_version", botConfiguration)
+            : base("bot--version", botConfiguration)
         {
         }
 

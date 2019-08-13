@@ -17,7 +17,7 @@
         private readonly IFeedbackBotStateRepository state;
 
         public ExpireCommand(IFeedbackBotStateRepository state, BotConfiguration botConfiguration)
-            : base("bot_state_expire", botConfiguration)
+            : base("bot--state--expire", botConfiguration)
         {
             this.state = state ?? throw new ArgumentNullException(nameof(state));
         }
@@ -29,7 +29,7 @@
             if (userProfile.SurveyState.StartDate != default(DateTime))
             {
                 userProfile.SurveyState.StartDate =
-                    userProfile.SurveyState.StartDate.AddDays(this.BotConfiguration.DefaultConversationExpiryDays * -1);
+                    userProfile.SurveyState.StartDate.AddHours(this.BotConfiguration.ConversationExpiryHours * -1);
             }
 
             await dc.Context.SendActivityAsync($"OK. Setting the conversation progress to 'expired' ", cancellationToken: cancellationToken);
