@@ -1,14 +1,11 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-    "contentVersion": "1.0.0.0",
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
   "parameters": {
-    "appServiceName": {
+    "serviceName": {
       "type": "string"
     },
-    "appServicePlanName": {
-      "type": "string"
-    },
-    "botServiceName": {
+    "resourceEnvironmentName": {
       "type": "string"
     },
     "botServiceSku": {
@@ -24,18 +21,6 @@
         "Id": "",
         "Password": ""
       }
-    },
-    "functionAppName": {
-      "type": "string"
-    },
-    "storageAccountName": {
-      "type": "string"
-    },
-    "serviceBusNamespaceName": {
-      "type": "string"
-    },
-    "cosmosDbName": {
-      "type": "string"
     },
     "cosmosDbThroughput": {
       "type": "int"
@@ -60,9 +45,6 @@
       "type": "securestring"
     },
     "environmentName": {
-      "type": "string"
-    },
-    "databaseName": {
       "type": "string"
     },
     "sqlServerName": {
@@ -101,14 +83,6 @@
     "botCertificateName": {
       "type": "string"
     },
-    "aseHostingEnvironmentName": {
-      "type": "string",
-      "defaultValue": ""
-    },
-    "aseResourceGroup": {
-      "type": "string",
-      "defaultValue": ""
-    },
     "certificateKeyVaultName": {
       "type": "string"
     },
@@ -138,544 +112,591 @@
     },
     "conversationExpiryHours": {
       "type": "int"
+    },
+    "aspSize": {
+      "type": "string",
+      "defaultValue": "1"
+    },
+    "aspInstances": {
+      "type": "int",
+      "defaultValue": 1
+    },
+    "aspSku": {
+      "type": "string",
+      "defaultValue": "Basic"
+    },
+    "appServiceAllowedIPs": {
+      "type": "array",
+      "defaultValue": [
+      ]
     }
   },
-    "variables": {
-        "azureCosmosEndpoint": "[concat('https://', parameters('cosmosDbName'), '.documents.azure.com:443/')]",
-        "data": {
-            "DatabaseName": "ApprenticeFeedback",
-            "FeedbackTable": "Feedback",
-            "ApprenticeSurveyDetailTable": "Apprentice-Survey-Details",
-            "ConversationLogTable": "Conversations",
-            "ConversationLogPartitionKey": "/conversation/id",
-            "SessionStateTable": "feedback-bot-sessions",
-            "SessionLogTable": "Sessions",
-            "SessionLogPartitionKey": "/mobile_number"
+  "variables": {
+    "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
+    "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
+    "storageAccountName": "[toLower(concat('das', parameters('resourceEnvironmentName'), parameters('serviceName'), 'str'))]",
+    "botAppServiceName": "[concat(variables('resourceNamePrefix'), '-as')]",
+    "botServiceName": "[concat(variables('resourceNamePrefix'), '-bot')]",
+    "databaseName": "[concat(variables('resourceNamePrefix'), '-db')]",
+    "serviceBusNamespaceName": "[concat(variables('resourceNamePrefix'), '-ns')]",
+    "functionAppServiceName": "[concat(variables('resourceNamePrefix'), '-fa')]",
+    "appServicePlanName": "[concat(variables('resourceNamePrefix'), '-asp')]",
+    "cosmosDbName": "[concat(variables('resourceNamePrefix'), '-cdb')]",
+    "azureCosmosEndpoint": "[concat('https://', variables('cosmosDbName'), '.documents.azure.com:443/')]",
+    "data": {
+      "DatabaseName": "ApprenticeFeedback",
+      "FeedbackTable": "Feedback",
+      "ApprenticeSurveyDetailTable": "Apprentice-Survey-Details",
+      "ConversationLogTable": "Conversations",
+      "ConversationLogPartitionKey": "/conversation/id",
+      "SessionStateTable": "feedback-bot-sessions",
+      "SessionLogTable": "Sessions",
+      "SessionLogPartitionKey": "/mobile_number"
+    },
+    "queues": {
+      "OutgoingMessageQueueName": "sms-outgoing-messages",
+      "IncomingMessageQueueName": "sms-incoming-messages",
+      "DeliveryReceiptQueueName": "sms-delivery-log"
+    }
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-05-10",
+      "name": "app-service-plan",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'app-service-plan.json')]",
+          "contentVersion": "1.0.0.0"
         },
-      "queues": {
-        "OutgoingMessageQueueName": "sms-outgoing-messages",
-        "IncomingMessageQueueName": "sms-incoming-messages",
-        "DeliveryReceiptQueueName": "sms-delivery-log"
+        "parameters": {
+          "appServicePlanName": {
+            "value": "[variables('appServicePlanName')]"
+          },
+          "aspSize": {
+            "value": "[parameters('aspSize')]"
+          },
+          "aspInstances": {
+            "value": "[parameters('aspInstances')]"
+          },
+          "nonASETier": {
+            "value": "[parameters('aspSku')]"
+          }
+        }
       }
     },
-    "resources": [
-        {
-            "apiVersion": "2017-05-10",
-            "name": "AppServicePlan",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service-plan.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appServicePlanName": {
-                        "value": "[parameters('appServicePlanName')]"
-                    },
-                    "aspSize": {
-                        "value": "1"
-                    },
-                    "aspInstances": {
-                        "value": 2
-                    },
-                    "aseHostingEnvironmentName": {
-                        "value": "[parameters('aseHostingEnvironmentName')]"
-                    },
-                    "aseResourceGroup": {
-                        "value": "[parameters('aseResourceGroup')]"
-                    }
-                }
-            }
+    {
+      "apiVersion": "2017-05-10",
+      "name": "function-app-certificate",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'app-service-certificate.json')]",
+          "contentVersion": "1.0.0.0"
         },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "FunctionAppCertificate",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service-certificate.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "keyVaultCertificateName": {
-                        "value": "[parameters('functionCertificateName')]"
-                    },
-                    "keyVaultName": {
-                        "value": "[parameters('certificateKeyVaultName')]"
-                    },
-                    "keyVaultResourceGroup": {
-                        "value": "[parameters('certificateKeyVaultResourceGroupName')]"
-                    },
-                    "serverFarmId": {
-                        "value": "[reference('AppServicePlan').outputs.appServicePlanId.value]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "BotCertificate",
-            "type": "Microsoft.Resources/deployments",
-            "condition": "[not(equals(parameters('botCertificateName'), parameters('functionCertificateName')))]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service-certificate.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "keyVaultCertificateName": {
-                        "value": "[parameters('botCertificateName')]"
-                    },
-                    "keyVaultName": {
-                        "value": "[parameters('certificateKeyVaultName')]"
-                    },
-                    "keyVaultResourceGroup": {
-                        "value": "[parameters('certificateKeyVaultResourceGroupName')]"
-                    },
-                    "serverFarmId": {
-                        "value": "[reference('AppServicePlan').outputs.appServicePlanId.value]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "StorageAccount",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/storage-account-arm.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "storageAccountName": {
-                        "value": "[parameters('storageAccountName')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "BotServiceApplicationInsights",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/application-insights.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appInsightsName": {
-                        "value": "[parameters('appServiceName')]"
-                    },
-                    "attachedService": {
-                        "value": "[parameters('appServiceName')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "FunctionAppApplicationInsights",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/application-insights.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appInsightsName": {
-                        "value": "[parameters('functionAppName')]"
-                    },
-                    "attachedService": {
-                        "value": "[parameters('functionAppName')]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "BotAppService",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/app-service.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "appServiceName": {
-                        "value": "[parameters('appServiceName')]"
-                    },
-                    "appServicePlanName": {
-                        "value": "[parameters('appServicePlanName')]"
-                    },
-                    "appServicePlanResourceGroup": {
-                        "value": "[resourceGroup().name]"
-                    },
-                    "appServiceAppSettings": {
-                        "value": [
-                            {
-                              "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                              "value": "[reference('BotServiceApplicationInsights').outputs.InstrumentationKey.value]"
-                            },
-                            {
-                              "name": "ASPNETCORE_ENVIRONMENT",
-                              "value": "[parameters('environmentName')]"
-                            },
-                            {
-                              "name": "MicrosoftAppId",
-                              "value": "[parameters('microsoftAppCredentials').Id]"
-                            },
-                            {
-                              "name": "MicrosoftAppPassword",
-                              "value": "[parameters('microsoftAppCredentials').Password]"
-                            },
-                            {
-                              "name": "Azure:CosmosEndpoint",
-                              "value": "[variables('azureCosmosEndpoint')]"
-                            },
-                            {
-                              "name": "Azure:CosmosKey",
-                              "value": "[reference('CosmosDb').outputs.PrimaryMasterKey.value]"
-                            },
-                            {
-                              "name": "Azure:CosmosDefaultThroughput",
-                              "value": "[string(parameters('cosmosDbThroughput'))]"
-                            },
-                            {
-                              "name": "Data:DatabaseName",
-                              "value": "[variables('data').DatabaseName]"
-                            },
-                            {
-                              "name": "Data:FeedbackTable",
-                              "value": "[variables('data').FeedbackTable]"
-                            },
-                            {
-                              "name": "Data:ConversationLogTable",
-                              "value": "[variables('data').ConversationLogTable]"
-                            },
-                            {
-                              "name": "Data:ConversationLogPartitionKey",
-                              "value": "[variables('data').ConversationLogPartitionKey]"
-                            },
-                            {
-                              "name": "Data:SessionStateTable",
-                              "value": "[variables('data').SessionStateTable]"
-                            },
-                            {
-                              "name": "Bot:AdminCommands",
-                              "value": "[string(parameters('botAdminCommands'))]"
-                            },
-                            {
-                              "name": "Bot:ConversationExpiryHours",
-                              "value": "[string(parameters('conversationExpiryHours'))]"
-                            },
-                            {
-                              "name": "Notify:OutgoingMessageQueueName",
-                              "value": "[variables('queues').OutgoingMessageQueueName]"
-                            },
-                            {
-                              "name": "Notify:IncomingMessageQueueName",
-                              "value": "[variables('queues').IncomingMessageQueueName]"
-                            }
-                        ]
-                    },
-                    "appServiceConnectionStrings": {
-                        "value": [
-                            {
-                                "name": "Redis",
-                                "connectionString": "[parameters('loggingRedisConnectionString')]",
-                                "type": "Custom"
-                            },
-                            {
-                                "name": "StorageAccount",
-                                "connectionString": "[reference('StorageAccount').outputs.storageConnectionString.value]",
-                                "type": "Custom"
-                            },
-                            {
-                                "name": "ServiceBus",
-                                "connectionString": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]",
-                                "type": "Custom"
-                            }
-                        ]
-                    },
-                    "customHostName": {
-                        "value": "[parameters('botCustomHostname')]"
-                    },
-                    "certificateThumbprint": {
-                        "value": "[reference(if(equals(parameters('botCertificateName'), parameters('functionCertificateName')), 'FunctionAppCertificate', 'BotCertificate')).outputs.certificateThumbprint.value]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "BotChannelRegistration",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/bot-service.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "botServiceName": {
-                        "value": "[parameters('botServiceName')]"
-                    },
-                    "botServiceSku": {
-                        "value": "[parameters('botServiceSku')]"
-                    },
-                    "botEndpoint": {
-                        "value": "[parameters('botEndpoint')]"
-                    },
-                    "microsoftAppId": {
-                        "value": "[parameters('microsoftAppCredentials').Id]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "FunctionApp",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/function-app.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "functionAppName": {
-                        "value": "[parameters('functionAppName')]"
-                    },
-                    "appServicePlanName": {
-                        "value": "[parameters('appServicePlanName')]"
-                    },
-                    "appServicePlanResourceGroup": {
-                        "value": "[resourceGroup().name]"
-                    },
-                    "functionAppAppSettings": {
-                      "value": [
-                        {
-                          "name": "AzureWebJobsDashboard",
-                          "value": "[reference('StorageAccount').outputs.storageConnectionString.value]"
-                        },
-                        {
-                          "name": "AzureWebJobsStorage",
-                          "value": "[reference('StorageAccount').outputs.storageConnectionString.value]"
-                        },
-                        {
-                          "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                          "value": "[reference('FunctionAppApplicationInsights').outputs.InstrumentationKey.value]"
-                        },
-                        {
-                          "name": "ASPNETCORE_ENVIRONMENT",
-                          "value": "[parameters('environmentName')]"
-                        },
-                        {
-                          "name": "FUNCTIONS_EXTENSION_VERSION",
-                          "value": "~2"
-                        },
-                        {
-                          "name": "AzureCosmosEndpoint",
-                          "value": "[variables('azureCosmosEndpoint')]"
-                        },
-                        {
-                          "name": "AzureCosmosKey",
-                          "value": "[reference('CosmosDb').outputs.PrimaryMasterKey.value]"
-                        },
-                        {
-                          "name": "AzureCosmos",
-                          "value": "[string(parameters('cosmosDbThroughput'))]"
-                        },
-                        {
-                          "name": "DatabaseName",
-                          "value": "[variables('data').DatabaseName]"
-                        },
-                        {
-                          "name": "FeedbackTable",
-                          "value": "[variables('data').FeedbackTable]"
-                        },
-                        {
-                          "name": "ApprenticeSurveyDetailTable",
-                          "value": "[variables('data').ApprenticeSurveyDetailTable]"
-                        },
-                        {
-                          "name": "ConversationLogTable",
-                          "value": "[variables('data').ConversationLogTable]"
-                        },
-                        {
-                          "name": "ConversationLogPartitionKey",
-                          "value": "[variables('data').ConversationLogPartitionKey]"
-                        },
-                        {
-                          "name": "SessionLogTable",
-                          "value": "[variables('data').SessionLogTable]"
-                        },
-                        {
-                          "name": "SessionLogPartitionKey",
-                          "value": "[variables('data').SessionLogPartitionKey]"
-                        },
-                        {
-                          "name": "SessionStateTable",
-                          "value": "[variables('data').SessionStateTable]"
-                        },
-                        {
-                          "name": "BotClientAuthToken",
-                          "value": "[parameters('botClientCredentials').AuthToken]"
-                        },
-                        {
-                          "name": "BotClientBaseAddress",
-                          "value": "[parameters('botClientCredentials').BaseAddress]"
-                        },
-                        {
-                          "name": "DirectLineAddress",
-                          "value": "[parameters('botClientCredentials').DirectLineAddress]"
-                        },
-                        {
-                          "name": "NotifyTemplateId",
-                          "value": "[parameters('notifyCredentials').TemplateId]"
-                        },
-                        {
-                          "name": "NotifySmsSenderId",
-                          "value": "[parameters('notifyCredentials').SmsSenderId]"
-                        },
-                        {
-                          "name": "NotifyClientApiKey",
-                          "value": "[parameters('notifyCredentials').ClientApiKey]"
-                        },
-                        {
-                          "name": "ServiceBusConnection",
-                          "value": "[reference('ServiceBus').outputs.ServiceBusEndpoint.value]"
-                        },
-                        {
-                          "name": "DailySurveyTriggerSchedule",
-                          "value": "[string(parameters('dailySurveyTriggerSchedule'))]"
-                        },
-                        {
-                          "name": "ApprenticeBatchSize",
-                          "value": "[string(parameters('apprenticeBatchSize'))]"
-                        },
-                        {
-                          "name": "MaxRetryAttempts",
-                          "value": "[string(parameters('maxRetryAttempts'))]"
-                        },
-                        {
-                          "name": "RetryDelayMs",
-                          "value": "[string(parameters('retryDelayMs'))]"
-                        },
-                        {
-                          "name": "OutgoingMessageQueueName",
-                          "value": "[variables('queues').OutgoingMessageQueueName]"
-                        },
-                        {
-                          "name": "IncomingMessageQueueName",
-                          "value": "[variables('queues').IncomingMessageQueueName]"
-                        },
-                        {
-                          "name": "DeliveryReceiptQueueName",
-                          "value": "[variables('queues').DeliveryReceiptQueueName]"
-                        }
-                      ]
-                    },
-                    "customHostName": {
-                        "value": "[parameters('functionCustomHostname')]"
-                    },
-                    "certificateThumbprint": {
-                        "value": "[reference('FunctionAppCertificate').outputs.certificateThumbprint.value]"
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "ServiceBus",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/service-bus.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "serviceBusNamespaceName": {
-                        "value": "[parameters('serviceBusNamespaceName')]"
-                    },
-                    "serviceBusQueues": {
-                        "value": [
-                            "[variables('queues').OutgoingMessageQueueName]",
-                            "[variables('queues').IncomingMessageQueueName]",
-                            "[variables('queues').DeliveryReceiptQueueName]"
-                        ]
-                    }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "CosmosDb",
-            "type": "Microsoft.Resources/deployments",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/cosmos-db.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "cosmosDbName": {
-                        "value": "[parameters('cosmosDbName')]"
-                    },
-                    "cosmosDbType": {
-                        "value": "GlobalDocumentDB"
-                    },
-                    "defaultConsistencyLevel": {
-                        "value": "Strong"
-                    },
-                    "ipRangeFilter": {
-                      "value": "[parameters('cosmosDbIpRangeFilter')]"
-                  }
-                }
-            }
-        },
-        {
-            "apiVersion": "2017-05-10",
-            "name": "SQLDatabase",
-            "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[parameters('sqlServerResourceGroupName')]",
-            "properties": {
-                "mode": "Incremental",
-                "templateLink": {
-                    "uri": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/sql-database.json",
-                    "contentVersion": "1.0.0.0"
-                },
-                "parameters": {
-                    "databaseName": {
-                        "value": "[parameters('databaseName')]"
-                    },
-                    "sqlServerName": {
-                        "value": "[parameters('sqlServerName')]"
-                    },
-                    "elasticPoolName": {
-                        "value": "[parameters('elasticPoolName')]"
-                    },
-                    "logAnalyticsSubscriptionId": {
-                        "value": "[parameters('logAnalyticsSubscriptionId')]"
-                    },
-                    "logAnalyticsResourceGroup": {
-                        "value": "[parameters('logAnalyticsResourceGroup')]"
-                    },
-                    "logAnalyticsWorkspaceName": {
-                        "value": "[parameters('logAnalyticsWorkspaceName')]"
-                    }
-                }
-            }
+        "parameters": {
+          "keyVaultCertificateName": {
+            "value": "[parameters('functionCertificateName')]"
+          },
+          "keyVaultName": {
+            "value": "[parameters('certificateKeyVaultName')]"
+          },
+          "keyVaultResourceGroup": {
+            "value": "[parameters('certificateKeyVaultResourceGroupName')]"
+          },
+          "serverFarmId": {
+            "value": "[reference('app-service-plan').outputs.appServicePlanId.value]"
+          }
         }
-    ],
-    "outputs": {}
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "bot-certificate",
+      "type": "Microsoft.Resources/deployments",
+      "condition": "[not(equals(parameters('botCertificateName'), parameters('functionCertificateName')))]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'app-service-certificate.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "keyVaultCertificateName": {
+            "value": "[parameters('botCertificateName')]"
+          },
+          "keyVaultName": {
+            "value": "[parameters('certificateKeyVaultName')]"
+          },
+          "keyVaultResourceGroup": {
+            "value": "[parameters('certificateKeyVaultResourceGroupName')]"
+          },
+          "serverFarmId": {
+            "value": "[reference('app-service-plan').outputs.appServicePlanId.value]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "storage-account",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'storage-account-arm.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "storageAccountName": {
+            "value": "[variables('storageAccountName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "bot-service-app-insights",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'application-insights.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appInsightsName": {
+            "value": "[variables('botAppServiceName')]"
+          },
+          "attachedService": {
+            "value": "[variables('botAppServiceName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "function-app-insights",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'application-insights.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appInsightsName": {
+            "value": "[variables('functionAppServiceName')]"
+          },
+          "attachedService": {
+            "value": "[variables('functionAppServiceName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "bot-app-service",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'app-service.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "appServiceName": {
+            "value": "[variables('botAppServiceName')]"
+          },
+          "appServicePlanName": {
+            "value": "[variables('appServicePlanName')]"
+          },
+          "appServicePlanResourceGroup": {
+            "value": "[resourceGroup().name]"
+          },
+          "appServiceAppSettings": {
+            "value": [
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference('bot-service-app-insights').outputs.InstrumentationKey.value]"
+              },
+              {
+                "name": "ASPNETCORE_ENVIRONMENT",
+                "value": "[parameters('environmentName')]"
+              },
+              {
+                "name": "MicrosoftAppId",
+                "value": "[parameters('microsoftAppCredentials').Id]"
+              },
+              {
+                "name": "MicrosoftAppPassword",
+                "value": "[parameters('microsoftAppCredentials').Password]"
+              },
+              {
+                "name": "Azure:CosmosEndpoint",
+                "value": "[variables('azureCosmosEndpoint')]"
+              },
+              {
+                "name": "Azure:CosmosKey",
+                "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
+              },
+              {
+                "name": "Azure:CosmosDefaultThroughput",
+                "value": "[string(parameters('cosmosDbThroughput'))]"
+              },
+              {
+                "name": "Data:DatabaseName",
+                "value": "[variables('data').DatabaseName]"
+              },
+              {
+                "name": "Data:FeedbackTable",
+                "value": "[variables('data').FeedbackTable]"
+              },
+              {
+                "name": "Data:ConversationLogTable",
+                "value": "[variables('data').ConversationLogTable]"
+              },
+              {
+                "name": "Data:ConversationLogPartitionKey",
+                "value": "[variables('data').ConversationLogPartitionKey]"
+              },
+              {
+                "name": "Data:SessionStateTable",
+                "value": "[variables('data').SessionStateTable]"
+              },
+              {
+                "name": "Bot:AdminCommands",
+                "value": "[string(parameters('botAdminCommands'))]"
+              },
+              {
+                "name": "Bot:ConversationExpiryHours",
+                "value": "[string(parameters('conversationExpiryHours'))]"
+              },
+              {
+                "name": "Notify:OutgoingMessageQueueName",
+                "value": "[variables('queues').OutgoingMessageQueueName]"
+              },
+              {
+                "name": "Notify:IncomingMessageQueueName",
+                "value": "[variables('queues').IncomingMessageQueueName]"
+              }
+            ]
+          },
+          "appServiceConnectionStrings": {
+            "value": [
+              {
+                "name": "Redis",
+                "connectionString": "[parameters('loggingRedisConnectionString')]",
+                "type": "Custom"
+              },
+              {
+                "name": "StorageAccount",
+                "connectionString": "[reference('storage-account').outputs.storageConnectionString.value]",
+                "type": "Custom"
+              },
+              {
+                "name": "ServiceBus",
+                "connectionString": "[reference('service-bus').outputs.ServiceBusEndpoint.value]",
+                "type": "Custom"
+              }
+            ]
+          },
+          "customHostName": {
+            "value": "[parameters('botCustomHostname')]"
+          },
+          "certificateThumbprint": {
+            "value": "[reference(if(equals(parameters('botCertificateName'), parameters('functionCertificateName')), 'function-app-certificate', 'bot-certificate')).outputs.certificateThumbprint.value]"
+          },
+          "ipSecurityRestrictions": {
+            "value": "[parameters('appServiceAllowedIPs')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "bot-service-app-insights",
+        "app-service-plan"
+      ]
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "bot-channel-registrations",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'bot-service.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "botServiceName": {
+            "value": "[variables('botServiceName')]"
+          },
+          "botServiceSku": {
+            "value": "[parameters('botServiceSku')]"
+          },
+          "botEndpoint": {
+            "value": "[parameters('botEndpoint')]"
+          },
+          "microsoftAppId": {
+            "value": "[parameters('microsoftAppCredentials').Id]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "function-app",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'function-app.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "functionAppName": {
+            "value": "[variables('functionAppServiceName')]"
+          },
+          "appServicePlanName": {
+            "value": "[variables('appServicePlanName')]"
+          },
+          "appServicePlanResourceGroup": {
+            "value": "[resourceGroup().name]"
+          },
+          "functionAppAppSettings": {
+            "value": [
+              {
+                "name": "AzureWebJobsDashboard",
+                "value": "[reference('storage-account').outputs.storageConnectionString.value]"
+              },
+              {
+                "name": "AzureWebJobsStorage",
+                "value": "[reference('storage-account').outputs.storageConnectionString.value]"
+              },
+              {
+                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                "value": "[reference('function-app-insights').outputs.InstrumentationKey.value]"
+              },
+              {
+                "name": "ASPNETCORE_ENVIRONMENT",
+                "value": "[parameters('environmentName')]"
+              },
+              {
+                "name": "FUNCTIONS_EXTENSION_VERSION",
+                "value": "~2"
+              },
+              {
+                "name": "AzureCosmosEndpoint",
+                "value": "[variables('azureCosmosEndpoint')]"
+              },
+              {
+                "name": "AzureCosmosKey",
+                "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
+              },
+              {
+                "name": "AzureCosmos",
+                "value": "[string(parameters('cosmosDbThroughput'))]"
+              },
+              {
+                "name": "DatabaseName",
+                "value": "[variables('data').DatabaseName]"
+              },
+              {
+                "name": "FeedbackTable",
+                "value": "[variables('data').FeedbackTable]"
+              },
+              {
+                "name": "ApprenticeSurveyDetailTable",
+                "value": "[variables('data').ApprenticeSurveyDetailTable]"
+              },
+              {
+                "name": "ConversationLogTable",
+                "value": "[variables('data').ConversationLogTable]"
+              },
+              {
+                "name": "ConversationLogPartitionKey",
+                "value": "[variables('data').ConversationLogPartitionKey]"
+              },
+              {
+                "name": "SessionLogTable",
+                "value": "[variables('data').SessionLogTable]"
+              },
+              {
+                "name": "SessionLogPartitionKey",
+                "value": "[variables('data').SessionLogPartitionKey]"
+              },
+              {
+                "name": "SessionStateTable",
+                "value": "[variables('data').SessionStateTable]"
+              },
+              {
+                "name": "BotClientAuthToken",
+                "value": "[parameters('botClientCredentials').AuthToken]"
+              },
+              {
+                "name": "BotClientBaseAddress",
+                "value": "[parameters('botClientCredentials').BaseAddress]"
+              },
+              {
+                "name": "DirectLineAddress",
+                "value": "[parameters('botClientCredentials').DirectLineAddress]"
+              },
+              {
+                "name": "NotifyTemplateId",
+                "value": "[parameters('notifyCredentials').TemplateId]"
+              },
+              {
+                "name": "NotifySmsSenderId",
+                "value": "[parameters('notifyCredentials').SmsSenderId]"
+              },
+              {
+                "name": "NotifyClientApiKey",
+                "value": "[parameters('notifyCredentials').ClientApiKey]"
+              },
+              {
+                "name": "ServiceBusConnection",
+                "value": "[reference('service-bus').outputs.ServiceBusEndpoint.value]"
+              },
+              {
+                "name": "DailySurveyTriggerSchedule",
+                "value": "[string(parameters('dailySurveyTriggerSchedule'))]"
+              },
+              {
+                "name": "ApprenticeBatchSize",
+                "value": "[string(parameters('apprenticeBatchSize'))]"
+              },
+              {
+                "name": "MaxRetryAttempts",
+                "value": "[string(parameters('maxRetryAttempts'))]"
+              },
+              {
+                "name": "RetryDelayMs",
+                "value": "[string(parameters('retryDelayMs'))]"
+              },
+              {
+                "name": "OutgoingMessageQueueName",
+                "value": "[variables('queues').OutgoingMessageQueueName]"
+              },
+              {
+                "name": "IncomingMessageQueueName",
+                "value": "[variables('queues').IncomingMessageQueueName]"
+              },
+              {
+                "name": "DeliveryReceiptQueueName",
+                "value": "[variables('queues').DeliveryReceiptQueueName]"
+              }
+            ]
+          },
+          "customHostName": {
+            "value": "[parameters('functionCustomHostname')]"
+          },
+          "certificateThumbprint": {
+            "value": "[reference('function-app-certificate').outputs.certificateThumbprint.value]"
+          },
+          "ipSecurityRestrictions": {
+            "value": "[parameters('appServiceAllowedIPs')]"
+          }
+        }
+      },
+      "dependsOn": [
+        "function-app-insights",
+        "app-service-plan"
+      ]
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "service-bus",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'service-bus.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "serviceBusNamespaceName": {
+            "value": "[variables('serviceBusNamespaceName')]"
+          },
+          "serviceBusQueues": {
+            "value": [
+              "[variables('queues').OutgoingMessageQueueName]",
+              "[variables('queues').IncomingMessageQueueName]",
+              "[variables('queues').DeliveryReceiptQueueName]"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "cosmos-db",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'cosmos-db.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "cosmosDbName": {
+            "value": "[variables('cosmosDbName')]"
+          },
+          "cosmosDbType": {
+            "value": "GlobalDocumentDB"
+          },
+          "defaultConsistencyLevel": {
+            "value": "Strong"
+          },
+          "ipRangeFilter": {
+            "value": "[parameters('cosmosDbIpRangeFilter')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "sql-database",
+      "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[parameters('sqlServerResourceGroupName')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'), 'sql-database.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "databaseName": {
+            "value": "[variables('databaseName')]"
+          },
+          "sqlServerName": {
+            "value": "[parameters('sqlServerName')]"
+          },
+          "elasticPoolName": {
+            "value": "[parameters('elasticPoolName')]"
+          },
+          "logAnalyticsSubscriptionId": {
+            "value": "[parameters('logAnalyticsSubscriptionId')]"
+          },
+          "logAnalyticsResourceGroup": {
+            "value": "[parameters('logAnalyticsResourceGroup')]"
+          },
+          "logAnalyticsWorkspaceName": {
+            "value": "[parameters('logAnalyticsWorkspaceName')]"
+          }
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "BotAppServiceName": {
+      "type": "string",
+      "value": "[variables('botAppServiceName')]"
+    },
+    "FunctionAppServiceName": {
+      "type": "string",
+      "value": "[variables('functionAppServiceName')]"
+    }
+  }
 }
