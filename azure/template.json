@@ -123,7 +123,7 @@
     },
     "aspSku": {
       "type": "string",
-      "defaultValue": "Basic"
+      "defaultValue": "Standard"
     },
     "appServiceAllowedIPs": {
       "type": "array",
