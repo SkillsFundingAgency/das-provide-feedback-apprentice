@@ -697,6 +697,10 @@
     "FunctionAppServiceName": {
       "type": "string",
       "value": "[variables('functionAppServiceName')]"
+    },
+    "DatabaseName": {
+      "type": "string",
+      "value": "[variables('databaseName')]"
     }
   }
 }
