@@ -472,7 +472,7 @@
           "functionAppAppSettings": {
             "value": [
               {
-                "name": "AzureWebJobsDashboard",
+                "name": "AzureWebJobsStorage",
                 "value": "[reference('storage-account').outputs.storageConnectionString.value]"
               },
               {
