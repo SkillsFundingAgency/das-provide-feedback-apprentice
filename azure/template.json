@@ -133,6 +133,9 @@
     "functionsExtensionVersion": {
       "type": "string",
       "defaultValue": "~2.0"
+    },
+    "sqlConnectionString": {
+      "type": "securestring"
     }
   },
   "variables": {
@@ -472,7 +475,7 @@
           "functionAppAppSettings": {
             "value": [
               {
-                "name": "AzureWebJobsDashboard",
+                "name": "AzureWebJobsStorage",
                 "value": "[reference('storage-account').outputs.storageConnectionString.value]"
               },
               {
@@ -590,6 +593,10 @@
               {
                 "name": "DeliveryReceiptQueueName",
                 "value": "[variables('queues').DeliveryReceiptQueueName]"
+              },
+              {
+                "name": "SqlConnectionString",
+                "value": "[parameters('sqlConnectionString')]"
               }
             ]
           },
