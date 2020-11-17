@@ -310,7 +310,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('deploymentUrlBase'), 'app-service.json')]",
+          "uri": "[concat(variables('deploymentUrlBase'), 'app-service-v2.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -324,91 +324,95 @@
             "value": "[resourceGroup().name]"
           },
           "appServiceAppSettings": {
-            "value": [
-              {
-                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                "value": "[reference('bot-service-app-insights').outputs.InstrumentationKey.value]"
-              },
-              {
-                "name": "ASPNETCORE_ENVIRONMENT",
-                "value": "[parameters('environmentName')]"
-              },
-              {
-                "name": "MicrosoftAppId",
-                "value": "[parameters('microsoftAppCredentials').Id]"
-              },
-              {
-                "name": "MicrosoftAppPassword",
-                "value": "[parameters('microsoftAppCredentials').Password]"
-              },
-              {
-                "name": "Azure:CosmosEndpoint",
-                "value": "[variables('azureCosmosEndpoint')]"
-              },
-              {
-                "name": "Azure:CosmosKey",
-                "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
-              },
-              {
-                "name": "Azure:CosmosDefaultThroughput",
-                "value": "[string(parameters('cosmosDbThroughput'))]"
-              },
-              {
-                "name": "Data:DatabaseName",
-                "value": "[variables('data').DatabaseName]"
-              },
-              {
-                "name": "Data:FeedbackTable",
-                "value": "[variables('data').FeedbackTable]"
-              },
-              {
-                "name": "Data:ConversationLogTable",
-                "value": "[variables('data').ConversationLogTable]"
-              },
-              {
-                "name": "Data:ConversationLogPartitionKey",
-                "value": "[variables('data').ConversationLogPartitionKey]"
-              },
-              {
-                "name": "Data:SessionStateTable",
-                "value": "[variables('data').SessionStateTable]"
-              },
-              {
-                "name": "Bot:AdminCommands",
-                "value": "[string(parameters('botAdminCommands'))]"
-              },
-              {
-                "name": "Bot:ConversationExpiryHours",
-                "value": "[string(parameters('conversationExpiryHours'))]"
-              },
-              {
-                "name": "Notify:OutgoingMessageQueueName",
-                "value": "[variables('queues').OutgoingMessageQueueName]"
-              },
-              {
-                "name": "Notify:IncomingMessageQueueName",
-                "value": "[variables('queues').IncomingMessageQueueName]"
-              }
-            ]
+            "value": {
+              "array": [
+                {
+                  "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                  "value": "[reference('bot-service-app-insights').outputs.InstrumentationKey.value]"
+                },
+                {
+                  "name": "ASPNETCORE_ENVIRONMENT",
+                  "value": "[parameters('environmentName')]"
+                },
+                {
+                  "name": "MicrosoftAppId",
+                  "value": "[parameters('microsoftAppCredentials').Id]"
+                },
+                {
+                  "name": "MicrosoftAppPassword",
+                  "value": "[parameters('microsoftAppCredentials').Password]"
+                },
+                {
+                  "name": "Azure:CosmosEndpoint",
+                  "value": "[variables('azureCosmosEndpoint')]"
+                },
+                {
+                  "name": "Azure:CosmosKey",
+                  "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
+                },
+                {
+                  "name": "Azure:CosmosDefaultThroughput",
+                  "value": "[string(parameters('cosmosDbThroughput'))]"
+                },
+                {
+                  "name": "Data:DatabaseName",
+                  "value": "[variables('data').DatabaseName]"
+                },
+                {
+                  "name": "Data:FeedbackTable",
+                  "value": "[variables('data').FeedbackTable]"
+                },
+                {
+                  "name": "Data:ConversationLogTable",
+                  "value": "[variables('data').ConversationLogTable]"
+                },
+                {
+                  "name": "Data:ConversationLogPartitionKey",
+                  "value": "[variables('data').ConversationLogPartitionKey]"
+                },
+                {
+                  "name": "Data:SessionStateTable",
+                  "value": "[variables('data').SessionStateTable]"
+                },
+                {
+                  "name": "Bot:AdminCommands",
+                  "value": "[string(parameters('botAdminCommands'))]"
+                },
+                {
+                  "name": "Bot:ConversationExpiryHours",
+                  "value": "[string(parameters('conversationExpiryHours'))]"
+                },
+                {
+                  "name": "Notify:OutgoingMessageQueueName",
+                  "value": "[variables('queues').OutgoingMessageQueueName]"
+                },
+                {
+                  "name": "Notify:IncomingMessageQueueName",
+                  "value": "[variables('queues').IncomingMessageQueueName]"
+                }
+              ]
+            }
           },
           "appServiceConnectionStrings": {
-            "value": [
-              {
-                "name": "Redis",
-                "connectionString": "[parameters('loggingRedisConnectionString')]",
-                "type": "Custom"
-              },
-              {
-                "name": "StorageAccount",
-                "connectionString": "[reference('storage-account').outputs.storageConnectionString.value]",
-                "type": "Custom"
-              },
-              {
-                "name": "ServiceBus",
-                "connectionString": "[reference('service-bus').outputs.ServiceBusEndpoint.value]",
-                "type": "Custom"
-              }
-            ]
+            "value": {
+              "array": [
+                {
+                  "name": "Redis",
+                  "connectionString": "[parameters('loggingRedisConnectionString')]",
+                  "type": "Custom"
+                },
+                {
+                  "name": "StorageAccount",
+                  "connectionString": "[reference('storage-account').outputs.storageConnectionString.value]",
+                  "type": "Custom"
+                },
+                {
+                  "name": "ServiceBus",
+                  "connectionString": "[reference('service-bus').outputs.ServiceBusEndpoint.value]",
+                  "type": "Custom"
+                }
+              ]
+            }
           },
           "customHostName": {
             "value": "[parameters('botCustomHostname')]"
@@ -459,7 +463,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "[concat(variables('deploymentUrlBase'), 'function-app.json')]",
+          "uri": "[concat(variables('deploymentUrlBase'), 'function-app-v2.json')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -473,132 +477,134 @@
             "value": "[resourceGroup().name]"
           },
           "functionAppAppSettings": {
-            "value": [
-              {
-                "name": "AzureWebJobsStorage",
-                "value": "[reference('storage-account').outputs.storageConnectionString.value]"
-              },
-              {
-                "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-                "value": "[reference('function-app-insights').outputs.InstrumentationKey.value]"
-              },
-              {
-                "name": "ASPNETCORE_ENVIRONMENT",
-                "value": "[parameters('environmentName')]"
-              },
-              {
-                "name": "FUNCTIONS_EXTENSION_VERSION",
-                "value": "[parameters('functionsExtensionVersion')]"
-              },
-              {
-                "name": "FUNCTIONS_WORKER_RUNTIME",
-                "value": "dotnet"
-              },
-              {
-                "name": "AzureCosmosEndpoint",
-                "value": "[variables('azureCosmosEndpoint')]"
-              },
-              {
-                "name": "AzureCosmosKey",
-                "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
-              },
-              {
-                "name": "AzureCosmos",
-                "value": "[string(parameters('cosmosDbThroughput'))]"
-              },
-              {
-                "name": "DatabaseName",
-                "value": "[variables('data').DatabaseName]"
-              },
-              {
-                "name": "FeedbackTable",
-                "value": "[variables('data').FeedbackTable]"
-              },
-              {
-                "name": "ApprenticeSurveyDetailTable",
-                "value": "[variables('data').ApprenticeSurveyDetailTable]"
-              },
-              {
-                "name": "ConversationLogTable",
-                "value": "[variables('data').ConversationLogTable]"
-              },
-              {
-                "name": "ConversationLogPartitionKey",
-                "value": "[variables('data').ConversationLogPartitionKey]"
-              },
-              {
-                "name": "SessionLogTable",
-                "value": "[variables('data').SessionLogTable]"
-              },
-              {
-                "name": "SessionLogPartitionKey",
-                "value": "[variables('data').SessionLogPartitionKey]"
-              },
-              {
-                "name": "SessionStateTable",
-                "value": "[variables('data').SessionStateTable]"
-              },
-              {
-                "name": "BotClientAuthToken",
-                "value": "[parameters('botClientCredentials').AuthToken]"
-              },
-              {
-                "name": "BotClientBaseAddress",
-                "value": "[parameters('botClientCredentials').BaseAddress]"
-              },
-              {
-                "name": "DirectLineAddress",
-                "value": "[parameters('botClientCredentials').DirectLineAddress]"
-              },
-              {
-                "name": "NotifyTemplateId",
-                "value": "[parameters('notifyCredentials').TemplateId]"
-              },
-              {
-                "name": "NotifySmsSenderId",
-                "value": "[parameters('notifyCredentials').SmsSenderId]"
-              },
-              {
-                "name": "NotifyClientApiKey",
-                "value": "[parameters('notifyCredentials').ClientApiKey]"
-              },
-              {
-                "name": "ServiceBusConnection",
-                "value": "[reference('service-bus').outputs.ServiceBusEndpoint.value]"
-              },
-              {
-                "name": "DailySurveyTriggerSchedule",
-                "value": "[string(parameters('dailySurveyTriggerSchedule'))]"
-              },
-              {
-                "name": "ApprenticeBatchSize",
-                "value": "[string(parameters('apprenticeBatchSize'))]"
-              },
-              {
-                "name": "MaxRetryAttempts",
-                "value": "[string(parameters('maxRetryAttempts'))]"
-              },
-              {
-                "name": "RetryDelayMs",
-                "value": "[string(parameters('retryDelayMs'))]"
-              },
-              {
-                "name": "OutgoingMessageQueueName",
-                "value": "[variables('queues').OutgoingMessageQueueName]"
-              },
-              {
-                "name": "IncomingMessageQueueName",
-                "value": "[variables('queues').IncomingMessageQueueName]"
-              },
-              {
-                "name": "DeliveryReceiptQueueName",
-                "value": "[variables('queues').DeliveryReceiptQueueName]"
-              },
-              {
-                "name": "SqlConnectionString",
-                "value": "[parameters('sqlConnectionString')]"
-              }
-            ]
+            "value": {
+              "array": [
+                {
+                  "name": "AzureWebJobsStorage",
+                  "value": "[reference('storage-account').outputs.storageConnectionString.value]"
+                },
+                {
+                  "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                  "value": "[reference('function-app-insights').outputs.InstrumentationKey.value]"
+                },
+                {
+                  "name": "ASPNETCORE_ENVIRONMENT",
+                  "value": "[parameters('environmentName')]"
+                },
+                {
+                  "name": "FUNCTIONS_EXTENSION_VERSION",
+                  "value": "[parameters('functionsExtensionVersion')]"
+                },
+                {
+                  "name": "FUNCTIONS_WORKER_RUNTIME",
+                  "value": "dotnet"
+                },
+                {
+                  "name": "AzureCosmosEndpoint",
+                  "value": "[variables('azureCosmosEndpoint')]"
+                },
+                {
+                  "name": "AzureCosmosKey",
+                  "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
+                },
+                {
+                  "name": "AzureCosmos",
+                  "value": "[string(parameters('cosmosDbThroughput'))]"
+                },
+                {
+                  "name": "DatabaseName",
+                  "value": "[variables('data').DatabaseName]"
+                },
+                {
+                  "name": "FeedbackTable",
+                  "value": "[variables('data').FeedbackTable]"
+                },
+                {
+                  "name": "ApprenticeSurveyDetailTable",
+                  "value": "[variables('data').ApprenticeSurveyDetailTable]"
+                },
+                {
+                  "name": "ConversationLogTable",
+                  "value": "[variables('data').ConversationLogTable]"
+                },
+                {
+                  "name": "ConversationLogPartitionKey",
+                  "value": "[variables('data').ConversationLogPartitionKey]"
+                },
+                {
+                  "name": "SessionLogTable",
+                  "value": "[variables('data').SessionLogTable]"
+                },
+                {
+                  "name": "SessionLogPartitionKey",
+                  "value": "[variables('data').SessionLogPartitionKey]"
+                },
+                {
+                  "name": "SessionStateTable",
+                  "value": "[variables('data').SessionStateTable]"
+                },
+                {
+                  "name": "BotClientAuthToken",
+                  "value": "[parameters('botClientCredentials').AuthToken]"
+                },
+                {
+                  "name": "BotClientBaseAddress",
+                  "value": "[parameters('botClientCredentials').BaseAddress]"
+                },
+                {
+                  "name": "DirectLineAddress",
+                  "value": "[parameters('botClientCredentials').DirectLineAddress]"
+                },
+                {
+                  "name": "NotifyTemplateId",
+                  "value": "[parameters('notifyCredentials').TemplateId]"
+                },
+                {
+                  "name": "NotifySmsSenderId",
+                  "value": "[parameters('notifyCredentials').SmsSenderId]"
+                },
+                {
+                  "name": "NotifyClientApiKey",
+                  "value": "[parameters('notifyCredentials').ClientApiKey]"
+                },
+                {
+                  "name": "ServiceBusConnection",
+                  "value": "[reference('service-bus').outputs.ServiceBusEndpoint.value]"
+                },
+                {
+                  "name": "DailySurveyTriggerSchedule",
+                  "value": "[string(parameters('dailySurveyTriggerSchedule'))]"
+                },
+                {
+                  "name": "ApprenticeBatchSize",
+                  "value": "[string(parameters('apprenticeBatchSize'))]"
+                },
+                {
+                  "name": "MaxRetryAttempts",
+                  "value": "[string(parameters('maxRetryAttempts'))]"
+                },
+                {
+                  "name": "RetryDelayMs",
+                  "value": "[string(parameters('retryDelayMs'))]"
+                },
+                {
+                  "name": "OutgoingMessageQueueName",
+                  "value": "[variables('queues').OutgoingMessageQueueName]"
+                },
+                {
+                  "name": "IncomingMessageQueueName",
+                  "value": "[variables('queues').IncomingMessageQueueName]"
+                },
+                {
+                  "name": "DeliveryReceiptQueueName",
+                  "value": "[variables('queues').DeliveryReceiptQueueName]"
+                },
+                {
+                  "name": "SqlConnectionString",
+                  "value": "[parameters('sqlConnectionString')]"
+                }
+              ]
+            }
           },
           "customHostName": {
             "value": "[parameters('functionCustomHostname')]"
