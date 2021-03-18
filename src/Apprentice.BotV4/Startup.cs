@@ -27,6 +27,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Localization;
+    using Microsoft.AspNetCore.Server.Kestrel.Core;
     using Microsoft.Bot.Builder;
     using Microsoft.Bot.Builder.Azure;
     using Microsoft.Bot.Builder.Dialogs;
@@ -91,6 +92,17 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.BotV4
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
+            // If using IIS:
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+
             // configure JSON serializer
             this.ConfigureJsonSerializer();
 
