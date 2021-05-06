@@ -53,7 +53,7 @@
     "environmentName": {
       "type": "string"
     },
-    "sqlServerName": {
+    "sharedSQLServerName": {
       "type": "string"
     },
     "sharedEnvResourceGroup": {
@@ -789,7 +789,7 @@
             "value": "[variables('databaseName')]"
           },
           "sqlServerName": {
-            "value": "[parameters('sqlServerName')]"
+            "value": "[parameters('sharedSQLServerName')]"
           },
           "elasticPoolName": {
             "value": "[parameters('elasticPoolName')]"
