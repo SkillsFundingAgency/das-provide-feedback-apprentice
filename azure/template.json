@@ -1,11 +1,17 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json",
   "contentVersion": "1.0.0.0",
   "parameters": {
     "serviceName": {
       "type": "string"
     },
     "resourceEnvironmentName": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "object"
+    },
+    "resourceGroupLocation": {
       "type": "string"
     },
     "botServiceSku": {
@@ -50,8 +56,20 @@
     "sqlServerName": {
       "type": "string"
     },
-    "sqlServerResourceGroupName": {
+    "sharedEnvResourceGroup": {
       "type": "string"
+    },
+    "sharedEnvVirtualNetworkName": {
+      "type": "string"
+    },
+    "subnetObject": {
+      "type": "object"
+    },
+    "subnetServiceEndpointList": {
+      "type": "array"
+    },
+    "subnetDelegations": {
+      "type": "array"
     },
     "elasticPoolName": {
       "type": "string"
@@ -86,7 +104,7 @@
     "certificateKeyVaultName": {
       "type": "string"
     },
-    "certificateKeyVaultResourceGroupName": {
+    "sharedManagementResourceGroup": {
       "type": "string"
     },
     "botAdminCommands": {
@@ -126,9 +144,7 @@
       "defaultValue": "Standard"
     },
     "appServiceAllowedIPs": {
-      "type": "array",
-      "defaultValue": [
-      ]
+      "type": "array"
     },
     "functionsExtensionVersion": {
       "type": "string",
@@ -141,6 +157,7 @@
   "variables": {
     "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/master/templates/",
     "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
+    "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
     "storageAccountName": "[toLower(concat('das', parameters('resourceEnvironmentName'), parameters('serviceName'), 'str'))]",
     "botAppServiceName": "[concat(variables('resourceNamePrefix'), '-as')]",
     "botServiceName": "[concat(variables('resourceNamePrefix'), '-bot')]",
@@ -168,9 +185,18 @@
   },
   "resources": [
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
+      "name": "[variables('resourceGroupName')]",
+      "type": "Microsoft.Resources/resourceGroups",
+      "location": "[parameters('resourceGroupLocation')]",
+      "tags": "[parameters('tags')]",
+      "properties": {}
+    },
+    {
+      "apiVersion": "2020-10-01",
       "name": "app-service-plan",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -191,12 +217,46 @@
             "value": "[parameters('aspSku')]"
           }
         }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2020-10-01",
+      "name": "app-service-subnet",
+      "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "[concat(variables('deploymentUrlBase'),'subnet.json')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "virtualNetworkName": {
+            "value": "[parameters('sharedEnvVirtualNetworkName')]"
+          },
+          "subnetName": {
+            "value": "[parameters('subnetObject').name]"
+          },
+          "subnetAddressPrefix": {
+            "value": "[parameters('subnetObject').addressSpace]"
+          },
+          "serviceEndpointList": {
+            "value": "[parameters('subnetServiceEndpointList')]"
+          },
+          "delegations": {
+            "value": "[parameters('subnetDelegations')]"
+          }
+        }
       }
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "function-app-certificate",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -211,18 +271,22 @@
             "value": "[parameters('certificateKeyVaultName')]"
           },
           "keyVaultResourceGroup": {
-            "value": "[parameters('certificateKeyVaultResourceGroupName')]"
+            "value": "[parameters('sharedManagementResourceGroup')]"
           },
           "serverFarmId": {
             "value": "[reference('app-service-plan').outputs.appServicePlanId.value]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "bot-certificate",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "condition": "[not(equals(parameters('botCertificateName'), parameters('functionCertificateName')))]",
       "properties": {
         "mode": "Incremental",
@@ -238,18 +302,22 @@
             "value": "[parameters('certificateKeyVaultName')]"
           },
           "keyVaultResourceGroup": {
-            "value": "[parameters('certificateKeyVaultResourceGroupName')]"
+            "value": "[parameters('sharedManagementResourceGroup')]"
           },
           "serverFarmId": {
             "value": "[reference('app-service-plan').outputs.appServicePlanId.value]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "storage-account",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -261,12 +329,16 @@
             "value": "[variables('storageAccountName')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "bot-service-app-insights",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -281,12 +353,16 @@
             "value": "[variables('botAppServiceName')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "function-app-insights",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -301,12 +377,16 @@
             "value": "[variables('functionAppServiceName')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "bot-app-service",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -321,7 +401,10 @@
             "value": "[variables('appServicePlanName')]"
           },
           "appServicePlanResourceGroup": {
-            "value": "[resourceGroup().name]"
+            "value": "[variables('resourceGroupName')]"
+          },
+          "subnetResourceId": {
+            "value": "[reference('app-service-subnet').outputs.subnetResourceId.value]"
           },
           "appServiceAppSettings": {
             "value": {
@@ -426,14 +509,16 @@
         }
       },
       "dependsOn": [
+        "[variables('resourceGroupName')]",
         "bot-service-app-insights",
         "app-service-plan"
       ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "bot-channel-registrations",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -454,12 +539,16 @@
             "value": "[parameters('microsoftAppCredentials').Id]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "function-app",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -474,7 +563,10 @@
             "value": "[variables('appServicePlanName')]"
           },
           "appServicePlanResourceGroup": {
-            "value": "[resourceGroup().name]"
+            "value": "[variables('resourceGroupName')]"
+          },
+          "subnetResourceId": {
+            "value": "[reference('app-service-subnet').outputs.subnetResourceId.value]"
           },
           "functionAppAppSettings": {
             "value": {
@@ -618,14 +710,16 @@
         }
       },
       "dependsOn": [
+        "[variables('resourceGroupName')]",
         "function-app-insights",
         "app-service-plan"
       ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "service-bus",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -644,12 +738,16 @@
             ]
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "cosmos-db",
       "type": "Microsoft.Resources/deployments",
+      "resourceGroup": "[variables('resourceGroupName')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -670,13 +768,16 @@
             "value": "[parameters('cosmosDbIpRangeFilter')]"
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[variables('resourceGroupName')]"
+      ]
     },
     {
-      "apiVersion": "2017-05-10",
+      "apiVersion": "2020-10-01",
       "name": "sql-database",
       "type": "Microsoft.Resources/deployments",
-      "resourceGroup": "[parameters('sqlServerResourceGroupName')]",
+      "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
       "properties": {
         "mode": "Incremental",
         "templateLink": {
@@ -707,6 +808,10 @@
     }
   ],
   "outputs": {
+    "ResourceGroupName": {
+      "type": "string",
+      "value": "[variables('resourceGroupName')]"
+    },
     "BotAppServiceName": {
       "type": "string",
       "value": "[variables('botAppServiceName')]"
