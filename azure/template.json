@@ -101,7 +101,7 @@
     "botCertificateName": {
       "type": "string"
     },
-    "certificateKeyVaultName": {
+    "sharedKeyVaultName": {
       "type": "string"
     },
     "sharedManagementResourceGroup": {
@@ -268,7 +268,7 @@
             "value": "[parameters('functionCertificateName')]"
           },
           "keyVaultName": {
-            "value": "[parameters('certificateKeyVaultName')]"
+            "value": "[parameters('sharedKeyVaultName')]"
           },
           "keyVaultResourceGroup": {
             "value": "[parameters('sharedManagementResourceGroup')]"
@@ -299,7 +299,7 @@
             "value": "[parameters('botCertificateName')]"
           },
           "keyVaultName": {
-            "value": "[parameters('certificateKeyVaultName')]"
+            "value": "[parameters('sharedKeyVaultName')]"
           },
           "keyVaultResourceGroup": {
             "value": "[parameters('sharedManagementResourceGroup')]"
