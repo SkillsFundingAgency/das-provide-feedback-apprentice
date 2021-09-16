@@ -28,6 +28,9 @@
         "Password": ""
       }
     },
+    "cosmosDbPrimaryReadWriteKey": {
+      "type": "securestring"
+    },
     "cosmosDbThroughput": {
       "type": "int"
     },
@@ -431,7 +434,7 @@
                 },
                 {
                   "name": "Azure:CosmosKey",
-                  "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
+                  "value": "[parameters('cosmosDbPrimaryReadWriteKey')]"
                 },
                 {
                   "name": "Azure:CosmosDefaultThroughput",
@@ -597,7 +600,7 @@
                 },
                 {
                   "name": "AzureCosmosKey",
-                  "value": "[reference('cosmos-db').outputs.PrimaryMasterKey.value]"
+                  "value": "[parameters('cosmosDbPrimaryReadWriteKey')]"
                 },
                 {
                   "name": "AzureCosmos",
