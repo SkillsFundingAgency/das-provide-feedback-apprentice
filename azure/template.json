@@ -700,6 +700,10 @@
                 {
                   "name": "SqlConnectionString",
                   "value": "[parameters('sqlConnectionString')]"
+                },
+                {
+                  "name": "WEBSITE_RUN_FROM_PACKAGE",
+                  "value": "1"
                 }
               ]
             }
