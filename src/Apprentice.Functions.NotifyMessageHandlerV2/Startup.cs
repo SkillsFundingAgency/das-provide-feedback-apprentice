@@ -9,6 +9,7 @@ using ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2.Servi
 using ESFA.DAS.ProvideFeedback.Apprentice.Services;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.SendSms;
 using ESFA.DAS.ProvideFeedback.Apprentice.Services.FeedbackService.Commands.TriggerSurveyInvites;
+using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +30,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
     internal class Startup : IWebJobsStartup
     {
         private readonly IConfigurationRoot _configuration;
+        private const string AzureResource = "https://database.windows.net/";
 
         public Startup()
         {
@@ -44,7 +46,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IDbConnection>(c => new SqlConnection(_configuration.GetConnectionStringOrSetting("SqlConnectionString")));
+            var env = _configuration.GetConnectionStringOrSetting("ASPNETCORE_ENVIRONMENT");
 
             services.AddLogging((options) =>
             {
@@ -66,7 +68,20 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.AddScoped<IStoreApprenticeSurveyDetails, ApprenticeSurveyInvitesRepository>();
             services.AddSingleton(service => new SettingsProvider(_configuration));
 
-            services.AddTransient<IDbConnection>(c => new SqlConnection(_configuration.GetConnectionStringOrSetting("SqlConnectionString")));
+            if (string.IsNullOrWhiteSpace(env))
+            {
+                services.AddTransient<IDbConnection>(c => new SqlConnection(_configuration.GetConnectionStringOrSetting("SqlConnectionString")));
+            }
+            else
+            {
+                var azureServiceTokenProvider = new AzureServiceTokenProvider();
+                services.AddTransient<IDbConnection>(c => new SqlConnection
+                {
+                    ConnectionString = _configuration.GetConnectionStringOrSetting("SqlConnectionString"),
+                    AccessToken = azureServiceTokenProvider.GetAccessTokenAsync(AzureResource).Result,
+                });
+            }
+
             services.AddScoped<IStoreApprenticeSurveyDetails, ApprenticeSurveyInvitesRepository>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddSingleton<IQueueClientFactory, QueueClientFactory>();
