@@ -68,7 +68,7 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
             services.AddScoped<IStoreApprenticeSurveyDetails, ApprenticeSurveyInvitesRepository>();
             services.AddSingleton(service => new SettingsProvider(_configuration));
 
-            if (string.IsNullOrWhiteSpace(env))
+            if (IsDevEnvironment())
             {
                 services.AddTransient<IDbConnection>(c => new SqlConnection(_configuration.GetConnectionStringOrSetting("SqlConnectionString")));
             }
@@ -149,5 +149,16 @@ namespace ESFA.DAS.ProvideFeedback.Apprentice.Functions.NotifyMessageHandlerV2
         }
 
         private static LogLevel GetMinLogLevel() => LogLevel.FromString("Info");
+
+        private bool IsDevEnvironment()
+        {
+            var aspnet_environment = _configuration.GetConnectionStringOrSetting("ASPNETCORE_ENVIRONMENT");
+            var environmentName = _configuration.GetConnectionStringOrSetting("EnvironmentName");
+
+            return string.IsNullOrWhiteSpace(aspnet_environment) ||
+                (environmentName?.Equals("DEV") ?? false) ||
+                (environmentName?.Equals("DEVELOPMENT") ?? false) ||
+                (environmentName?.Equals("LOCAL") ?? false);
+        }
     }
 }
