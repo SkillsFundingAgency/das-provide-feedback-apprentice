@@ -236,7 +236,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2020-10-01",
-            "name": "app-service-subnet",
+            "name": "provide-feedback-apprentice-app-service-subnet",
             "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
             "properties": {
                 "mode": "Incremental",
@@ -259,6 +259,27 @@
                     },
                     "delegations": {
                         "value": "[parameters('subnetDelegations')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-04-01",
+            "name": "provide-feedback-apprentice-sql-firewall-rule",
+            "resourceGroup": "[parameters('sharedEnvResourceGroup')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'), 'sql-server-firewall-rules.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "serverName": {
+                        "value": "[parameters('sharedSQLServerName')]"
+                    },
+                    "subnetResourceIdList": {
+                        "value": "[createArray(reference('provide-feedback-apprentice-app-service-subnet').outputs.SubnetResourceId.value)]"
                     }
                 }
             }
@@ -418,7 +439,7 @@
                         "value": "[variables('resourceGroupName')]"
                     },
                     "subnetResourceId": {
-                        "value": "[reference('app-service-subnet').outputs.subnetResourceId.value]"
+                        "value": "[reference('provide-feedback-apprentice-app-service-subnet').outputs.subnetResourceId.value]"
                     },
                     "appServiceAppSettings": {
                         "value": {
@@ -580,7 +601,7 @@
                         "value": "[variables('resourceGroupName')]"
                     },
                     "subnetResourceId": {
-                        "value": "[reference('app-service-subnet').outputs.subnetResourceId.value]"
+                        "value": "[reference('provide-feedback-apprentice-app-service-subnet').outputs.subnetResourceId.value]"
                     },
                     "functionAppAppSettings": {
                         "value": {
